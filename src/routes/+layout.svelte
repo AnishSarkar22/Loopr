@@ -1,21 +1,34 @@
 <script lang="ts">
-	import Header from './Header.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import '../app.css';
 
 	let { children } = $props();
+
+	let theme = $state('light');
+
+	function toggleTheme() {
+		theme = theme === 'light' ? 'dark' : 'light';
+	}
 </script>
 
-<div class="app">
+<div class="app" data-theme={theme}>
 	<Header />
 
 	<main>
 		{@render children()}
 	</main>
 
-	<footer>
-		<p>
-			visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to learn about SvelteKit
-		</p>
+	<footer class="footer sm:footer-horizontal footer-center text-base-content p-4">
+		<aside>
+			<p>
+				Created with ❤️ by Anish Sarkar | <a
+					href="https://x.com/AnishSarkar22"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="link link-primary">Say hi on Twitter!</a
+				>
+			</p>
+		</aside>
 	</footer>
 </div>
 
@@ -35,23 +48,5 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
 	}
 </style>
