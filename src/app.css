@@ -2,7 +2,7 @@
 @import '@fontsource/fira-mono';
 @plugin '@tailwindcss/forms';
 @plugin "daisyui" {
-  themes: light --default;
+  themes: luxury --default;
   root: ":root";
   include: ;
   exclude: ;

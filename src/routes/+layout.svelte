@@ -1,35 +1,34 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 	import '../app.css';
+	import { page } from '$app/stores';
 
 	let { children } = $props();
 
-	let theme = $state('light');
+	let theme = $state('luxury');
 
 	function toggleTheme() {
-		theme = theme === 'light' ? 'dark' : 'light';
+		theme = theme === 'luxury' ? 'light' : 'luxury';
 	}
+
+	// Show footer only on dashboard (home) page
+	let showFooter = $derived($page.url.pathname === '/');
+	let isDashboard = $derived($page.url.pathname === '/');
 </script>
 
 <div class="app" data-theme={theme}>
-	<Header />
+	{#if isDashboard}
+		<Header />
+	{/if}
 
 	<main>
 		{@render children()}
 	</main>
 
-	<footer class="footer sm:footer-horizontal footer-center text-base-content p-4">
-		<aside>
-			<p>
-				Created with ❤️ by Anish Sarkar | <a
-					href="https://x.com/AnishSarkar22"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="link link-primary">Say hi on Twitter!</a
-				>
-			</p>
-		</aside>
-	</footer>
+	{#if showFooter}
+		<Footer />
+	{/if}
 </div>
 
 <style>
