@@ -6,14 +6,26 @@
 	export let userEmail: string = ''; // Email used during signup
 	let isResending = false;
 
+	let showToast = false;
+	let toastMessage = '';
+	let isError = false;
+
+	function showAlert(message: string, error = false) {
+		toastMessage = message;
+		isError = error;
+		showToast = true;
+		setTimeout(() => {
+			showToast = false;
+		}, 3000);
+	}
+
 	async function handleResendVerification() {
 		isResending = true;
 		try {
 			await account.createVerification(`${PUBLIC_APP_URL}/verify`);
-			alert('Verification email has been resent. Please check your inbox.');
+			showAlert('Verification email has been resent. Please check your inbox.');
 		} catch (error) {
-			console.error('Resend verification failed:', error);
-			alert('Failed to resend verification email. Please try again.');
+			showAlert('Failed to resend verification email. Please try again.');
 		} finally {
 			isResending = false;
 		}
@@ -72,3 +84,40 @@
 		</div>
 	</div>
 </div>
+
+{#if showToast}
+	<div class="toast toast-bottom toast-end z-50">
+		<div class="alert {isError ? 'alert-error' : 'alert-success'} shadow-lg">
+			{#if isError}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 shrink-0 stroke-current"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
+				</svg>
+			{:else}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 shrink-0 stroke-current"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
+				</svg>
+			{/if}
+			<span>{toastMessage}</span>
+		</div>
+	</div>
+{/if}

@@ -6,6 +6,9 @@
 
 	let isAuthenticated = false;
 	let userInitials = '';
+	let showToast = false;
+	let toastMessage = '';
+	let isError = false;
 
 	onMount(async () => {
 		try {
@@ -29,15 +32,24 @@
 		}
 	});
 
+	function showAlert(message: string, error = false) {
+		toastMessage = message;
+		isError = error;
+		showToast = true;
+		setTimeout(() => {
+			showToast = false;
+		}, 3000);
+	}
+
 	async function handleLogout() {
 		try {
 			// Delete the current session
 			await account.deleteSession('current');
-
+			showAlert('Successfully logged out!');
 			window.location.href = '/login';
 		} catch (error) {
 			console.error('Logout failed:', error);
-			alert('Failed to logout. Please try again.');
+			showAlert('Failed to logout. Please try again.', true);
 		}
 	}
 </script>
@@ -158,3 +170,40 @@
 		{/if}
 	</div>
 </div>
+
+{#if showToast}
+	<div class="toast toast-bottom toast-end z-50">
+		<div class="alert {isError ? 'alert-error' : 'alert-success'} shadow-lg">
+			{#if isError}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 shrink-0 stroke-current"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
+				</svg>
+			{:else}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 shrink-0 stroke-current"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
+				</svg>
+			{/if}
+			<span>{toastMessage}</span>
+		</div>
+	</div>
+{/if}

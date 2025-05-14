@@ -10,6 +10,19 @@
 	let isEmailValid = true;
 	let doPasswordsMatch = true;
 
+	let showToast = false;
+	let toastMessage = '';
+	let isError = false;
+
+	function showAlert(message: string, error = false) {
+		toastMessage = message;
+		isError = error;
+		showToast = true;
+		setTimeout(() => {
+			showToast = false;
+		}, 3000);
+	}
+
 	function validateEmail(value: string) {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		isEmailValid = emailRegex.test(value);
@@ -56,16 +69,16 @@
 			if (error instanceof AppwriteException) {
 				switch (error.type) {
 					case 'user_already_exists':
-						alert('Email already exists');
+						showAlert('Email already exists');
 						break;
 					case 'general_argument_invalid':
-						alert('Please check your email and password');
+						showAlert('Please check your email and password');
 						break;
 					default:
-						alert(`Failed to create account: ${error.message}`);
+						showAlert(`Failed to create account: ${error.message}`);
 				}
 			} else {
-				alert('An unexpected error occurred');
+				showAlert('An unexpected error occurred');
 			}
 		} finally {
 			loading = false;
@@ -183,3 +196,40 @@
 		</div>
 	</div>
 </div>
+
+{#if showToast}
+	<div class="toast toast-bottom toast-end z-50">
+		<div class="alert {isError ? 'alert-error' : 'alert-success'} shadow-lg">
+			{#if isError}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 shrink-0 stroke-current"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
+				</svg>
+			{:else}
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-6 w-6 shrink-0 stroke-current"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+					/>
+				</svg>
+			{/if}
+			<span>{toastMessage}</span>
+		</div>
+	</div>
+{/if}
