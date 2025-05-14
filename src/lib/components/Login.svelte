@@ -1,33 +1,65 @@
 <script lang="ts">
+	import { account, AppwriteException } from '../appwrite';
+	import { goto } from '$app/navigation';
 	let email = '';
 	let password = '';
 	let loading = false;
 	let isPasswordValid = true;
 	let isEmailValid = true;
 
-	// Email validation function
 	function validateEmail(value: string) {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		isEmailValid = emailRegex.test(value);
 	}
 
 	function validatePassword(value: string) {
-        isPasswordValid = value.length > 0;
-    }
+		isPasswordValid = value.length > 0;
+	}
 
 	async function handleSubmit() {
 		if (!isEmailValid || !isPasswordValid) {
 			return;
 		}
 		loading = true;
-		// Add your authentication logic here
+
 		try {
-			// Simulate API call
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			// Redirect to home page after successful login
+			// Delete any existing sessions first
+			try {
+				await account.deleteSession('current');
+			} catch (e) {
+				// Ignore error if no session exists
+			}
+			// Create new email session with Appwrite
+			await account.createEmailPasswordSession(email, password);
+
+			// Get the user to check verification status
+			const user = await account.get();
+
+			if (!user.emailVerification) {
+				// If email is not verified, redirect to verification page
+				window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
+				return;
+			}
+
+			// If email is verified, redirect to dashboard
 			window.location.href = '/';
 		} catch (error) {
 			console.error('Login failed:', error);
+
+			if (error instanceof AppwriteException) {
+				switch (error.type) {
+					case 'user_invalid_credentials':
+						alert('Invalid email or password');
+						break;
+					case 'user_not_found':
+						alert('No account found with this email');
+						break;
+					default:
+						alert(`Login failed: ${error.message}`);
+				}
+			} else {
+				alert('An unexpected error occurred');
+			}
 		} finally {
 			loading = false;
 		}
@@ -37,7 +69,7 @@
 <div class="hero w-full py-35">
 	<div class="hero-content flex-col">
 		<div class="text-center">
-			<h1 class="text-primary text-5xl font-bold">Login</h1>
+			<h1 class="text-primary text-5xl font-bold">Log In</h1>
 			<p class="py-6">Welcome back! Please login to continue.</p>
 		</div>
 		<div class="card bg-base-200 w-full shadow-lg md:w-[400px]">
@@ -91,21 +123,28 @@
 						on:input={(e) => validatePassword(e.currentTarget.value)}
 					/>
 				</label>
-				 <p class="validator-hint text-error text-sm" class:hidden={isPasswordValid}>
-                    Please enter a valid password
-				 </p>
+				<p class="validator-hint text-error text-sm" class:hidden={isPasswordValid}>
+					Please enter a valid password
+				</p>
 
 				<div class="label">
-					<a href="/forgot-password" class="label-text-alt link link-hover">Forgot password?</a>
+					<a href="/forgot-password" class="label-text-alt link link-hover -mt-2">Forgot password?</a>
 				</div>
 
 				<div class="form-control mt-6 w-full">
-					<button class="btn btn-primary w-full" class:loading type="submit">
-						{loading ? 'Logging in...' : 'Login'}
+					<button
+						class="btn btn-primary w-full"
+						type="submit"
+						disabled={loading || !isEmailValid || !isPasswordValid}
+					>
+						{#if loading}
+							<span class="loading loading-spinner"></span>
+						{/if}
+						{loading ? 'Logging in...' : 'Log In'}
 					</button>
 				</div>
 				<div class="mt-4 text-center">
-					<a href="/register" class="link link-hover text-sm"> Don't have an account? Sign up </a>
+					<a href="/signup" class="link link-hover text-sm"> Don't have an account? Sign Up </a>
 				</div>
 			</form>
 		</div>

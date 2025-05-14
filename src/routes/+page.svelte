@@ -8,7 +8,7 @@
 
 	let showToast = false;
 	let toastTimeout: number | null = null;
-	const TOAST_DURATION = 2000; // 2 seconds
+	const TOAST_DURATION = 2000;
 
 	interface Log {
 		message: string;

@@ -9,7 +9,7 @@
 					href="https://x.com/AnishSarkar22"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="link link-primary">Say hi on Twitter!</a
+					class="link link-primary">Say hi on X!</a
 				>
 			</p>
 		</aside>

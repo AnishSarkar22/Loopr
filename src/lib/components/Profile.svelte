@@ -3,7 +3,7 @@
     
     let showDeleteConfirm = false;
     let deleteTimeout: number | null = null;
-    const DELETE_TIMEOUT = 5000; // 5 seconds countdown
+    const DELETE_TIMEOUT = 5000;
     
     function handleDelete() {
         showDeleteConfirm = true;

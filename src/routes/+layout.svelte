@@ -13,8 +13,8 @@
 	}
 
 	// Show footer only on dashboard (home) page
-	let showFooter = $derived($page.url.pathname === '/');
-	let isDashboard = $derived($page.url.pathname === '/');
+	let showFooter = $derived($page?.url?.pathname === '/');
+	let isDashboard = $derived($page?.url?.pathname === '/');
 </script>
 
 <div class="app" data-theme={theme}>

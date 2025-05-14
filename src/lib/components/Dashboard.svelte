@@ -15,11 +15,11 @@
 	export let onTogglePing: () => void;
 </script>
 
-<div class="card mb-8 shadow-sm">
+<div class="card mb-8 shadow-lg">
 	<div class="card-body">
 		<div class="form-control mb-4 w-full">
-			<label for="app-url" class="label mb-4">
-				<span class="label-text">App URL</span>
+			<label for="app-url" class="card-title mb-4">
+				<span>App URL</span>
 			</label>
 			<div>
 				<label class="input w-full">
@@ -158,7 +158,7 @@
 
 	<div class="card-body">
 		<h2 class="card-title mb-4">Activity Log</h2>
-		<div class="bg-base-100 border-base-300 h-64 overflow-y-auto rounded-lg border-2 border-dashed">
+		<div class="bg-base-100 border-accent h-64 overflow-y-auto rounded-lg border-2 border-dashed">
 			{#each logs as log}
 				<div class="border-base-300 border-b px-4 py-2 last:border-0">
 					<span class="text-sm opacity-70">[{log.timestamp}]</span>
@@ -176,7 +176,23 @@
 				</div>
 			{/each}
 			{#if logs.length === 0}
-				<div class="text-base-content/70 py-4 text-center">No activity yet</div>
+				<div class="flex flex-col items-center justify-center py-4">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="text-base-content/50 mb-2 h-8 w-8"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					<div class="text-base-content/70 text-center">No activity yet</div>
+				</div>
 			{/if}
 		</div>
 	</div>
