@@ -1,18 +1,152 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import type { Log } from '$lib/types/index';
+    import type { Log, PingURL } from '$lib/types';
+    import { urlService } from '$lib/services/urlService';
+    import { account } from '$lib/appwrite';
+    import { onMount } from 'svelte';
 
-	export let appName: string;
-	export let endpoint: string;
-	export let isEnabled: boolean;
-	export let successCount: number;
-	export let lastPingTime: string | null;
-	export let lastPingStatus: 'success' | 'error' | '';
-	export let lastPingStatusCode: number | null;
-	export let logs: Log[];
-	export let showToast: boolean;
+	let appName: string = '';
+    let endpoint: string = '';
+    let isEnabled: boolean = false;
+    let successCount: number = 0;
+    let lastPingTime: string | null = null;
+    let lastPingStatus: 'success' | 'error' | '' = '';
+    let lastPingStatusCode: number | null = null;
+    let logs: Log[] = [];
+    let showToast = false;
+    let currentURL: PingURL | null = null;
+	let userId: string | null = null;
 
-	export let onTogglePing: () => void;
+	onMount(async () => {
+        try {
+            const session = await account.get();
+            userId = session.$id;
+            
+            // Load existing URL if any
+            const urls = await urlService.getURLs(userId);
+            if (urls && urls.length > 0) {
+                currentURL = urls[0]; // Assuming one URL per user for simplicity
+                const urlParts = parseUrl(currentURL.url);
+                
+                appName = urlParts.appName;
+                endpoint = urlParts.endpoint;
+                isEnabled = currentURL.isEnabled;
+                successCount = currentURL.successCount;
+                lastPingTime = formatTimestamp(currentURL.lastPingTime);
+                lastPingStatus = currentURL.lastPingStatus;
+                lastPingStatusCode = currentURL.lastPingStatusCode;
+                logs = currentURL.logs || [];
+            }
+            
+            // Show initial toast
+            showToast = true;
+            setTimeout(() => { showToast = false; }, 3000);
+		} catch (error) {
+			console.error('Error loading user data', error);
+			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+			addLog('Failed to load user data: ' + errorMessage, 'error');
+		}
+    });
+
+	function parseUrl(url: string) {
+        try {
+            // Extract appName and endpoint from URL like https://app-name.onrender.com/endpoint
+            const regex = /https:\/\/([^.]+)\.onrender\.com\/(.*)/;
+            const match = url.match(regex);
+            
+            if (match) {
+                return {
+                    appName: match[1],
+                    endpoint: match[2]
+                };
+            }
+            return { appName: '', endpoint: '' };
+        } catch (e) {
+            return { appName: '', endpoint: '' };
+        }
+    }
+
+	function formatTimestamp(timestamp: string): string {
+		if (!timestamp) return '';
+		
+		const date = new Date(timestamp);
+        const today = new Date();
+        
+        // Format date part
+        let datePart = '';
+        if (date.toDateString() === today.toDateString()) {
+            datePart = 'Today';
+        } else {
+            datePart = `${date.getMonth() + 1}/${date.getDate()}`;
+        }
+        
+        // Format time part
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const timePart = `${hours}:${minutes}`;
+        
+        return `${datePart} ${timePart}`;
+    }
+    
+    function addLog(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
+        const newLog: Log = {
+            timestamp: formatTimestamp(new Date().toISOString()),
+            message,
+            type
+        };
+        logs = [newLog, ...logs].slice(0, 100); // Keep only the last 100 logs
+    }
+
+	async function togglePinging() {
+        try {
+            // Basic validation
+            if (!appName && isEnabled) {
+                addLog('Please enter an app name', 'warning');
+                return;
+            }
+            
+            const newStatus = !isEnabled;
+            
+            // Update UI immediately for better user experience
+            isEnabled = newStatus;
+            showToast = true;
+            setTimeout(() => { showToast = false; }, 3000);
+            
+			// Call service to toggle the ping status
+			if (!userId) {
+				throw new Error('User ID is required');
+			}
+			currentURL = await urlService.togglePing(
+				currentURL?.id || '',
+				appName,
+				endpoint,
+				newStatus,
+				userId
+			);
+            
+            if (newStatus) {
+                addLog(`Started monitoring ${appName}.onrender.com/${endpoint}`, 'info');
+                
+                // Trigger an initial ping
+                if (currentURL) {
+                    try {
+                        await urlService.executePingFunction(currentURL.id);
+                        addLog('Initial ping sent', 'info');
+                    } catch (error) {
+                        addLog('Failed to send initial ping', 'error');
+                    }
+                }
+            } else {
+                addLog('Monitoring stopped', 'warning');
+            }
+        } catch (error) {
+            console.error('Error toggling ping status', error);
+			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+			addLog('Error: ' + errorMessage, 'error');
+            isEnabled = !isEnabled; // Revert UI state on error
+        }
+    }
+
 </script>
 
 <div class="card mb-8 shadow-lg">
@@ -60,7 +194,7 @@
 			</div> -->
 		<button
 			class={`btn btn-soft ${isEnabled ? 'btn-error' : 'btn-primary'} sm:btn-sm md:btn-md lg:btn-lg xl:btn-lg mt-2 w-full`}
-			on:click={onTogglePing}
+			on:click={togglePinging}
 		>
 			{isEnabled ? 'Stop Pinging' : 'Keep this URL alive!'}
 		</button>
