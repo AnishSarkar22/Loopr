@@ -2,37 +2,38 @@ import { Client, Databases, Query } from 'appwrite';
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export default async function({ req, res }) {
+export default async function({ req, res, log, error }) {
   const client = new Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
     .setProject(process.env.APPWRITE_PROJECT_ID)
     .setKey(process.env.APPWRITE_API_KEY);
-  
+
   const databases = new Databases(client);
-  const batchSize = 100; // Adjust based on your needs
   
-  // Process URLs in batches
-  const now = new Date().toISOString();
-  const urlsDue = await databases.listDocuments(
+  // Delete results older than 30 days
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const cutoffDate = thirtyDaysAgo.toISOString().split('T')[0];
+  
+  const oldResults = await databases.listDocuments(
     process.env.DATABASE_ID,
-    process.env.URLS_COLLECTION_ID,
-    [
-      Query.equal('isEnabled', true),
-      Query.lessThanEqual('nextPingTime', now)
-    ],
-    batchSize
+    process.env.RESULTS_COLLECTION_ID,
+    [Query.lessThan('date', cutoffDate)]
   );
   
-  // Process in parallel with Promise.all
-  const pingResults = await Promise.all(
-    urlsDue.documents.map(doc => pingUrl(doc.url, doc.$id))
-  );
-  
-  // Bulk update results, minimizing writes
-  await updateResultsInBulk(databases, pingResults);
+  let deletedCount = 0;
+  for (const doc of oldResults.documents) {
+    await databases.deleteDocument(
+      process.env.DATABASE_ID,
+      process.env.RESULTS_COLLECTION_ID,
+      doc.$id
+    );
+    deletedCount++;
+  }
   
   return res.json({
     success: true,
-    processed: pingResults.length
+    message: `Deleted ${deletedCount} old result shards`,
+    timestamp: new Date().toISOString()
   });
 }
