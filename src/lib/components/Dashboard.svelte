@@ -3,7 +3,7 @@
     import type { Log, PingURL } from '$lib/types';
     import { urlService } from '$lib/services/urlService';
     import { account } from '$lib/appwrite';
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
 
 	let appName: string = '';
     let endpoint: string = '';
@@ -16,6 +16,9 @@
     let showToast = false;
     let currentURL: PingURL | null = null;
 	let userId: string | null = null;
+	let lastRefreshTime: string = '';
+	let refreshing = false;
+    let lastRefreshTimestamp = 0;
 
 	onMount(async () => {
         try {
@@ -127,23 +130,78 @@
             if (newStatus) {
                 addLog(`Started monitoring ${appName}.onrender.com/${endpoint}`, 'info');
                 
-                // Trigger an initial ping
+                // Store this log message in the database
                 if (currentURL) {
                     try {
-                        await urlService.executePingFunction(currentURL.id);
-                        addLog('Initial ping sent', 'info');
+                        await urlService.addLog(
+                            currentURL.id, 
+                            `URL monitoring activated by user`, 
+                            'info'
+                        );
+                        // No need to call executePingFunction, it's removed in the batch approach
                     } catch (error) {
-                        addLog('Failed to send initial ping', 'error');
+                        console.error('Error adding log', error);
                     }
                 }
+                
+                addLog('Your URL will be pinged in the next batch run (within 15 minutes)', 'info');
             } else {
-                addLog('Monitoring stopped', 'warning');
+                 addLog('Monitoring stopped', 'warning');
+                
+                // Store this log in the database if URL exists
+                if (currentURL?.id) {
+                    try {
+                        await urlService.addLog(
+                            currentURL.id, 
+                            'URL monitoring deactivated by user', 
+                            'warning'
+                        );
+                    } catch (error) {
+                        console.error('Error adding log', error);
+                    }
+                }
             }
         } catch (error) {
             console.error('Error toggling ping status', error);
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 			addLog('Error: ' + errorMessage, 'error');
             isEnabled = !isEnabled; // Revert UI state on error
+        }
+    }
+
+	// function to allow manual refresh of URL status
+	async function refreshStatus() {
+        if (!currentURL?.id || !userId) return;
+        
+        // Debounce: prevent rapid successive refreshes
+        const now = Date.now();
+        if (refreshing || (now - lastRefreshTimestamp < 5000)) {
+            addLog('Please wait before refreshing again', 'warning');
+            return;
+        }
+        
+        refreshing = true;
+        lastRefreshTimestamp = now;
+        
+        try {
+            // Get only the current user's URLs, limit to 1 result
+			const updatedURL = await urlService.getURLs(userId);
+            if (updatedURL && updatedURL.length > 0) {
+                // Update UI with latest data
+                successCount = updatedURL[0].successCount;
+                lastPingTime = formatTimestamp(updatedURL[0].lastPingTime);
+                lastPingStatus = updatedURL[0].lastPingStatus;
+                lastPingStatusCode = updatedURL[0].lastPingStatusCode;
+                lastRefreshTime = new Date().toLocaleTimeString();
+                logs = updatedURL[0].logs || [];
+                
+                addLog('Status refreshed', 'info');
+            }
+        } catch (error) {
+            console.error('Error refreshing status', error);
+            addLog('Failed to refresh status', 'error');
+        } finally {
+            refreshing = false;
         }
     }
 
@@ -286,6 +344,21 @@
 				</div>
 			</div>
 		</div>
+
+		<div class="flex justify-center mb-4">
+            <button 
+                class="btn btn-sm btn-outline"
+                on:click={refreshStatus}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh Status
+            </button>
+			<div class="text-xs opacity-60">
+        Last updated: {lastRefreshTime || 'Never'}
+    </div>
+        </div>
 	{/if}
 
 	<div class="divider mx-auto my-0 w-2/3"></div>

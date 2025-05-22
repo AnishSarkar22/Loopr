@@ -1,10 +1,9 @@
-import { databases, functions, ID } from '$lib/appwrite';
+import { databases, ID } from '$lib/appwrite';
 import type { Log, PingURL } from '$lib/types';
 import { Query } from 'appwrite';
 
 const DATABASE_ID = import.meta.env.VITE_DATABASE_ID;
 const COLLECTION_ID = 'ping_urls';
-const PING_FUNCTION_ID = import.meta.env.VITE_PING_FUNCTION_ID;
 
 export const urlService = {
 	async createURL(appName: string, endpoint: string, userId: string): Promise<PingURL> {
@@ -32,13 +31,14 @@ export const urlService = {
 		return response;
 	},
 
-	async getURLs(userId: string): Promise<PingURL[]> {
-		const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
-			Query.equal('userId', userId)
-		]);
+	async getURLs(userId: string, limit: number = 100): Promise<PingURL[]> {
+        const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+            Query.equal('userId', userId),
+            Query.limit(limit)
+        ]);
 
-		return response.documents;
-	},
+        return response.documents;
+    },
 
 	async updateURL(id: string, data: Partial<PingURL>): Promise<PingURL> {
 		const response = await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, data);
@@ -51,23 +51,23 @@ export const urlService = {
 	},
 
 	async togglePing(
-		id: string,
-		appName: string,
-		endpoint: string,
-		isEnabled: boolean,
-		userId: string
-	): Promise<PingURL> {
-		if (!id) {
-			// No existing URL, create one
-			if (isEnabled) {
-				return await this.createURL(appName, endpoint, userId);
-			}
-			return null;
-		} else {
-			// Update existing URL
-			return await this.updateURL(id, { isEnabled });
-		}
-	},
+        id: string,
+        appName: string,
+        endpoint: string,
+        isEnabled: boolean,
+        userId: string
+    ): Promise<PingURL> {
+        if (!id) {
+            // No existing URL, create one
+            if (isEnabled) {
+                return await this.createURL(appName, endpoint, userId);
+            }
+            return null;
+        } else {
+            // Update existing URL
+            return await this.updateURL(id, { isEnabled });
+        }
+    },
 
 	async addLog(
 		urlId: string,
@@ -86,8 +86,4 @@ export const urlService = {
 
 		await this.updateURL(urlId, { logs });
 	},
-
-	async executePingFunction(urlId: string): Promise<void> {
-		await functions.createExecution(PING_FUNCTION_ID, JSON.stringify({ urlId }), false);
-	}
 };

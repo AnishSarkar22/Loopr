@@ -4,7 +4,7 @@ export type Log = {
     type: 'success' | 'error' | 'warning' | 'info';
 };
 
-//  for cron jobs using appwrite
+// for cron jobs using appwrite
 export type PingURL = {
     id: string;
     url: string;
@@ -15,6 +15,11 @@ export type PingURL = {
     lastPingStatusCode: number;
     successCount: number;
     logs: Log[];
+    // New fields for performance scaling
+    nodeId: string;             // Which worker node handles this URL
+    pingInterval: number;       // Minutes between pings
+    nextPingTime: string;       // When to ping next
+    shardKey: number;           // For distributing load (0-9)
 }
 
 export type PingResult = {
@@ -32,3 +37,24 @@ export type PingFunction = {
     isEnabled: boolean;
     lastExecution?: string;
 };
+
+// New types for distributed architecture
+export type WorkerNode = {
+    id: string;
+    name: string;
+    status: 'online' | 'offline';
+    lastHeartbeat: string;
+    urlCount: number;
+    region?: string;  // Optional geographic region
+}
+
+export type ResultShard = {
+    userId: string;
+    date: string;     // YYYY-MM-DD format
+    shardId: string;  // Combined user+date identifier
+    results: {
+        urlId: string;
+        timestamps: string[];
+        statuses: number[];
+    }[];
+}
