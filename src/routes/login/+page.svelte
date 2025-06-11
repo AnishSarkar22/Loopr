@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-    <title>Login - KeepRenderAlive</title>
+    <title>Login - Loopr</title>
 </svelte:head>
 
 {#if showVerificationAlert}

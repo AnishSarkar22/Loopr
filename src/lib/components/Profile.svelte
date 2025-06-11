@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
     
-    let showDeleteConfirm = false;
+    let showDeleteConfirm = $state(false);
     let deleteTimeout: number | null = null;
     const DELETE_TIMEOUT = 5000;
     
@@ -45,7 +45,7 @@
                             <div class="card-actions justify-end mt-4">
                                 <button 
                                     class="btn btn-error btn-outline" 
-                                    on:click={handleDelete}
+                                    onclick={handleDelete}
                                 >
                                     Delete Account
                                 </button>
@@ -64,13 +64,13 @@
                                         <div class="mt-4 flex gap-2">
                                             <button 
                                                 class="btn btn-error btn-sm" 
-                                                on:click={confirmDelete}
+                                                onclick={confirmDelete}
                                             >
                                                 Yes, Delete My Account
                                             </button>
                                             <button 
                                                 class="btn btn-ghost btn-sm" 
-                                                on:click={cancelDelete}
+                                                onclick={cancelDelete}
                                             >
                                                 Cancel
                                             </button>

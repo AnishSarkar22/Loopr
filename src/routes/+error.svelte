@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-    <title>{$page.status} - KeepRenderAlive</title>
+    <title>{$page.status} - Loopr</title>
 </svelte:head>
 
 <NotFound />

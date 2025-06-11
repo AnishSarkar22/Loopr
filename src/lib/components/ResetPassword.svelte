@@ -2,17 +2,15 @@
     import { account, AppwriteException } from '../appwrite';
     import { goto } from '$app/navigation';
     
-    export let userId: string;
-    export let secret: string;
-    
-    let password = '';
-    let confirmPassword = '';
-    let loading = false;
-    let showToast = false;
-    let toastMessage = '';
-    let isError = false;
-    let isPasswordValid = true;
-    let doPasswordsMatch = true;
+    let { userId, secret }: { userId: string; secret: string } = $props();
+    let password = $state('');
+    let confirmPassword = $state('');
+    let loading = $state(false);
+    let showToast = $state(false);
+    let toastMessage = $state('');
+    let isError = $state(false);
+    let isPasswordValid = $state(true);
+    let doPasswordsMatch = $state(true);
 
     function validatePassword(value: string) {
         const passwordRegex = /^[a-zA-Z0-9]{8,}$/;
@@ -68,30 +66,30 @@
     </div>
 
     <div class="card bg-base-200 w-full max-w-sm shadow-xl">
-        <form class="card-body flex-col items-center space-y-4" on:submit|preventDefault={handleSubmit}>
+        <form class="card-body flex-col items-center space-y-4" onsubmit={handleSubmit}>
             <!-- Password Input -->
             <div class="form-control w-full">
                 <label class="input input-bordered flex items-center gap-2 w-full" class:input-error={!isPasswordValid}>
                     <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-						<g
-							stroke-linejoin="round"
-							stroke-linecap="round"
-							stroke-width="2.5"
-							fill="none"
-							stroke="currentColor"
-						>
-							<path
-								d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
-							></path>
-							<circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
-						</g>
-					</svg>
+                        <g
+                            stroke-linejoin="round"
+                            stroke-linecap="round"
+                            stroke-width="2.5"
+                            fill="none"
+                            stroke="currentColor"
+                        >
+                            <path
+                                d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                            ></path>
+                            <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                        </g>
+                    </svg>
                     <input
                         type="password"
                         placeholder="New Password"
                         class="grow"
                         bind:value={password}
-                        on:input={(e) => validatePassword(e.currentTarget.value)}
+                        oninput={(e) => validatePassword(e.currentTarget.value)}
                         required
                         minlength="8"
                     />
@@ -109,25 +107,25 @@
             <div class="form-control w-full">
                 <label class="input input-bordered flex items-center gap-2 w-full" class:input-error={!doPasswordsMatch}>
                     <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-						<g
-							stroke-linejoin="round"
-							stroke-linecap="round"
-							stroke-width="2.5"
-							fill="none"
-							stroke="currentColor"
-						>
-							<path
-								d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
-							></path>
-							<circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
-						</g>
-					</svg>
+                        <g
+                            stroke-linejoin="round"
+                            stroke-linecap="round"
+                            stroke-width="2.5"
+                            fill="none"
+                            stroke="currentColor"
+                        >
+                            <path
+                                d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                            ></path>
+                            <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                        </g>
+                    </svg>
                     <input
                         type="password"
                         placeholder="Confirm Password"
                         class="grow"
                         bind:value={confirmPassword}
-                        on:input={(e) => validateConfirmPassword(e.currentTarget.value)}
+                        oninput={(e) => validateConfirmPassword(e.currentTarget.value)}
                         required
                     />
                 </label>
@@ -155,7 +153,7 @@
     </div>
 
     {#if showToast}
-        <div class="toast toast-bottom toast-end z-50">
+        <div class="toast toast-top toast-center z-50">
             <div class="alert {isError ? 'alert-error' : 'alert-success'} shadow-lg">
                 {#if isError}
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">

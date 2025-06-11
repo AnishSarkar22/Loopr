@@ -6,17 +6,12 @@ const DATABASE_ID = import.meta.env.VITE_DATABASE_ID;
 const COLLECTION_ID = 'ping_urls';
 
 export const urlService = {
-	async createURL(appName: string, endpoint: string, userId: string): Promise<PingURL> {
-		// Construct the full URL
-		const url = `https://${appName}.onrender.com/${endpoint || ''}`;
-
-		// Allow for custom full URLs:
-		// const url = appName.includes('://')
-		// 	? `${appName}${endpoint ? `/${endpoint}` : ''}`
-		// 	: `https://${appName}.onrender.com/${endpoint || ''}`;
+	async createURL(url: string, userId: string): Promise<PingURL> {
+		 // Normalize URL (add https if missing)
+        const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
 
 		const data = {
-			url,
+			url: normalizedUrl,
 			userId,
 			isEnabled: true,
 			lastPingTime: new Date().toISOString(),
@@ -32,17 +27,16 @@ export const urlService = {
 	},
 
 	async getURLs(userId: string, limit: number = 100): Promise<PingURL[]> {
-        const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
-            Query.equal('userId', userId),
-            Query.limit(limit)
-        ]);
+		const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
+			Query.equal('userId', userId),
+			Query.limit(limit)
+		]);
 
-        return response.documents;
-    },
+		return response.documents;
+	},
 
 	async updateURL(id: string, data: Partial<PingURL>): Promise<PingURL> {
 		const response = await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, data);
-
 		return response;
 	},
 
@@ -51,23 +45,22 @@ export const urlService = {
 	},
 
 	async togglePing(
-        id: string,
-        appName: string,
-        endpoint: string,
-        isEnabled: boolean,
-        userId: string
-    ): Promise<PingURL> {
-        if (!id) {
-            // No existing URL, create one
-            if (isEnabled) {
-                return await this.createURL(appName, endpoint, userId);
-            }
-            return null;
-        } else {
-            // Update existing URL
-            return await this.updateURL(id, { isEnabled });
-        }
-    },
+		id: string,
+		url: string,
+		isEnabled: boolean,
+		userId: string
+	): Promise<PingURL> {
+		if (!id) {
+			// No existing URL, create one
+			if (isEnabled) {
+				return await this.createURL(appName, endpoint, userId);
+			}
+			return null;
+		} else {
+			// Update existing URL
+			return await this.updateURL(id, { isEnabled });
+		}
+	},
 
 	async addLog(
 		urlId: string,
@@ -86,4 +79,42 @@ export const urlService = {
 
 		await this.updateURL(urlId, { logs });
 	},
+
+	async reportClientPings(
+		urlId: string,
+		results: Array<{ success: boolean; timestamp: string; status: number }>
+	): Promise<void> {
+		if (results.length === 0) return;
+
+		try {
+			const url = await databases.getDocument(DATABASE_ID, URLS_COLLECTION_ID, urlId);
+
+			// Update success count
+			const additionalSuccesses = results.filter((r) => r.success).length;
+			const newSuccessCount = url.successCount + additionalSuccesses;
+
+			// Find most recent ping
+			const sortedResults = [...results].sort(
+				(a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+			);
+			const latestResult = sortedResults[0];
+
+			// Update URL document
+			await this.updateURL(urlId, {
+				lastPingTime: latestResult.timestamp,
+				lastPingStatus: latestResult.success ? 'success' : 'error',
+				lastPingStatusCode: latestResult.status,
+				successCount: newSuccessCount
+			});
+
+			// Add a log entry
+			await this.addLog(
+				urlId,
+				`Processed ${results.length} client pings (${additionalSuccesses} successful)`,
+				'info'
+			);
+		} catch (error) {
+			console.error('Failed to report client pings:', error);
+		}
+	}
 };

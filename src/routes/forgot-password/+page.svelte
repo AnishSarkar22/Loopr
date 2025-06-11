@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-    <title>Reset Password - KeepRenderAlive</title>
+    <title>Reset Password - Loopr</title>
 </svelte:head>
 
 <div class="hero min-h-screen bg-base-100">

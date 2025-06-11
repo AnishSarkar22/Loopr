@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     
-    let glitchText = '';
+    let glitchText = $state('');
     const text = "404";
     
     function glitch() {
