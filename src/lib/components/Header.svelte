@@ -61,6 +61,15 @@
         <a href="/" class="btn btn-ghost text-primary text-xl">Loopr</a>
     </div>
 
+    <div class="navbar-center hidden lg:flex">
+        {#if isAuthenticated}
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/" class:active={$page.url.pathname === '/'}>Dashboard</a></li>
+                <li><a href="/urls" class:active={$page.url.pathname === '/urls'}>My URLs</a></li>
+            </ul>
+        {/if}
+    </div>
+
     <div class="navbar-end">
         <a
             href="https://github.com/AnishSarkar22/Loopr"

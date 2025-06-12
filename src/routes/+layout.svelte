@@ -15,20 +15,33 @@
 	// Show footer only on dashboard (home) page
 	let showFooter = $derived($page?.url?.pathname === '/');
 	let isDashboard = $derived($page?.url?.pathname === '/');
+
+	// Show header on authenticated pages
+    let showHeader = $derived(
+        $page?.url?.pathname === '/' || 
+        $page?.url?.pathname === '/urls' || 
+        $page?.url?.pathname?.startsWith('/urls/') ||
+        $page?.url?.pathname === '/profile'
+    );
 </script>
 
 <div class="app" data-theme={theme}>
-	{#if isDashboard}
-		<Header />
-	{/if}
+	{#if showHeader}
+        <Header />
+        <div class="pt-16"> <!-- Add padding for fixed header -->
+            <main>
+                {@render children()}
+            </main>
+        </div>
+    {:else}
+        <main>
+            {@render children()}
+        </main>
+    {/if}
 
-	<main>
-		{@render children()}
-	</main>
-
-	{#if showFooter}
-		<Footer />
-	{/if}
+    {#if showFooter}
+        <Footer />
+    {/if}
 </div>
 
 <style>

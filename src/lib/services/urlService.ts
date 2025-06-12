@@ -1,48 +1,98 @@
 import { databases, ID } from '$lib/appwrite';
-import type { Log, PingURL } from '$lib/types';
+import type { Log, PingURL, PingURLDatabase } from '$lib/types';
 import { Query } from 'appwrite';
 
 const DATABASE_ID = import.meta.env.VITE_DATABASE_ID;
-const COLLECTION_ID = 'ping_urls';
+const COLLECTION_ID = import.meta.env.VITE_COLLECTION_ID;
+
+// Helper functions for data transformation
+function dbToApp(dbData: PingURLDatabase): PingURL {
+    return {
+        ...dbData,
+        id: dbData.$id,
+        logs: JSON.parse(dbData.logs || '[]')
+    };
+}
+
+function appToDb(appData: Partial<PingURL>): Partial<PingURLDatabase> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { id: _id, logs, ...dbData } = appData;
+	return {
+		...dbData,
+		...(logs && { logs: JSON.stringify(logs) })
+	};
+}
 
 export const urlService = {
-	async createURL(url: string, userId: string): Promise<PingURL> {
+	async createURL(
+        url: string, 
+        userId: string, 
+        name?: string, 
+        pingInterval?: number, 
+        description?: string
+    ): Promise<PingURL> {
 		 // Normalize URL (add https if missing)
         const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
 
 		const data = {
 			url: normalizedUrl,
-			userId,
-			isEnabled: true,
-			lastPingTime: new Date().toISOString(),
-			lastPingStatus: '',
-			lastPingStatusCode: null,
-			successCount: 0,
-			logs: []
+            userId,
+            isEnabled: false, // Start disabled by default for safety
+            lastPingTime: '',
+            lastPingStatus: '',
+            lastPingStatusCode: null,
+            successCount: 0,
+            logs: JSON.stringify([]),
+            pingInterval: pingInterval || 15,
+            nextPingTime: new Date().toISOString(),
+            ...(name && { name }),
+            ...(description && { description })
 		};
 
 		const response = await databases.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), data);
-
-		return response;
+		return dbToApp(response);
 	},
 
 	async getURLs(userId: string, limit: number = 100): Promise<PingURL[]> {
 		const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
 			Query.equal('userId', userId),
-			Query.limit(limit)
+            Query.limit(limit),
+            Query.orderDesc('$createdAt')
 		]);
 
-		return response.documents;
+		// Map all documents using the helper function
+        return response.documents.map(dbToApp);
 	},
 
+	async getURL(urlId: string): Promise<PingURL> {
+        const response = await databases.getDocument(DATABASE_ID, COLLECTION_ID, urlId);
+        return dbToApp(response);
+    },
+
+	// async updateURL(id: string, data: Partial<PingURL>): Promise<PingURL> {
+	// 	const response = await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, data);
+	// 	return response;
+	// },
 	async updateURL(id: string, data: Partial<PingURL>): Promise<PingURL> {
-		const response = await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, data);
-		return response;
-	},
+        // Use helper function to convert app data to database format
+        const updateData = appToDb(data);
+        
+        const response = await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, updateData);
+        return dbToApp(response);
+    },
 
 	async deleteURL(id: string): Promise<void> {
 		await databases.deleteDocument(DATABASE_ID, COLLECTION_ID, id);
 	},
+
+	async toggleURL(id: string, isEnabled: boolean): Promise<PingURL> {
+        const updateData: Partial<PingURL> = { 
+            isEnabled,
+            // Set next ping time if enabling
+            ...(isEnabled && { nextPingTime: new Date().toISOString() })
+        };
+        return await this.updateURL(id, updateData);
+    },
 
 	async togglePing(
 		id: string,
@@ -50,17 +100,15 @@ export const urlService = {
 		isEnabled: boolean,
 		userId: string
 	): Promise<PingURL> {
-		if (!id) {
-			// No existing URL, create one
-			if (isEnabled) {
-				return await this.createURL(appName, endpoint, userId);
-			}
-			return null;
-		} else {
-			// Update existing URL
-			return await this.updateURL(id, { isEnabled });
-		}
-	},
+        if (!id) {
+            if (isEnabled) {
+                return await this.createURL(url, userId);
+            }
+            throw new Error('Cannot create disabled URL');
+        } else {
+            return await this.toggleURL(id, isEnabled);
+        }
+    },
 
 	async addLog(
 		urlId: string,
@@ -75,8 +123,11 @@ export const urlService = {
 			type
 		};
 
-		const logs = [...(url.logs || []), newLog].slice(-100); // Keep last 100 logs
+		// Parse existing logs, add new log, and keep last 100
+        const existingLogs = JSON.parse(url.logs || '[]');
+        const logs = [...existingLogs, newLog].slice(-100);
 
+		// Update with stringified logs
 		await this.updateURL(urlId, { logs });
 	},
 
@@ -87,7 +138,7 @@ export const urlService = {
 		if (results.length === 0) return;
 
 		try {
-			const url = await databases.getDocument(DATABASE_ID, URLS_COLLECTION_ID, urlId);
+			const url = await databases.getDocument(DATABASE_ID, COLLECTION_ID, urlId);
 
 			// Update success count
 			const additionalSuccesses = results.filter((r) => r.success).length;
