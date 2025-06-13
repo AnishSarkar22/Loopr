@@ -1,0 +1,19 @@
+{
+  "functions": [
+    {
+      "name": "pingFunction",
+      "runtime": "node-18.0",
+      "entrypoint": "src/index.js",
+      "execute": ["any"],
+      "events": [],
+      "schedule": "*/5 * * * *",
+      "timeout": 900,
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    }
+  ]
+}

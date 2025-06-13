@@ -1,18 +1,16 @@
 <script lang="ts">
-    import Dashboard from '$lib/components/Dashboard.svelte';
+    import URLManager from '$lib/components/URLManager.svelte';
 </script>
 
 <svelte:head>
     <title>Loopr – Effortless Cron Job Scheduling</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-3xl px-4 py-17">
+<div class="container mx-auto max-w-6xl px-4 py-8">
     <header class="mb-8 text-center">
-        <h1 class="text-primary text-3xl font-bold">Loopr</h1>
-        <div class="text-base-content/70 mt-2">
-            Keep your app alive by pinging it every 10-15 minutes
-        </div>
+        <h1 class="text-3xl font-bold text-primary mb-2">Welcome to Loopr</h1>
+        <p class="text-base-content/70">Keep your apps alive with automated pinging</p>
     </header>
 
-    <Dashboard />
+    <URLManager />
 </div>

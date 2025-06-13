@@ -65,7 +65,7 @@
         {#if isAuthenticated}
             <ul class="menu menu-horizontal px-1">
                 <li><a href="/" class:active={$page.url.pathname === '/'}>Dashboard</a></li>
-                <li><a href="/urls" class:active={$page.url.pathname === '/urls'}>My URLs</a></li>
+                <li><a href="/statistics" class:active={$page.url.pathname === '/statistics'}>Statistics</a></li>
             </ul>
         {/if}
     </div>

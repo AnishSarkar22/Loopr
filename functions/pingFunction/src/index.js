@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Client, Databases, Query } from 'appwrite';
 
-export default async function({ req, res }) {
+export default async function({ res }) {
   const client = new Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
-    .setProject(process.env.APPWRITE_PROJECT_ID)
-    .setKey(process.env.APPWRITE_API_KEY);
+    .setProject(process.env.VITE_PROJECT_ID)
+    .setKey(process.env.VITE_APPWRITE_ENDPOINT);
   
   const databases = new Databases(client);
-  const batchSize = 100; // Adjust based on your needs
-  const nodeId = process.env.NODE_ID || `node-${Math.floor(Math.random() * 5) + 1}`; // Fixed node pool
+  const batchSize = 100;
+  const nodeId = process.env.NODE_ID || `node-${Math.floor(Math.random() * 5) + 1}`;
   const now = new Date().toISOString();
   
   try {
@@ -32,12 +31,12 @@ export default async function({ req, res }) {
       });
     }
     
-    // 2. Process URLs in parallel with efficient promises
+    // 2. Process URLs in parallel
     const pingResults = await Promise.all(
       urlsDue.documents.map(doc => pingUrl(doc.url, doc.$id))
     );
     
-    // 3. Group results by user for efficient storage
+    // 3. Group results by user and prepare URL updates
     const resultsByUser = {};
     const urlUpdates = [];
     
@@ -52,10 +51,8 @@ export default async function({ req, res }) {
       }
       resultsByUser[userId].push(result);
       
-      // Prepare URL update
-      const pingInterval = urlDoc.pingInterval || 15; // Default to 15 minutes
-      const nextPingTime = new Date();
-      nextPingTime.setMinutes(nextPingTime.getMinutes() + pingInterval);
+      // Calculate next ping time based on user's chosen interval
+      const nextPingTime = calculateNextPingTime(urlDoc.pingInterval || '15m');
       
       urlUpdates.push({
         id: urlDoc.$id,
@@ -63,8 +60,11 @@ export default async function({ req, res }) {
           lastPingTime: result.timestamp,
           lastPingStatus: result.success ? 'success' : 'error',
           lastPingStatusCode: result.status,
+          lastResponseTime: result.responseTime,
           nextPingTime: nextPingTime.toISOString(),
-          successCount: urlDoc.successCount + (result.success ? 1 : 0)
+          successCount: (urlDoc.successCount || 0) + (result.success ? 1 : 0),
+          totalPings: (urlDoc.totalPings || 0) + 1,
+          lastError: result.error || null
         }
       });
     }
@@ -78,7 +78,8 @@ export default async function({ req, res }) {
     return res.json({
       success: true,
       processed: pingResults.length,
-      timestamp: now
+      timestamp: now,
+      nodeId: nodeId
     });
   } catch (error) {
     console.error('Error in ping function:', error);
@@ -89,6 +90,47 @@ export default async function({ req, res }) {
   }
 }
 
+// Helper function to calculate next ping time based on user's interval choice
+function calculateNextPingTime(pingInterval) {
+  const nextPing = new Date();
+  
+  // Map user options to time calculations
+  switch (pingInterval) {
+    case '5m':
+      nextPing.setMinutes(nextPing.getMinutes() + 5);
+      break;
+    case '10m':
+      nextPing.setMinutes(nextPing.getMinutes() + 10);
+      break;
+    case '15m':
+      nextPing.setMinutes(nextPing.getMinutes() + 15);
+      break;
+    case '30m':
+      nextPing.setMinutes(nextPing.getMinutes() + 30);
+      break;
+    case '1h':
+      nextPing.setHours(nextPing.getHours() + 1);
+      break;
+    case '3h':
+      nextPing.setHours(nextPing.getHours() + 3);
+      break;
+    case '6h':
+      nextPing.setHours(nextPing.getHours() + 6);
+      break;
+    case '12h':
+      nextPing.setHours(nextPing.getHours() + 12);
+      break;
+    case '24h':
+      nextPing.setDate(nextPing.getDate() + 1);
+      break;
+    default:
+      // Default to 15 minutes if invalid interval
+      nextPing.setMinutes(nextPing.getMinutes() + 15);
+  }
+  
+  return nextPing;
+}
+
 // Helper function to ping a URL
 async function pingUrl(url, urlId) {
   try {
@@ -96,12 +138,13 @@ async function pingUrl(url, urlId) {
     const response = await fetch(url, {
       method: 'GET',
       headers: { 
-        'User-Agent': 'KeepAlive-Bot/1.0',
-        'X-Ping': 'keepalive' 
+        'User-Agent': 'Loopr-KeepAlive/1.0',
+        'X-Ping': 'keepalive',
+        'Accept': '*/*'
       },
       cache: 'no-cache',
       redirect: 'follow',
-      signal: AbortSignal.timeout(15000) // 15 second timeout for any URL
+      signal: AbortSignal.timeout(30000) // 30 second timeout
     });
     
     const endTime = Date.now();
@@ -120,40 +163,40 @@ async function pingUrl(url, urlId) {
       status: 0,
       success: false,
       timestamp: new Date().toISOString(),
+      responseTime: null,
       error: error.message
     };
   }
 }
 
-// Helper function to update URLs in batches
+// ...existing updateUrlsInBatches function...
 async function updateUrlsInBatches(databases, urlUpdates, batchSize = 25) {
-  // Group updates by the same URL ID
   const consolidatedUpdates = {};
   
   for (const update of urlUpdates) {
     if (!consolidatedUpdates[update.id]) {
       consolidatedUpdates[update.id] = update.data;
     } else {
-      // Merge with any existing updates for this URL
       consolidatedUpdates[update.id] = {
         ...consolidatedUpdates[update.id],
         ...update.data,
-        // Handle special case for successCount
         successCount: Math.max(
           consolidatedUpdates[update.id].successCount || 0,
           update.data.successCount || 0
+        ),
+        totalPings: Math.max(
+          consolidatedUpdates[update.id].totalPings || 0,
+          update.data.totalPings || 0
         )
       };
     }
   }
   
-  // Convert back to array format
   const finalUpdates = Object.entries(consolidatedUpdates).map(([id, data]) => ({
     id,
     data
   }));
   
-  // Process in batches
   for (let i = 0; i < finalUpdates.length; i += batchSize) {
     const batch = finalUpdates.slice(i, i + batchSize);
     await Promise.all(
@@ -169,66 +212,72 @@ async function updateUrlsInBatches(databases, urlUpdates, batchSize = 25) {
   }
 }
 
-// Helper function to implement time-based data sharding
+// Enhanced storeResultsByUser function with response times
 async function storeResultsByUser(databases, resultsByUser) {
   const batches = [];
   
   for (const [userId, results] of Object.entries(resultsByUser)) {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
     const shardId = `${userId}_${today}`;
     
     try {
-      // Try to get existing shard
       const existingShard = await databases.getDocument(
         process.env.DATABASE_ID,
         process.env.RESULTS_COLLECTION_ID,
         shardId
       );
       
-      // Update existing shard
       const updatedResults = [...existingShard.results];
       for (const result of results) {
         const existingUrlIdx = updatedResults.findIndex(r => r.urlId === result.urlId);
         if (existingUrlIdx >= 0) {
-          // Limit array sizes to prevent document size issues
-          const MAX_HISTORY = 288; // 24 hours of 5-minute intervals
+          // Adjust MAX_HISTORY based on ping frequency to save space
+          let MAX_HISTORY = 288; // Default for 5-minute intervals (24 hours)
           
-          // Add new result using push for timestamps and statuses
+          // Store less history for more frequent pings to save storage
+          if (result.pingInterval === '5m') MAX_HISTORY = 288;  // 24 hours
+          else if (result.pingInterval === '10m') MAX_HISTORY = 144; // 24 hours
+          else if (result.pingInterval === '15m') MAX_HISTORY = 96;  // 24 hours
+          else if (result.pingInterval === '30m') MAX_HISTORY = 48;  // 24 hours
+          else if (result.pingInterval === '1h') MAX_HISTORY = 168;  // 7 days
+          else if (result.pingInterval === '3h') MAX_HISTORY = 168;  // 21 days
+          else if (result.pingInterval === '6h') MAX_HISTORY = 168;  // 42 days
+          else if (result.pingInterval === '12h') MAX_HISTORY = 168; // 84 days
+          else if (result.pingInterval === '24h') MAX_HISTORY = 365; // 1 year
+          
           updatedResults[existingUrlIdx].timestamps.push(result.timestamp);
           updatedResults[existingUrlIdx].statuses.push(result.status);
+          updatedResults[existingUrlIdx].responseTimes = updatedResults[existingUrlIdx].responseTimes || [];
+          updatedResults[existingUrlIdx].responseTimes.push(result.responseTime);
           
-          // Keep only the most recent MAX_HISTORY entries
           if (updatedResults[existingUrlIdx].timestamps.length > MAX_HISTORY) {
             updatedResults[existingUrlIdx].timestamps = 
               updatedResults[existingUrlIdx].timestamps.slice(-MAX_HISTORY);
             updatedResults[existingUrlIdx].statuses = 
               updatedResults[existingUrlIdx].statuses.slice(-MAX_HISTORY);
+            updatedResults[existingUrlIdx].responseTimes = 
+              updatedResults[existingUrlIdx].responseTimes.slice(-MAX_HISTORY);
           }
         } else {
-          // Add new URL result
           updatedResults.push({
             urlId: result.urlId,
             timestamps: [result.timestamp],
-            statuses: [result.status]
+            statuses: [result.status],
+            responseTimes: [result.responseTime]
           });
         }
       }
 
       const MAX_URLS_PER_SHARD = 50;
-
       
-      // After checking the number of URLs in a shard:
       if (updatedResults.length > MAX_URLS_PER_SHARD) {
-        // Create a new shard with a unique name
         const shardCounter = existingShard.counter || 0;
         const newShardId = `${userId}_${today}_${shardCounter + 1}`;
         
-        // Split the results between shards
         const halfPoint = Math.floor(updatedResults.length / 2);
         const firstHalf = updatedResults.slice(0, halfPoint);
         const secondHalf = updatedResults.slice(halfPoint);
         
-        // Update the original shard
         batches.push(
           databases.updateDocument(
             process.env.DATABASE_ID,
@@ -241,7 +290,6 @@ async function storeResultsByUser(databases, resultsByUser) {
           )
         );
         
-        // Create a new shard with the rest
         batches.push(
           databases.createDocument(
             process.env.DATABASE_ID,
@@ -266,12 +314,12 @@ async function storeResultsByUser(databases, resultsByUser) {
         );
       }
 
-    } catch (error) {
-      // Shard doesn't exist, create it
+    } catch {
       const newResults = results.map(result => ({
         urlId: result.urlId,
         timestamps: [result.timestamp],
-        statuses: [result.status]
+        statuses: [result.status],
+        responseTimes: [result.responseTime]
       }));
       
       batches.push(
@@ -290,6 +338,5 @@ async function storeResultsByUser(databases, resultsByUser) {
     }
   }
   
-  // Execute all shard operations
   await Promise.all(batches);
 }

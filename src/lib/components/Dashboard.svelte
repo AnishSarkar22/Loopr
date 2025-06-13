@@ -1,641 +1,324 @@
 <script lang="ts">
-	import { fade, slide } from 'svelte/transition';
-	import type { Log, PingURL } from '$lib/types';
-	import { urlService } from '$lib/services/urlService';
-	import { account } from '$lib/appwrite';
-	import { onMount, onDestroy } from 'svelte';
-	import { browser } from '$app/environment';
+    import { page } from '$app/stores';
+    import { onMount, onDestroy } from 'svelte';
+    import { account } from '$lib/appwrite';
+    import { urlService } from '$lib/services/urlService';
+    import type { PingURL, Log } from '$lib/types';
+    import { fade } from 'svelte/transition';
+    import { goto } from '$app/navigation';
 
-	let fullUrl = $state('');
-	let isEnabled = $state(false);
-	let successCount = $state(0);
-	let lastPingTime = $state<string | null>(null);
-	let lastPingStatus = $state<'success' | 'error' | ''>('');
-	let lastPingStatusCode = $state<number | null>(null);
-	let logs = $state<Log[]>([]);
-	let showToast = $state(false);
-	let toastMessage = $state('');
-	let toastType = $state<'success' | 'error' | 'warning' | 'info'>('info');
-	let currentURL = $state<PingURL | null>(null);
-	let userId = $state<string | null>(null);
-	let lastRefreshTime = $state('');
-	let refreshing = $state(false);
-	let lastRefreshTimestamp = $state(0);
-	let isAuthenticated = $state(false);
+    let url = $state<PingURL | null>(null);
+    let userId = $state<string | null>(null);
+    let loading = $state(true);
+    let refreshing = $state(false);
+    let autoRefresh = $state(true);
+    let refreshInterval: number | null = null;
+    
+    // Toast states
+    let showToast = $state(false);
+    let toastMessage = $state('');
+    let toastType = $state<'success' | 'error' | 'warning' | 'info'>('info');
 
-	let attemptedStart = $state(false);
-	let showLoginPrompt = $state(false);
+    let urlId = $derived($page.params.id);
 
-	// Client-side pinging state
-	let clientPingEnabled = $state(false);
-	let clientPingInterval = $state<number | null>(null);
-	let clientPingResults = $state<Array<{ success: boolean; timestamp: string; status: number }>>(
-		[]
-	);
-	const CLIENT_PING_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+    onMount(async () => {
+        try {
+            const session = await account.get();
+            userId = session.$id;
+            await loadUrl();
+            
+            if (autoRefresh) {
+                startAutoRefresh();
+            }
+        } catch (error) {
+            console.error('Authentication error:', error);
+            goto('/login');
+        } finally {
+            loading = false;
+        }
+    });
 
-	// Helper function to show toast notifications
-	function showToastNotification(
-		message: string,
-		type: 'success' | 'error' | 'warning' | 'info' = 'info',
-		duration: number = 3000
-	) {
-		toastMessage = message;
-		toastType = type;
-		showToast = true;
+    onDestroy(() => {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    });
 
-		setTimeout(() => {
-			showToast = false;
-		}, duration);
-	}
+    async function loadUrl() {
+        if (!urlId) return;
+        
+        try {
+            url = await urlService.getURL(urlId);
+        } catch (error) {
+            console.error('Error loading URL:', error);
+            showAlert('Failed to load URL details', 'error');
+        }
+    }
 
-	onMount(async () => {
-		try {
-			const session = await account.get();
-			userId = session.$id;
-			isAuthenticated = true;
+    function startAutoRefresh() {
+        refreshInterval = window.setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                await loadUrl();
+            }
+        }, 30000); // Refresh every 30 seconds
+    }
 
-			// Load existing URL if any
-			const urls = await urlService.getURLs(userId);
-			if (urls && urls.length > 0) {
-				currentURL = urls[0]; // Assuming one URL per user for simplicity
+    function toggleAutoRefresh() {
+        autoRefresh = !autoRefresh;
+        
+        if (autoRefresh) {
+            startAutoRefresh();
+        } else if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
 
-				fullUrl = currentURL.url;
-				isEnabled = currentURL.isEnabled;
-				successCount = currentURL.successCount;
-				lastPingTime = formatTimestamp(currentURL.lastPingTime || '') || null;
-            	lastPingStatus = (currentURL.lastPingStatus as 'success' | 'error') || '';
-            	lastPingStatusCode = currentURL.lastPingStatusCode ?? null;
-				logs = currentURL.logs || [];
+    async function refreshStatus() {
+        refreshing = true;
+        try {
+            await loadUrl();
+            showAlert('Status refreshed', 'success');
+        } catch (error) {
+            showAlert('Failed to refresh status', 'error');
+        } finally {
+            refreshing = false;
+        }
+    }
 
-				// Check if we should enable client-side pinging
-				if (isEnabled && browser) {
-					setupClientPinging(true);
-				}
-			}
+    async function toggleUrl() {
+        if (!url) return;
+        
+        try {
+            url = await urlService.toggleURL(url.id!, !url.isEnabled);
+            showAlert(
+                `${url.isEnabled ? 'Started' : 'Stopped'} monitoring`,
+                url.isEnabled ? 'success' : 'warning'
+            );
+        } catch (error) {
+            console.error('Error toggling URL:', error);
+            showAlert('Failed to update URL status', 'error');
+        }
+    }
 
-			// Show welcome toast for authenticated users
-			showToastNotification('Welcome back! Your URLs are ready to monitor.', 'success');
-		} catch (error) {
-			console.error('Error loading user data', error);
-			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-			addLog('Failed to load user data: ' + errorMessage, 'error');
-		}
-	});
+    function showAlert(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
+        toastMessage = message;
+        toastType = type;
+        showToast = true;
+        setTimeout(() => {
+            showToast = false;
+        }, 3000);
+    }
 
-	// Helper function to check if a URL is valid
-	function isValidUrl(url: string): boolean {
-		try {
-			new URL(url);
-			return true;
-		} catch (e) {
-			return false;
-		}
-	}
+    function formatTimestamp(timestamp: string): string {
+        if (!timestamp) return 'Never';
+        
+        const date = new Date(timestamp);
+        const now = new Date();
+        
+        if (date.toDateString() === now.toDateString()) {
+            return 'Today ' + date.toLocaleTimeString();
+        } else {
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+    }
 
-	// Get full URL from appName and endpoint
-	function getAppUrl(): string {
-		return fullUrl;
-	}
+    function getLogIcon(type: string) {
+        switch (type) {
+            case 'success': return '✓';
+            case 'error': return '✗';
+            case 'warning': return '⚠';
+            default: return 'ℹ';
+        }
+    }
 
-	function normalizeUrl(url: string): string {
-		if (!url) return '';
+    function getLogColor(type: string) {
+        switch (type) {
+            case 'success': return 'text-success';
+            case 'error': return 'text-error';
+            case 'warning': return 'text-warning';
+            default: return 'text-info';
+        }
+    }
 
-		// will add https:// if no protocol is specified
-		if (!/^https?:\/\//i.test(url)) {
-			return `https://${url}`;
-		}
-
-		return url;
-	}
-
-	function formatTimestamp(timestamp: string): string {
-		if (!timestamp) return '';
-
-		const date = new Date(timestamp);
-		const today = new Date();
-
-		// Format date part
-		let datePart = '';
-		if (date.toDateString() === today.toDateString()) {
-			datePart = 'Today';
-		} else {
-			datePart = `${date.getMonth() + 1}/${date.getDate()}`;
-		}
-
-		// Format time part
-		const hours = date.getHours().toString().padStart(2, '0');
-		const minutes = date.getMinutes().toString().padStart(2, '0');
-		const timePart = `${hours}:${minutes}`;
-
-		return `${datePart} ${timePart}`;
-	}
-
-	function addLog(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
-		const newLog: Log = {
-			timestamp: formatTimestamp(new Date().toISOString()),
-			message,
-			type
-		};
-		logs = [newLog, ...logs].slice(0, 100); // Keep only the last 100 logs
-	}
-
-	// Client-side pinging function
-	async function setupClientPinging(enabled: boolean) {
-		// Only run on client side and if app name is valid
-		const appUrl = getAppUrl();
-		if (!browser || !appUrl || !isValidUrl(appUrl)) return;
-
-		// Clean up any existing interval
-		if (clientPingInterval) {
-			clearInterval(clientPingInterval);
-			clientPingInterval = null;
-		}
-
-		if (!enabled) {
-			clientPingEnabled = false;
-			return;
-		}
-
-		// Set up client-side pinging when tab is active
-		clientPingEnabled = true;
-
-		// Do initial ping
-		await doClientPing();
-
-		// Set interval for future pings
-		clientPingInterval = window.setInterval(async () => {
-			if (document.visibilityState === 'visible') {
-				await doClientPing();
-			}
-		}, CLIENT_PING_INTERVAL_MS);
-	}
-
-	async function doClientPing() {
-		const appUrl = getAppUrl();
-		if (!appUrl || !isEnabled || !clientPingEnabled) return;
-
-		// Store results locally to reduce server overhead
-		let localStorageEnabled = false;
-		try {
-			localStorageEnabled = 'localStorage' in window;
-		} catch (e) {
-			localStorageEnabled = false;
-		}
-
-		// Check local storage before pinging
-		if (localStorageEnabled) {
-			try {
-				// Check if we've pinged recently
-				const storedData = localStorage.getItem(`ping_${currentURL?.id}`);
-				const lastPingData = storedData ? JSON.parse(storedData) : null;
-				const now = Date.now();
-
-				if (lastPingData && now - lastPingData.timestamp < 5 * 60 * 1000) {
-					// Don't ping if we've pinged in the last 5 minutes
-					console.log('Skipping client ping - recently pinged');
-					return;
-				}
-			} catch (e) {
-				console.error('localStorage error:', e);
-			}
-		}
-
-		try {
-			addLog(`Client ping: Pinging ${appUrl}...`, 'info');
-
-			const response = await fetch(appUrl, {
-				method: 'GET',
-				mode: 'cors',
-				cache: 'no-cache',
-				headers: { 'X-Ping': 'keepalive-client' }
-			});
-
-			const result = {
-				success: response.status >= 200 && response.status < 400,
-				timestamp: new Date().toISOString(),
-				status: response.status
-			};
-
-			// Store ping result locally
-			if (localStorageEnabled) {
-				try {
-					localStorage.setItem(
-						`ping_${currentURL?.id}`,
-						JSON.stringify({
-							timestamp: Date.now(),
-							status: result.status,
-							success: result.success
-						})
-					);
-				} catch (e) {
-					console.error('localStorage error:', e);
-				}
-			}
-
-			clientPingResults.push(result);
-
-			// Keep only the last 10 results
-			if (clientPingResults.length > 10) {
-				clientPingResults = clientPingResults.slice(-10);
-			}
-
-			// Update UI
-			lastPingTime = formatTimestamp(result.timestamp);
-			lastPingStatus = result.success ? 'success' : 'error';
-			lastPingStatusCode = result.status;
-
-			if (result.success) {
-				successCount++;
-				addLog(`Client ping successful (${result.status})`, 'success');
-			} else {
-				addLog(`Client ping failed: HTTP ${result.status}`, 'error');
-			}
-
-			// Batch report client pings to server
-			if (clientPingResults.length >= 5) {
-				await reportClientPings();
-			}
-		} catch (error) {
-			addLog(
-				`Client ping failed: ${error instanceof Error ? error.message : 'Network error'}`,
-				'error'
-			);
-		}
-	}
-
-	async function reportClientPings() {
-		if (clientPingResults.length === 0 || !currentURL?.id) return;
-
-		try {
-			// Create a copy of the results and clear the array
-			const resultsToReport = [...clientPingResults];
-			clientPingResults = [];
-
-			// Send to server
-			await urlService.reportClientPings(currentURL.id, resultsToReport);
-		} catch (error) {
-			console.error('Failed to report client pings:', error);
-		}
-	}
-
-	async function togglePinging() {
-		try {
-			// Check if user is authenticated first
-			if (!isAuthenticated || !userId) {
-				attemptedStart = true;
-				showLoginPrompt = true;
-				showToastNotification('Please log in to start monitoring', 'info', 4000);
-				// setTimeout(() => {
-				//     window.location.href = '/login';
-				// }, 2000);
-				return;
-			}
-
-			// Check if URL is provided when trying to start pinging
-			if (!fullUrl.trim() && !isEnabled) {
-				showToastNotification('Please enter a URL before starting the service', 'warning', 4000);
-				return;
-			}
-
-			// Validate URL format
-			const normalizedUrl = normalizeUrl(fullUrl);
-			if (!isValidUrl(normalizedUrl)) {
-				showToastNotification(
-					'Please enter a valid URL (e.g., https://example.com)',
-					'warning',
-					4000
-				);
-				return;
-			}
-
-			const newStatus = !isEnabled;
-
-			// Update UI immediately for better user experience
-			isEnabled = newStatus;
-
-			currentURL = await urlService.togglePing(
-				currentURL?.id || '',
-				normalizedUrl,
-				newStatus,
-				userId
-			);
-
-			// Handle client-side pinging
-			setupClientPinging(newStatus);
-
-			if (newStatus) {
-				showToastNotification(`Started monitoring ${normalizedUrl}`, 'success');
-				addLog(`Started monitoring ${normalizedUrl}`, 'info');
-
-				if (currentURL && currentURL.id) {
-					try {
-						await urlService.addLog(currentURL.id, `URL monitoring activated by user`, 'info');
-					} catch (error) {
-						console.error('Error adding log', error);
-					}
-				}
-
-				addLog('Your URL will be pinged in the next batch run (within 15 minutes)', 'info');
-			} else {
-				showToastNotification('Monitoring stopped', 'warning');
-				addLog('Monitoring stopped', 'warning');
-
-				if (currentURL?.id) {
-					try {
-						await urlService.addLog(currentURL.id, 'URL monitoring deactivated by user', 'warning');
-					} catch (error) {
-						console.error('Error adding log', error);
-					}
-				}
-			}
-		} catch (error) {
-			console.error('Error toggling ping status', error);
-			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-			showToastNotification(`Error: ${errorMessage}`, 'error');
-			addLog('Error: ' + errorMessage, 'error');
-			isEnabled = !isEnabled; // Revert UI state on error
-		}
-	}
-
-	// function to allow manual refresh of URL status
-	async function refreshStatus() {
-		if (!currentURL?.id || !userId) return;
-
-		// Debounce: prevent rapid successive refreshes
-		const now = Date.now();
-		if (refreshing || now - lastRefreshTimestamp < 5000) {
-			addLog('Please wait before refreshing again', 'warning');
-			return;
-		}
-
-		refreshing = true;
-		lastRefreshTimestamp = now;
-
-		try {
-			// Get only the current user's URLs, limit to 1 result
-			const updatedURL = await urlService.getURLs(userId);
-			if (updatedURL && updatedURL.length > 0) {
-				// Update the UI with latest data
-				 successCount = updatedURL[0].successCount;
-				lastPingTime = formatTimestamp(updatedURL[0].lastPingTime || '') || null;
-				lastPingStatus = (updatedURL[0].lastPingStatus as 'success' | 'error') || '';
-				lastPingStatusCode = updatedURL[0].lastPingStatusCode ?? null;
-				lastRefreshTime = new Date().toLocaleTimeString();
-				logs = updatedURL[0].logs || [];
-
-				addLog('Status refreshed', 'info');
-			}
-		} catch (error) {
-			console.error('Error refreshing status', error);
-			addLog('Failed to refresh status', 'error');
-			showToastNotification('Failed to refresh status', 'error');
-		} finally {
-			refreshing = false;
-		}
-	}
-
-	// Ensure cleanup on component destruction
-	onDestroy(() => {
-		if (clientPingInterval) {
-			clearInterval(clientPingInterval);
-			clientPingInterval = null;
-		}
-
-		// Report any remaining client pings
-		if (clientPingResults.length > 0) {
-			reportClientPings().catch(console.error);
-		}
-	});
+    function getUrlHostname(urlString: string): string {
+        try {
+            return new URL(urlString).hostname;
+        } catch {
+            return urlString;
+        }
+    }
 </script>
 
-<div class="card mb-8 shadow-lg">
-	<div class="card-body">
-		<div class="form-control mb-4 w-full">
-			<label for="app-url" class="card-title mb-4">
-				<span>App URL</span>
-			</label>
-			<div>
-				<label class="input input-bordered w-full">
-					<input
-						type="url"
-						bind:value={fullUrl}
-						placeholder="https://example.com"
-						class="grow"
-						disabled={isEnabled}
-					/>
-				</label>
-				<!-- <div class="label">
-                    <span class="label-text-alt text-base-content/70">
-                        Enter any website URL you want to keep alive
-                    </span>
-                </div> -->
-			</div>
-		</div>
+<svelte:head>
+    <title>{url?.name || 'Dashboard'} - Loopr</title>
+</svelte:head>
 
-		<button
-			class={`btn btn-soft ${isEnabled ? 'btn-error' : 'btn-primary'} sm:btn-sm md:btn-md lg:btn-lg xl:btn-lg mt-2 w-full`}
-			onclick={togglePinging}
-		>
-			{isEnabled ? 'Stop Pinging' : 'Keep this URL alive!'}
-		</button>
+<div class="container mx-auto max-w-4xl px-4 py-8">
+    <!-- Back Navigation -->
+    <div class="mb-6">
+        <a href="/statistics" class="btn btn-ghost btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Statistics
+        </a>
+    </div>
 
-		<!-- {#if !isAuthenticated && (fullUrl.trim() || attemptedStart)}
-			<div class="alert alert-info mt-2">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
-				<span
-					>Please <a href="/login" class="link link-primary">log in</a> to start monitoring your URL</span
-				>
-			</div>
-		{/if} -->
+    {#if loading}
+        <div class="flex justify-center items-center py-12">
+            <span class="loading loading-spinner loading-lg"></span>
+        </div>
+    {:else if url}
+        <!-- URL Header -->
+        <div class="card bg-base-100 shadow-lg mb-6">
+            <div class="card-body">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div 
+                                class="w-4 h-4 rounded-full"
+                                class:bg-success={url.isEnabled && url.lastPingStatus === 'success'}
+                                class:bg-error={url.isEnabled && url.lastPingStatus === 'error'}
+                                class:bg-base-content={!url.isEnabled}
+                                class:opacity-30={!url.isEnabled}
+                            ></div>
+                            <h1 class="text-2xl font-bold">
+                                {url.name || getUrlHostname(url.url)}
+                            </h1>
+                            <div class="badge" class:badge-success={url.isEnabled} class:badge-ghost={!url.isEnabled}>
+                                {url.isEnabled ? 'Active' : 'Inactive'}
+                            </div>
+                        </div>
+                        <p class="text-base-content/70 mb-2">{url.url}</p>
+                        {#if url.description}
+                            <p class="text-sm text-base-content/60">{url.description}</p>
+                        {/if}
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button 
+                            class="btn btn-sm btn-outline"
+                            onclick={refreshStatus}
+                            disabled={refreshing}
+                        >
+                            {#if refreshing}
+                                <span class="loading loading-spinner loading-xs"></span>
+                            {:else}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            {/if}
+                            Refresh
+                        </button>
+                        
+                        <button 
+                            class="btn btn-sm"
+                            class:btn-error={url.isEnabled}
+                            class:btn-success={!url.isEnabled}
+                            onclick={toggleUrl}
+                        >
+                            {url.isEnabled ? 'Stop Monitoring' : 'Start Monitoring'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		{#if showLoginPrompt && !isAuthenticated}
-			<div class="alert alert-info mt-4" transition:slide>
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-					/>
-				</svg>
-				<div>
-					<div class="font-semibold">Ready to monitor your URL?</div>
-					<div class="text-sm opacity-70">
-						Create a free account to start keeping your services alive
-					</div>
-				</div>
-				<div class="flex gap-2">
-					<button class="btn btn-ghost btn-sm" onclick={() => (showLoginPrompt = false)}>×</button>
-					<a href="/login" class="btn btn-primary btn-sm">Login</a>
-				</div>
-			</div>
-		{/if}
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="stat bg-base-100 rounded-lg shadow-lg">
+                <div class="stat-title">Success Count</div>
+                <div class="stat-value text-success">{url.successCount}</div>
+            </div>
+            
+            <div class="stat bg-base-100 rounded-lg shadow-lg">
+                <div class="stat-title">Last Ping</div>
+                <div class="stat-value text-sm">
+                    {formatTimestamp(url.lastPingTime || '').split(' ')[0]}
+                </div>
+                <div class="stat-desc">
+                    {formatTimestamp(url.lastPingTime || '').split(' ')[1] || ''}
+                </div>
+            </div>
+            
+            <div class="stat bg-base-100 rounded-lg shadow-lg">
+                <div class="stat-title">Last Status</div>
+                <div class="stat-value" class:text-success={url.lastPingStatus === 'success'} class:text-error={url.lastPingStatus === 'error'}>
+                    {url.lastPingStatusCode || 'N/A'}
+                </div>
+                <div class="stat-desc">
+                    {url.lastPingStatus === 'success' ? 'OK' : url.lastPingStatus === 'error' ? 'Error' : ''}
+                </div>
+            </div>
+            
+            <div class="stat bg-base-100 rounded-lg shadow-lg">
+                <div class="stat-title">Ping Interval</div>
+                <div class="stat-value text-primary">{url.pingInterval || 15}</div>
+                <div class="stat-desc">minutes</div>
+            </div>
+        </div>
 
-		<div class="mt-4 flex flex-col gap-2">
-			<div
-				class="alert alert-success min-h-8 py-2"
-				class:alert-success={isEnabled}
-				class:alert-ghost={!isEnabled}
-			>
-				<div class="flex items-center gap-2">
-					<span class="loading loading-ring loading-xs" class:hidden={!isEnabled}></span>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-4 w-4"
-						fill="none"
-						viewBox="0 0 24 24"
-						class:hidden={isEnabled}
-					>
-						<circle cx="12" cy="12" r="10" class="stroke-current opacity-30" stroke-width="4"
-						></circle>
-					</svg>
-					<span>{isEnabled ? 'Service Active' : 'Service Inactive'}</span>
+        <!-- Auto Refresh Toggle -->
+        <div class="card bg-base-100 shadow-lg mb-6">
+            <div class="card-body py-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Auto-refresh every 30 seconds</span>
+                    <input 
+                        type="checkbox" 
+                        class="toggle toggle-primary" 
+                        bind:checked={autoRefresh}
+                        onchange={toggleAutoRefresh}
+                    />
+                </div>
+            </div>
+        </div>
 
-					<!-- Add client ping indicator -->
-					{#if isEnabled && clientPingEnabled}
-						<div class="badge badge-accent badge-sm ml-2">Client pinging active</div>
-					{/if}
-				</div>
-			</div>
-
-			<div class="text-sm">
-				{#if showToast}
-					<div class="toast toast-top toast-center z-50" transition:fade={{ duration: 200 }}>
-						<div
-							class="alert {isEnabled
-								? 'alert-info bg-info/90'
-								: 'alert-warning bg-warning/90'} shadow-lg backdrop-blur-sm"
-						>
-							<span class="flex items-center gap-2">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									class="h-4 w-4 stroke-current"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d={isEnabled
-											? 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-											: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'}
-									>
-									</path>
-								</svg>
-								{isEnabled ? 'Pinging your URL every 10-15 minutes' : 'Enter your URL'}
-							</span>
-						</div>
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
-
-	{#if isEnabled}
-		<div class="stats mb-5 w-full backdrop-blur-sm">
-			<div class="stat place-items-center">
-				<div class="stat-title font-medium opacity-80">Success Count</div>
-				<div class="stat-value text-primary text-4xl">{successCount}</div>
-			</div>
-
-			<div class="stat place-items-center">
-				<div class="stat-title font-medium opacity-80">Last Ping</div>
-				<div class="stat-value text-secondary text-4xl">
-					{lastPingTime ? lastPingTime.split(' ')[0] : 'N/A'}
-				</div>
-				<div class="stat-desc text-base opacity-70">
-					{lastPingTime ? lastPingTime.split(' ')[1] : ''}
-				</div>
-			</div>
-
-			<div class="stat place-items-center">
-				<div class="stat-title font-medium opacity-80">Last Status</div>
-				<div
-					class="stat-value text-4xl"
-					class:text-success={lastPingStatus === 'success'}
-					class:text-error={lastPingStatus === 'error'}
-				>
-					{lastPingStatusCode || 'N/A'}
-				</div>
-				<div class="stat-desc text-base opacity-70">
-					{lastPingStatus === 'success' ? 'OK' : lastPingStatus === 'error' ? 'Error' : ''}
-				</div>
-			</div>
-		</div>
-
-		<div class="mb-4 flex justify-center">
-			<button class="btn btn-sm btn-outline" onclick={refreshStatus}>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="mr-1 h-5 w-5"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-					/>
-				</svg>
-				Refresh Status
-			</button>
-			<div class="ml-2 text-xs opacity-60">
-				Last updated: {lastRefreshTime || 'Never'}
-			</div>
-		</div>
-	{/if}
-
-	<div class="divider mx-auto my-0 w-2/3"></div>
-
-	<div class="card-body">
-		<h2 class="card-title mb-4">Activity Log</h2>
-		<div class="bg-base-100 border-accent h-64 overflow-y-auto rounded-lg border-2 border-dashed">
-			{#each logs as log}
-				<div class="border-base-300 border-b px-4 py-2 last:border-0">
-					<span class="text-sm opacity-70">[{log.timestamp}]</span>
-					<span
-						class={`ml-2 ${
-							log.type === 'success'
-								? 'text-success'
-								: log.type === 'error'
-									? 'text-error'
-									: log.type === 'warning'
-										? 'text-warning'
-										: 'text-base-content'
-						}`}>{log.message}</span
-					>
-				</div>
-			{/each}
-			{#if logs.length === 0}
-				<div class="flex flex-col items-center justify-center py-4">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="text-base-content/50 mb-2 h-8 w-8"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
-					<div class="text-base-content/70 text-center">No activity yet</div>
-				</div>
-			{/if}
-		</div>
-	</div>
+        <!-- Activity Logs -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Activity Logs</h2>
+                
+                {#if url.logs && url.logs.length > 0}
+                    <div class="space-y-2 max-h-96 overflow-y-auto">
+                        {#each url.logs as log}
+                            <div class="flex items-start gap-3 p-3 bg-base-200 rounded-lg">
+                                <span class="text-lg {getLogColor(log.type)}">
+                                    {getLogIcon(log.type)}
+                                </span>
+                                <div class="flex-1">
+                                    <p class="text-sm">{log.message}</p>
+                                    <p class="text-xs text-base-content/60 mt-1">
+                                        {formatTimestamp(log.timestamp)}
+                                    </p>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                {:else}
+                    <div class="text-center py-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p class="text-base-content/60">No activity logs yet</p>
+                    </div>
+                {/if}
+            </div>
+        </div>
+    {:else}
+        <div class="text-center py-12">
+            <h1 class="text-2xl font-bold mb-4">URL Not Found</h1>
+            <p class="text-base-content/70 mb-6">The URL you're looking for doesn't exist or you don't have access to it.</p>
+            <a href="/statistics" class="btn btn-primary">Back to Statistics</a>
+        </div>
+    {/if}
 </div>
+
+<!-- Toast Notification -->
+{#if showToast}
+    <div class="toast toast-top toast-center z-50" transition:fade>
+        <div class="alert" class:alert-success={toastType === 'success'} class:alert-error={toastType === 'error'} class:alert-warning={toastType === 'warning'} class:alert-info={toastType === 'info'}>
+            <span>{toastMessage}</span>
+        </div>
+    </div>
+{/if}

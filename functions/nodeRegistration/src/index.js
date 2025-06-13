@@ -4,8 +4,8 @@ import { Client, Databases, ID, Query } from 'appwrite';
 export default async function({ req, res }) {
   const client = new Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
-    .setProject(process.env.APPWRITE_PROJECT_ID)
-    .setKey(process.env.APPWRITE_API_KEY);
+    .setProject(process.env.VITE_PROJECT_ID)
+    .setKey(process.env.VITE_APPWRITE_ENDPOINT);
 
   const databases = new Databases(client);
   

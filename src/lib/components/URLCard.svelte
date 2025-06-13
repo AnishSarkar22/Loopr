@@ -14,6 +14,11 @@
     let showDetails = $state(false);
     let updating = $state(false);
 
+    // Toast states
+    // let showToast = $state(false);
+    // let toastMessage = $state('');
+    // let toastType = $state<'success' | 'error' | 'warning' | 'info'>('info');
+
     function formatTimestamp(timestamp: string): string {
         if (!timestamp) return 'Never';
 
@@ -58,18 +63,27 @@
         }
     }
 
-    async function handleDelete() {
-        if (!url.id) return;
+    // function showAlert(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
+    //     toastMessage = message;
+    //     toastType = type;
+    //     showToast = true;
+    //     setTimeout(() => {
+    //         showToast = false;
+    //     }, 3000);
+    // }
+
+    // async function handleDelete() {
+    //     if (!url.id) return;
         
-        if (confirm('Are you sure you want to delete this URL? This action cannot be undone.')) {
-            try {
-                await urlService.deleteURL(url.id);
-                onDelete(url.id);
-            } catch (error) {
-                console.error('Error deleting URL:', error);
-            }
-        }
-    }
+    //     if (confirm('Are you sure you want to delete this URL? This action cannot be undone.')) {
+    //         try {
+    //             await urlService.deleteURL(url.id);
+    //             onDelete(url.id);
+    //         } catch (error) {
+    //             showAlert('Failed to delete URL', 'error');
+    //         }
+    //     }
+    // }
 
     function getUrlDomain(fullUrl: string): string {
         try {
@@ -101,13 +115,14 @@
                     </svg>
                 </div>
                 <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32">
+                    <li><a href="/urls/{url.id}/edit">Edit URL</a></li>
                     <li><button onclick={toggleStatus} disabled={updating}>
                         {url.isEnabled ? 'Disable' : 'Enable'}
                     </button></li>
                     <li><button onclick={() => showDetails = !showDetails}>
                         {showDetails ? 'Hide Details' : 'Show Details'}
                     </button></li>
-                    <li><button onclick={handleDelete} class="text-error">Delete</button></li>
+                    <!-- <li><button onclick={handleDelete} class="text-error">Delete</button></li> -->
                 </ul>
             </div>
         </div>
