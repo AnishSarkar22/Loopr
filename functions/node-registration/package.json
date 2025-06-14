@@ -1,0 +1,10 @@
+{
+  "name": "node-regisration",
+  "version": "1.0.0",
+  "description": "Node Registration Function",
+  "main": "src/index.js",
+  "dependencies": {
+    "node-appwrite": "^14.1.0"
+  },
+  "type": "module"
+}

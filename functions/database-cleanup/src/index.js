@@ -1,4 +1,4 @@
-// for cleanup function
+// for database cleanup
 
 import { Client, Databases, Query } from 'appwrite';
 

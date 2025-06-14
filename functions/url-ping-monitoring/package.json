@@ -1,0 +1,10 @@
+{
+  "name": "ping-function",
+  "version": "1.0.0",
+  "description": "URL Ping Monitoring Function",
+  "main": "src/index.js",
+  "dependencies": {
+    "node-appwrite": "^14.1.0"
+  },
+  "type": "module"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "database-cleanup",
+  "version": "1.0.0",
+  "description": "Database Cleanup Function",
+  "main": "src/index.js",
+  "dependencies": {
+    "node-appwrite": "^14.1.0"
+  },
+  "type": "module"
+}

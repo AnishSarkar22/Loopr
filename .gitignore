@@ -2,6 +2,9 @@ test-results
 node_modules
 /playwright-report/
 
+# appwrite.json
+
+
 # Output
 .output
 .vercel

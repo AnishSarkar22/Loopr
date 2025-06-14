@@ -1,4 +1,4 @@
-// for ping Function - Dynamic Batch Processing
+// for url ping monitoring - Dynamic Batch Processing
 
 import { Client, Databases, Query } from 'appwrite';
 

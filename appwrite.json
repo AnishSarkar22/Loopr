@@ -1,3 +1,75 @@
 {
-  "projectName": "Loopr"
+    "projectName": "Loopr",
+    "projectId": "put-your-project-id",
+    "functions": [
+        {
+            "$id": "pingFunction",
+            "name": "url-ping-monitoring",
+            "runtime": "node-18.0",
+            "specification": "s-0.5vcpu-512mb",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "scopes": [
+                "databases.read",
+                "databases.write", 
+                "documents.read",
+                "documents.write"
+            ],
+            "schedule": "*/5 * * * *",
+            "timeout": 300,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/index.js",
+            "commands": "npm install",
+            "path": "functions/url-ping-monitoring"
+        },
+        {
+            "$id": "nodeRegistration",
+            "name": "node-registration",
+            "runtime": "node-18.0",
+            "specification": "s-0.5vcpu-512mb",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "scopes": [
+                "databases.read",
+                "databases.write", 
+                "documents.read",
+                "documents.write"
+            ],
+            "schedule": "*/5 * * * *",
+            "timeout": 300,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/index.js",
+            "commands": "npm install",
+            "path": "functions/node-registration"
+        },
+        {
+            "$id": "cleanupFunction",
+            "name": "database-cleanup",
+            "runtime": "node-18.0",
+            "specification": "s-0.5vcpu-512mb",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "scopes": [
+                "databases.read",
+                "databases.write", 
+                "documents.read",
+                "documents.write"
+            ],
+            "schedule": "0 2 * * *",
+            "timeout": 900,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/index.js",
+            "commands": "npm install",
+            "path": "functions/database-cleanup"
+        }
+    ]
 }
