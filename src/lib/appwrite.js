@@ -5,7 +5,7 @@ const client = new Client();
 // Initialize Appwrite client
 client
     .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
-    .setProject(import.meta.env.VITE_PROJECT_ID);
+    .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID);
 
 // Initialize Appwrite services
 export const account = new Account(client);

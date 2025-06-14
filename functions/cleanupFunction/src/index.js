@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// for cleanup function
+
 import { Client, Databases, Query } from 'appwrite';
 
-export default async function({ req, res }) {
+export default async function({ res }) {
   const client = new Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
-    .setProject(process.env.VITE_PROJECT_ID)
-    .setKey(process.env.VITE_APPWRITE_ENDPOINT);
+    .setProject(process.env.APPWRITE_PROJECT_ID)
+    .setKey(process.env.APPWRITE_API_ENDPOINT);
   
   const databases = new Databases(client);
   
@@ -43,7 +44,7 @@ export default async function({ req, res }) {
     
     const staleNodes = await databases.listDocuments(
       process.env.DATABASE_ID,
-      'worker_nodes',
+      process.env.WORKER_NODES_COLLECTION_ID,
       [Query.lessThan('lastHeartbeat', dayAgo.toISOString())],
       100
     );
@@ -53,7 +54,7 @@ export default async function({ req, res }) {
         staleNodes.documents.map(node => 
           databases.updateDocument(
             process.env.DATABASE_ID,
-            'worker_nodes',
+            process.env.WORKER_NODES_COLLECTION_ID,
             node.$id,
             { status: 'offline' }
           )
@@ -86,7 +87,7 @@ async function reassignUrls(databases, offlineNodes) {
   // Get active nodes
   const activeNodes = await databases.listDocuments(
     process.env.DATABASE_ID,
-    'worker_nodes',
+    process.env.WORKER_NODES_COLLECTION_ID,
     [Query.equal('status', 'online')],
     100
   );

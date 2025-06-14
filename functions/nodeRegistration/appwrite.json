@@ -1,6 +1,6 @@
 {
-	"$id": "pingFunction",
-	"name": "URL Ping Monitoring Function",
+	"$id": "nodeRegistration",
+	"name": "Node Registration Function",
 	"runtime": "node-18.0",
 	"execute": ["any"],
 	"events": [],
