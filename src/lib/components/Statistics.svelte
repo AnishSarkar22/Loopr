@@ -79,7 +79,7 @@
 
 	function addLog(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
 		const newLog: Log = {
-			timestamp: formatTimestamp(new Date().toISOString()),
+			timestamp: new Date().toISOString(),
 			message,
 			type
 		};
@@ -265,7 +265,7 @@
 				{#if logs.length > 0}
 					{#each logs as log}
 						<div class="border-base-300 border-b px-4 py-2 last:border-0">
-							<span class="text-sm opacity-70">[{log.timestamp}]</span>
+							<span class="text-sm opacity-70">[{formatTimestamp(log.timestamp)}]</span>
 							<span
 								class={`ml-2 ${
 									log.type === 'success'
