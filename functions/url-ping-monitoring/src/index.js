@@ -1,16 +1,83 @@
 // for url ping monitoring - Dynamic Batch Processing
 
-import { Client, Databases, Query } from 'appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
 
 export default async function ({ res }) {
+	console.log('=== PING MONITORING FUNCTION STARTED ===');
+
 	const client = new Client()
 		.setEndpoint('https://cloud.appwrite.io/v1')
 		.setProject(process.env.APPWRITE_PROJECT_ID)
-		.setKey(process.env.APPWRITE_API_ENDPOINT);
+		.setKey(process.env.APPWRITE_API_KEY);
 
 	const databases = new Databases(client);
 	const nodeId = process.env.NODE_ID || `node-${Math.floor(Math.random() * 5) + 1}`;
 	const now = new Date().toISOString();
+
+	console.log(`Node ID: ${nodeId}`);
+	console.log(`Current time: ${now}`);
+
+	// remove thissssss
+	// Test database connection first
+	try {
+		console.log('Testing database connection...');
+		const totalUrls = await databases.listDocuments(
+			process.env.DATABASE_ID,
+			process.env.URLS_COLLECTION_ID,
+			[Query.limit(1)]
+		);
+		console.log(`Total URLs in database: ${totalUrls.total}`);
+
+		// Check how many URLs are assigned to this node
+		const nodeUrls = await databases.listDocuments(
+			process.env.DATABASE_ID,
+			process.env.URLS_COLLECTION_ID,
+			[Query.equal('nodeId', nodeId)]
+		);
+		console.log(`URLs assigned to ${nodeId}: ${nodeUrls.total}`);
+
+		// Check how many URLs are enabled
+		const enabledUrls = await databases.listDocuments(
+			process.env.DATABASE_ID,
+			process.env.URLS_COLLECTION_ID,
+			[Query.equal('isEnabled', true)]
+		);
+		console.log(`Total enabled URLs: ${enabledUrls.total}`);
+
+		// Check how many URLs are due for ping
+		const dueUrls = await databases.listDocuments(
+			process.env.DATABASE_ID,
+			process.env.URLS_COLLECTION_ID,
+			[
+				Query.equal('nodeId', nodeId),
+				Query.equal('isEnabled', true),
+				Query.lessThanEqual('nextPingTime', now)
+			]
+		);
+		console.log(`URLs due for ping on ${nodeId}: ${dueUrls.total}`);
+		// Log some sample URLs for debugging
+		if (dueUrls.documents.length > 0) {
+			console.log(
+				'Sample due URLs:',
+				dueUrls.documents.slice(0, 3).map((url) => ({
+					id: url.$id,
+					url: url.url,
+					nextPingTime: url.nextPingTime,
+					isEnabled: url.isEnabled,
+					nodeId: url.nodeId
+				}))
+			);
+		}
+	} catch (error) {
+		console.error('Database connection test failed:', error);
+		return res.json(
+			{
+				success: false,
+				error: 'Database connection failed: ' + error.message
+			},
+			500
+		);
+	}
 
 	// Dynamic processing based on available time
 	const FUNCTION_TIMEOUT = 300; // 5 minutes
@@ -110,11 +177,30 @@ async function processBatch(databases, urlDocuments) {
 				}
 				resultsByUser[userId].push({
 					...result,
-					pingInterval: urlDoc.pingInterval || '15m'
+					pingInterval: urlDoc.pingInterval || 15
 				});
 
 				// Calculate next ping time
-				const nextPingTime = calculateNextPingTime(urlDoc.pingInterval || '15m');
+				// const nextPingTime = calculateNextPingTime(urlDoc.pingInterval || 15);
+
+				// Create log entry
+                const logMessage = result.success 
+                    ? `Ping successful (${result.status}) - ${result.responseTime}ms`
+                    : `Ping failed (${result.status || 'timeout'}) - ${result.error || 'Unknown error'}`;
+
+                const logType = result.success ? 'success' : 'error';
+
+                // Parse existing logs and add new one
+                const existingLogs = JSON.parse(urlDoc.logs || '[]');
+                const newLog = {
+                    timestamp: result.timestamp,
+                    message: logMessage,
+                    type: logType
+                };
+                
+                // Keep only last 100 logs
+                const updatedLogs = [...existingLogs, newLog].slice(-100);
+
 
 				urlUpdates.push({
 					id: urlDoc.$id,
@@ -123,10 +209,11 @@ async function processBatch(databases, urlDocuments) {
 						lastPingStatus: result.success ? 'success' : 'error',
 						lastPingStatusCode: result.status,
 						lastResponseTime: result.responseTime,
-						nextPingTime: nextPingTime.toISOString(),
+						nextPingTime: calculateNextPingTime(urlDoc.pingInterval || 15), // Convert to ISO string
 						successCount: (urlDoc.successCount || 0) + (result.success ? 1 : 0),
 						totalPings: (urlDoc.totalPings || 0) + 1,
-						lastError: result.error || null
+						lastError: result.error || null,
+						logs: JSON.stringify(updatedLogs)
 					}
 				});
 			}
@@ -160,40 +247,17 @@ async function processBatch(databases, urlDocuments) {
 // Helper function to calculate next ping time based on user's interval choice
 function calculateNextPingTime(pingInterval) {
 	const nextPing = new Date();
+	const intervalMinutes = parseInt(pingInterval) || 15;
 
-	switch (pingInterval) {
-		case '5m':
-			nextPing.setMinutes(nextPing.getMinutes() + 5);
-			break;
-		case '10m':
-			nextPing.setMinutes(nextPing.getMinutes() + 10);
-			break;
-		case '15m':
-			nextPing.setMinutes(nextPing.getMinutes() + 15);
-			break;
-		case '30m':
-			nextPing.setMinutes(nextPing.getMinutes() + 30);
-			break;
-		case '1h':
-			nextPing.setHours(nextPing.getHours() + 1);
-			break;
-		case '3h':
-			nextPing.setHours(nextPing.getHours() + 3);
-			break;
-		case '6h':
-			nextPing.setHours(nextPing.getHours() + 6);
-			break;
-		case '12h':
-			nextPing.setHours(nextPing.getHours() + 12);
-			break;
-		case '24h':
-			nextPing.setHours(nextPing.getHours() + 24);
-			break;
-		default:
-			nextPing.setMinutes(nextPing.getMinutes() + 15); // Default 15 minutes
-	}
+	// Add the interval in minutes
+	nextPing.setMinutes(nextPing.getMinutes() + intervalMinutes);
 
-	return nextPing;
+	// Return ISO string for DateTime field
+	const isoString = nextPing.toISOString();
+
+	console.log(`Server: Next ping scheduled in ${intervalMinutes} minutes: ${isoString}`);
+
+	return isoString;
 }
 
 // Helper function to ping a URL
@@ -292,7 +356,27 @@ async function storeResultsByUser(databases, resultsByUser) {
 				shardId
 			);
 
-			const updatedResults = [...existingShard.results];
+			let updatedResults = [];
+            try {
+                if (typeof existingShard.results === 'string') {
+                    updatedResults = JSON.parse(existingShard.results);
+                } else if (Array.isArray(existingShard.results)) {
+                    updatedResults = [...existingShard.results];
+                } else {
+                    console.warn('Unexpected results format:', typeof existingShard.results);
+                    updatedResults = [];
+                }
+            } catch (parseError) {
+                console.error('Failed to parse existing results:', parseError);
+                updatedResults = [];
+            }
+
+            // Ensure updatedResults is an array
+            if (!Array.isArray(updatedResults)) {
+                console.warn('Results is not an array, resetting to empty array');
+                updatedResults = [];
+            }
+
 			for (const result of results) {
 				const existingUrlIdx = updatedResults.findIndex((r) => r.urlId === result.urlId);
 				if (existingUrlIdx >= 0) {
@@ -300,23 +384,23 @@ async function storeResultsByUser(databases, resultsByUser) {
 					let MAX_HISTORY = 288; // Default for 5-minute intervals (24 hours)
 
 					// Store less history for more frequent pings to save storage
-					if (result.pingInterval === '5m')
+					if (result.pingInterval <= 5)
 						MAX_HISTORY = 288; // 24 hours
-					else if (result.pingInterval === '10m')
+					else if (result.pingInterval <= 10)
 						MAX_HISTORY = 144; // 24 hours
-					else if (result.pingInterval === '15m')
+					else if (result.pingInterval <= 15)
 						MAX_HISTORY = 96; // 24 hours
-					else if (result.pingInterval === '30m')
+					else if (result.pingInterval <= 30)
 						MAX_HISTORY = 48; // 24 hours
-					else if (result.pingInterval === '1h')
+					else if (result.pingInterval <= 60)
 						MAX_HISTORY = 168; // 7 days
-					else if (result.pingInterval === '3h')
+					else if (result.pingInterval <= 180)
 						MAX_HISTORY = 168; // 21 days
-					else if (result.pingInterval === '6h')
+					else if (result.pingInterval <= 360)
 						MAX_HISTORY = 168; // 42 days
-					else if (result.pingInterval === '12h')
+					else if (result.pingInterval <= 720)
 						MAX_HISTORY = 168; // 84 days
-					else if (result.pingInterval === '24h') MAX_HISTORY = 365; // 1 year
+					else if (result.pingInterval <= 1440) MAX_HISTORY = 365; // 1 year
 
 					updatedResults[existingUrlIdx].timestamps.push(result.timestamp);
 					updatedResults[existingUrlIdx].statuses.push(result.status);
@@ -341,6 +425,9 @@ async function storeResultsByUser(databases, resultsByUser) {
 					});
 				}
 			}
+
+			const resultsJson = JSON.stringify(updatedResults);
+            console.log(`Storing results for ${userId}: ${updatedResults.length} URLs`);
 
 			const MAX_URLS_PER_SHARD = 50;
 
@@ -384,18 +471,21 @@ async function storeResultsByUser(databases, resultsByUser) {
 						process.env.RESULTS_COLLECTION_ID,
 						shardId,
 						{
-							results: JSON.stringify(updatedResults)
+							results: resultsJson
 						}
 					)
 				);
 			}
 		} catch {
+			// Create new shard
 			const newResults = results.map((result) => ({
 				urlId: result.urlId,
 				timestamps: [result.timestamp],
 				statuses: [result.status],
 				responseTimes: [result.responseTime]
 			}));
+
+			console.log(`Creating new shard for ${userId}: ${newResults.length} URLs`);
 
 			batches.push(
 				databases.createDocument(

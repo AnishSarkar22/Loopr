@@ -35,6 +35,11 @@
             const session = await account.get();
             userId = session.$id;
             isAuthenticated = true;
+
+            // Fix any URLs with missing nextPingTime first
+            await urlService.fixMissingNextPingTimes(userId);
+
+            // now load the URLs
             await loadURLs();
         } catch (error) {
             console.error('Error loading user data', error);

@@ -2,7 +2,7 @@
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
     import { account } from '$lib/appwrite';
-    import { urlService } from '$lib/services/urlService';
+    import { urlService, formatPingInterval } from '$lib/services/urlService';
     import type { PingURL } from '$lib/types';
     import { fade } from 'svelte/transition';
     import { goto } from '$app/navigation';
@@ -203,8 +203,13 @@
                             {url.name || getUrlHostname(url.url)}
                         </p>
                     </div>
-                    <div class="badge" class:badge-success={url.isEnabled} class:badge-ghost={!url.isEnabled}>
-                        {url.isEnabled ? 'Active' : 'Inactive'}
+                    <div class="flex items-center gap-2">
+                        <div class="badge" class:badge-success={url.isEnabled} class:badge-ghost={!url.isEnabled}>
+                            {url.isEnabled ? 'Active' : 'Inactive'}
+                        </div>
+                        <div class="text-xs opacity-60">
+                            Every {formatPingInterval(url.pingInterval || 15)}
+                        </div>
                     </div>
                 </div>
 

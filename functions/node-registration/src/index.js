@@ -1,6 +1,6 @@
 // for node Registration
 
-import { Client, Databases, Query } from 'appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
 
 const REDISTRIBUTION_BATCH_SIZE = parseInt(process.env.REDISTRIBUTION_BATCH_SIZE) || 10;
 const MAX_REDISTRIBUTION_ATTEMPTS = parseInt(process.env.MAX_REDISTRIBUTION_ATTEMPTS) || 3;
@@ -23,7 +23,7 @@ export default async function ({ res }) {
 	const client = new Client()
 		.setEndpoint('https://cloud.appwrite.io/v1')
 		.setProject(process.env.APPWRITE_PROJECT_ID)
-		.setKey(process.env.APPWRITE_API_ENDPOINT);
+		.setKey(process.env.APPWRITE_API_KEY);
 
 	const databases = new Databases(client);
 
@@ -59,7 +59,6 @@ export default async function ({ res }) {
 				process.env.WORKER_NODES_COLLECTION_ID,
 				nodeId,
 				{
-					id: nodeId,
 					name: `Worker ${nodeId}`,
 					status: 'online',
 					lastHeartbeat: now,
@@ -70,10 +69,13 @@ export default async function ({ res }) {
 			);
 		}
 
-		// Always do load balancing, but with different strategies
+		// Assign unassigned URLs first
+        await assignUnassignedUrls(databases);
+
+		// load balancing
 		await balanceNodeLoad(databases, nodeId, !!process.env.NODE_ID);
 
-		// Get current URL count for load balancing decisions
+		// Getting current URL count for load balancing decisions
 		const urlCount = await databases.listDocuments(
 			process.env.DATABASE_ID,
 			process.env.URLS_COLLECTION_ID,
@@ -97,6 +99,68 @@ export default async function ({ res }) {
 			500
 		);
 	}
+}
+
+// Function to assign URLs that don't have a nodeId
+async function assignUnassignedUrls(databases) {
+    try {
+        console.log('Checking for unassigned URLs...');
+        
+        // Get URLs with null nodeId that are enabled
+        const unassignedUrls = await databases.listDocuments(
+            process.env.DATABASE_ID,
+            process.env.URLS_COLLECTION_ID,
+            [
+                Query.isNull('nodeId'),
+                Query.equal('isEnabled', true)
+            ],
+            100
+        );
+
+        if (unassignedUrls.documents.length === 0) {
+            console.log('No unassigned enabled URLs found');
+            return;
+        }
+
+        console.log(`Found ${unassignedUrls.documents.length} unassigned enabled URLs`);
+
+        // Get active nodes
+        const activeNodes = await databases.listDocuments(
+            process.env.DATABASE_ID,
+            process.env.WORKER_NODES_COLLECTION_ID,
+            [Query.equal('status', 'online')],
+            100
+        );
+
+        if (activeNodes.documents.length === 0) {
+            console.log('No active nodes available for assignment');
+            return;
+        }
+
+        console.log(`Found ${activeNodes.documents.length} active nodes for assignment`);
+
+        // Assign URLs to nodes in round-robin fashion
+        const assignments = unassignedUrls.documents.map((url, index) => {
+            const nodeIndex = index % activeNodes.documents.length;
+            const assignedNode = activeNodes.documents[nodeIndex];
+            
+            console.log(`Assigning URL ${url.$id} to node ${assignedNode.$id}`);
+            
+            return databases.updateDocument(
+                process.env.DATABASE_ID,
+                process.env.URLS_COLLECTION_ID,
+                url.$id,
+                { nodeId: assignedNode.$id }
+            );
+        });
+
+        await Promise.all(assignments);
+        console.log(`Successfully assigned ${assignments.length} URLs to nodes`);
+
+    } catch (error) {
+        console.error('Error assigning unassigned URLs:', error);
+        // Don't throw - let the main registration continue
+    }
 }
 
 // Enhanced helper function with different strategies for fixed vs dynamic nodes

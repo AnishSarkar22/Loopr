@@ -25,6 +25,10 @@
         try {
             const session = await account.get();
             userId = session.$id;
+
+            // Fix missing nextPingTimes before loading specific URL
+            // await urlService.fixMissingNextPingTimes(userId);
+
             await loadUrl();
             
             if (autoRefresh) {

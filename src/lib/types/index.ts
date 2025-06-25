@@ -4,12 +4,6 @@ export type Log = {
     type: 'success' | 'error' | 'warning' | 'info';
 };
 
-export type Log = {
-    timestamp: string;
-    message: string;
-    type: 'success' | 'error' | 'warning' | 'info';
-};
-
 export type PingURLDatabase = {
     // Required attributes
     url: string;
@@ -23,11 +17,14 @@ export type PingURLDatabase = {
     lastPingTime?: string;
     lastPingStatus?: string;
     lastPingStatusCode?: number | null;
+    lastResponseTime?: number;
+    totalPings?: number;  
     logs?: string;              // JSON string in database
     nodeId?: string;
     pingInterval?: number;      // Default: 15
-    nextPingTime?: string;
+    nextPingTime?: string | null;
     shardKey?: number;          // Default: 0
+    lastError?: string;
     
     // Appwrite system fields
     $id?: string;

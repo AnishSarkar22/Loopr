@@ -1,12 +1,12 @@
 // for database cleanup
 
-import { Client, Databases, Query } from 'appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
 
 export default async function({ res }) {
   const client = new Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
     .setProject(process.env.APPWRITE_PROJECT_ID)
-    .setKey(process.env.APPWRITE_API_ENDPOINT);
+    .setKey(process.env.APPWRITE_API_KEY);
   
   const databases = new Databases(client);
   
