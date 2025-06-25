@@ -19,74 +19,74 @@ export default async function ({ res }) {
 
 	// remove thissssss
 	// Test database connection first
-	try {
-		console.log('Testing database connection...');
-		const totalUrls = await databases.listDocuments(
-			process.env.DATABASE_ID,
-			process.env.URLS_COLLECTION_ID,
-			[Query.limit(1)]
-		);
-		console.log(`Total URLs in database: ${totalUrls.total}`);
+	// try {
+	// 	console.log('Testing database connection...');
+	// 	const totalUrls = await databases.listDocuments(
+	// 		process.env.DATABASE_ID,
+	// 		process.env.URLS_COLLECTION_ID,
+	// 		[Query.limit(1)]
+	// 	);
+	// 	console.log(`Total URLs in database: ${totalUrls.total}`);
 
-		// Check how many URLs are assigned to this node
-		const nodeUrls = await databases.listDocuments(
-			process.env.DATABASE_ID,
-			process.env.URLS_COLLECTION_ID,
-			[Query.equal('nodeId', nodeId)]
-		);
-		console.log(`URLs assigned to ${nodeId}: ${nodeUrls.total}`);
+	// 	// Check how many URLs are assigned to this node
+	// 	const nodeUrls = await databases.listDocuments(
+	// 		process.env.DATABASE_ID,
+	// 		process.env.URLS_COLLECTION_ID,
+	// 		[Query.equal('nodeId', nodeId)]
+	// 	);
+	// 	console.log(`URLs assigned to ${nodeId}: ${nodeUrls.total}`);
 
-		// Check how many URLs are enabled
-		const enabledUrls = await databases.listDocuments(
-			process.env.DATABASE_ID,
-			process.env.URLS_COLLECTION_ID,
-			[Query.equal('isEnabled', true)]
-		);
-		console.log(`Total enabled URLs: ${enabledUrls.total}`);
+	// 	// Check how many URLs are enabled
+	// 	const enabledUrls = await databases.listDocuments(
+	// 		process.env.DATABASE_ID,
+	// 		process.env.URLS_COLLECTION_ID,
+	// 		[Query.equal('isEnabled', true)]
+	// 	);
+	// 	console.log(`Total enabled URLs: ${enabledUrls.total}`);
 
-		// Check how many URLs are due for ping
-		const dueUrls = await databases.listDocuments(
-			process.env.DATABASE_ID,
-			process.env.URLS_COLLECTION_ID,
-			[
-				Query.equal('nodeId', nodeId),
-				Query.equal('isEnabled', true),
-				Query.lessThanEqual('nextPingTime', now)
-			]
-		);
-		console.log(`URLs due for ping on ${nodeId}: ${dueUrls.total}`);
-		// Log some sample URLs for debugging
-		if (dueUrls.documents.length > 0) {
-			console.log(
-				'Sample due URLs:',
-				dueUrls.documents.slice(0, 3).map((url) => ({
-					id: url.$id,
-					url: url.url,
-					nextPingTime: url.nextPingTime,
-					isEnabled: url.isEnabled,
-					nodeId: url.nodeId
-				}))
-			);
-		}
-	} catch (error) {
-		console.error('Database connection test failed:', error);
-		return res.json(
-			{
-				success: false,
-				error: 'Database connection failed: ' + error.message
-			},
-			500
-		);
-	}
+	// 	// Check how many URLs are due for ping
+	// 	const dueUrls = await databases.listDocuments(
+	// 		process.env.DATABASE_ID,
+	// 		process.env.URLS_COLLECTION_ID,
+	// 		[
+	// 			Query.equal('nodeId', nodeId),
+	// 			Query.equal('isEnabled', true),
+	// 			Query.lessThanEqual('nextPingTime', now)
+	// 		]
+	// 	);
+	// 	console.log(`URLs due for ping on ${nodeId}: ${dueUrls.total}`);
+	// 	// Log some sample URLs for debugging
+	// 	if (dueUrls.documents.length > 0) {
+	// 		console.log(
+	// 			'Sample due URLs:',
+	// 			dueUrls.documents.slice(0, 3).map((url) => ({
+	// 				id: url.$id,
+	// 				url: url.url,
+	// 				nextPingTime: url.nextPingTime,
+	// 				isEnabled: url.isEnabled,
+	// 				nodeId: url.nodeId
+	// 			}))
+	// 		);
+	// 	}
+	// } catch (error) {
+	// 	console.error('Database connection test failed:', error);
+	// 	return res.json(
+	// 		{
+	// 			success: false,
+	// 			error: 'Database connection failed: ' + error.message
+	// 		},
+	// 		500
+	// 	);
+	// }
 
 	// Dynamic processing based on available time
-	const FUNCTION_TIMEOUT = 300; // 5 minutes
-	const PROCESSING_BUFFER = 30; // 30 seconds buffer
+	const FUNCTION_TIMEOUT = parseInt(process.env.FUNCTION_TIMEOUT) || 300; // 5 minutes
+	const PROCESSING_BUFFER = parseInt(process.env.PROCESSING_BUFFER) || 30; // 30 seconds buffer
 	const AVAILABLE_TIME = FUNCTION_TIMEOUT - PROCESSING_BUFFER;
 
 	let totalProcessed = 0;
 	let offset = 0;
-	const BATCH_SIZE = 50; // Process in chunks
+	const BATCH_SIZE = parseInt(process.env.BATCH_SIZE) || 100; // Process in chunks
 
 	const startTime = Date.now();
 
@@ -149,7 +149,7 @@ export default async function ({ res }) {
 
 async function processBatch(databases, urlDocuments) {
 	// Process URLs in smaller parallel chunks to avoid memory issues
-	const PARALLEL_CHUNK_SIZE = 10;
+	const PARALLEL_CHUNK_SIZE = parseInt(process.env.PARALLEL_CHUNK_SIZE) || 25;
 
 	// Collect all updates first, then batch them (more efficient)
 	const allUrlUpdates = [];
@@ -184,34 +184,43 @@ async function processBatch(databases, urlDocuments) {
 				// const nextPingTime = calculateNextPingTime(urlDoc.pingInterval || 15);
 
 				// Create log entry
-                const logMessage = result.success 
-                    ? `Ping successful (${result.status}) - ${result.responseTime}ms`
-                    : `Ping failed (${result.status || 'timeout'}) - ${result.error || 'Unknown error'}`;
+				const logMessage = result.success
+					? `Ping successful (${result.status}) - ${result.responseTime}ms`
+					: `Ping failed (${result.status || 'timeout'}) - ${result.error || 'Unknown error'}`;
 
-                const logType = result.success ? 'success' : 'error';
+				const logType = result.success ? 'success' : 'error';
 
-                // Parse existing logs and add new one
-                const existingLogs = JSON.parse(urlDoc.logs || '[]');
-                const newLog = {
-                    timestamp: result.timestamp,
-                    message: logMessage,
-                    type: logType
-                };
-                
-                // Keep only last 100 logs
-                const updatedLogs = [...existingLogs, newLog].slice(-100);
+				// Parse existing logs and add new one
+				const existingLogs = JSON.parse(urlDoc.logs || '[]');
+				const newLog = {
+					timestamp: result.timestamp,
+					message: logMessage,
+					type: logType
+				};
 
+				// Store only limited number of logs
+				const MAX_LOGS = parseInt(process.env.MAX_LOGS_PER_URL) || 100;
+				const updatedLogs = [...existingLogs, newLog].slice(-MAX_LOGS);
+
+				console.log('Debug URL update data:', {
+					urlId: urlDoc.$id,
+					originalTimestamp: result.timestamp,
+					convertedTimestamp: new Date(result.timestamp).toISOString(),
+					success: result.success,
+					status: result.status,
+					responseTime: result.responseTime
+				});
 
 				urlUpdates.push({
 					id: urlDoc.$id,
 					data: {
-						lastPingTime: result.timestamp,
+						lastPingTime: new Date(result.timestamp).toISOString(),
 						lastPingStatus: result.success ? 'success' : 'error',
-						lastPingStatusCode: result.status,
-						lastResponseTime: result.responseTime,
-						nextPingTime: calculateNextPingTime(urlDoc.pingInterval || 15), // Convert to ISO string
-						successCount: (urlDoc.successCount || 0) + (result.success ? 1 : 0),
-						totalPings: (urlDoc.totalPings || 0) + 1,
+						lastPingStatusCode: parseInt(result.status) || 0,
+						lastResponseTime: parseInt(result.responseTime) || 0,
+						nextPingTime: calculateNextPingTime(urlDoc.pingInterval || 15),
+						successCount: (parseInt(urlDoc.successCount) || 0) + (result.success ? 1 : 0),
+						totalPings: (parseInt(urlDoc.totalPings) || 0) + 1,
 						lastError: result.error || null,
 						logs: JSON.stringify(updatedLogs)
 					}
@@ -237,9 +246,10 @@ async function processBatch(databases, urlDocuments) {
 
 	// Store all at once (more efficient)
 	if (allUrlUpdates.length > 0 || Object.keys(allResultsByUser).length > 0) {
+		const updateBatchSize = parseInt(process.env.UPDATE_BATCH_SIZE) || 75;
 		await Promise.all([
 			storeResultsByUser(databases, allResultsByUser),
-			updateUrlsInBatches(databases, allUrlUpdates, 25)
+			updateUrlsInBatches(databases, allUrlUpdates, updateBatchSize)
 		]);
 	}
 }
@@ -299,26 +309,15 @@ async function pingUrl(url, urlId) {
 	}
 }
 
-async function updateUrlsInBatches(databases, urlUpdates, batchSize = 25) {
+async function updateUrlsInBatches(databases, urlUpdates, batchSize = 50) {
 	const consolidatedUpdates = {};
 
+	// Group updates by URL ID to avoid duplicate calls
 	for (const update of urlUpdates) {
-		if (!consolidatedUpdates[update.id]) {
-			consolidatedUpdates[update.id] = update.data;
-		} else {
-			consolidatedUpdates[update.id] = {
-				...consolidatedUpdates[update.id],
-				...update.data,
-				successCount: Math.max(
-					consolidatedUpdates[update.id].successCount || 0,
-					update.data.successCount || 0
-				),
-				totalPings: Math.max(
-					consolidatedUpdates[update.id].totalPings || 0,
-					update.data.totalPings || 0
-				)
-			};
-		}
+		consolidatedUpdates[update.id] = {
+			...consolidatedUpdates[update.id],
+			...update.data
+		};
 	}
 
 	const finalUpdates = Object.entries(consolidatedUpdates).map(([id, data]) => ({
@@ -326,6 +325,7 @@ async function updateUrlsInBatches(databases, urlUpdates, batchSize = 25) {
 		data
 	}));
 
+	// Process in larger batches
 	for (let i = 0; i < finalUpdates.length; i += batchSize) {
 		const batch = finalUpdates.slice(i, i + batchSize);
 		await Promise.all(
@@ -350,121 +350,113 @@ async function storeResultsByUser(databases, resultsByUser) {
 		const shardId = `${userId}_${today}`;
 
 		try {
-			const existingShard = await databases.getDocument(
-				process.env.DATABASE_ID,
-				process.env.RESULTS_COLLECTION_ID,
-				shardId
-			);
-
-			let updatedResults = [];
-            try {
-                if (typeof existingShard.results === 'string') {
-                    updatedResults = JSON.parse(existingShard.results);
-                } else if (Array.isArray(existingShard.results)) {
-                    updatedResults = [...existingShard.results];
-                } else {
-                    console.warn('Unexpected results format:', typeof existingShard.results);
-                    updatedResults = [];
-                }
-            } catch (parseError) {
-                console.error('Failed to parse existing results:', parseError);
-                updatedResults = [];
-            }
-
-            // Ensure updatedResults is an array
-            if (!Array.isArray(updatedResults)) {
-                console.warn('Results is not an array, resetting to empty array');
-                updatedResults = [];
-            }
-
-			for (const result of results) {
-				const existingUrlIdx = updatedResults.findIndex((r) => r.urlId === result.urlId);
-				if (existingUrlIdx >= 0) {
-					// Adjust MAX_HISTORY based on ping frequency to save space
-					let MAX_HISTORY = 288; // Default for 5-minute intervals (24 hours)
-
-					// Store less history for more frequent pings to save storage
-					if (result.pingInterval <= 5)
-						MAX_HISTORY = 288; // 24 hours
-					else if (result.pingInterval <= 10)
-						MAX_HISTORY = 144; // 24 hours
-					else if (result.pingInterval <= 15)
-						MAX_HISTORY = 96; // 24 hours
-					else if (result.pingInterval <= 30)
-						MAX_HISTORY = 48; // 24 hours
-					else if (result.pingInterval <= 60)
-						MAX_HISTORY = 168; // 7 days
-					else if (result.pingInterval <= 180)
-						MAX_HISTORY = 168; // 21 days
-					else if (result.pingInterval <= 360)
-						MAX_HISTORY = 168; // 42 days
-					else if (result.pingInterval <= 720)
-						MAX_HISTORY = 168; // 84 days
-					else if (result.pingInterval <= 1440) MAX_HISTORY = 365; // 1 year
-
-					updatedResults[existingUrlIdx].timestamps.push(result.timestamp);
-					updatedResults[existingUrlIdx].statuses.push(result.status);
-					updatedResults[existingUrlIdx].responseTimes =
-						updatedResults[existingUrlIdx].responseTimes || [];
-					updatedResults[existingUrlIdx].responseTimes.push(result.responseTime);
-
-					if (updatedResults[existingUrlIdx].timestamps.length > MAX_HISTORY) {
-						updatedResults[existingUrlIdx].timestamps =
-							updatedResults[existingUrlIdx].timestamps.slice(-MAX_HISTORY);
-						updatedResults[existingUrlIdx].statuses =
-							updatedResults[existingUrlIdx].statuses.slice(-MAX_HISTORY);
-						updatedResults[existingUrlIdx].responseTimes =
-							updatedResults[existingUrlIdx].responseTimes.slice(-MAX_HISTORY);
-					}
-				} else {
-					updatedResults.push({
-						urlId: result.urlId,
-						timestamps: [result.timestamp],
-						statuses: [result.status],
-						responseTimes: [result.responseTime]
-					});
-				}
+			// Try to get existing document first
+			let existingShard;
+			try {
+				existingShard = await databases.getDocument(
+					process.env.DATABASE_ID,
+					process.env.RESULTS_COLLECTION_ID,
+					shardId
+				);
+			} catch {
+				// Document doesn't exist, we'll create it
+				existingShard = null;
 			}
 
-			const resultsJson = JSON.stringify(updatedResults);
-            console.log(`Storing results for ${userId}: ${updatedResults.length} URLs`);
+			if (existingShard) {
+				// Update existing document
+				let updatedResults = [];
+				try {
+					if (typeof existingShard.results === 'string') {
+						updatedResults = JSON.parse(existingShard.results);
+					} else if (Array.isArray(existingShard.results)) {
+						updatedResults = [...existingShard.results];
+					} else {
+						console.warn('Unexpected results format:', typeof existingShard.results);
+						updatedResults = [];
+					}
+				} catch (parseError) {
+					console.error('Failed to parse existing results:', parseError);
+					updatedResults = [];
+				}
 
-			const MAX_URLS_PER_SHARD = 50;
+				// Ensure updatedResults is an array
+				if (!Array.isArray(updatedResults)) {
+					console.warn('Results is not an array, resetting to empty array');
+					updatedResults = [];
+				}
 
-			if (updatedResults.length > MAX_URLS_PER_SHARD) {
-				const shardCounter = existingShard.counter || 0;
-				const newShardId = `${userId}_${today}_${shardCounter + 1}`;
+				for (const result of results) {
+					const existingUrlIdx = updatedResults.findIndex((r) => r.urlId === result.urlId);
+					if (existingUrlIdx >= 0) {
+						// Determine MAX_HISTORY based on ping interval
 
-				const halfPoint = Math.floor(updatedResults.length / 2);
-				const firstHalf = updatedResults.slice(0, halfPoint);
-				const secondHalf = updatedResults.slice(halfPoint);
+						// use this code on more capable server
+						// if (result.pingInterval <= 5)
+						// 	MAX_HISTORY = 288; // 24 hours
+						// else if (result.pingInterval <= 10)
+						// 	MAX_HISTORY = 144; // 24 hours
+						// else if (result.pingInterval <= 15)
+						// 	MAX_HISTORY = 96; // 24 hours
+						// else if (result.pingInterval <= 30)
+						// 	MAX_HISTORY = 48; // 24 hours
+						// else if (result.pingInterval <= 60)
+						// 	MAX_HISTORY = 168; // 7 days
+						// else if (result.pingInterval <= 180)
+						// 	MAX_HISTORY = 168; // 21 days
+						// else if (result.pingInterval <= 360)
+						// 	MAX_HISTORY = 168; // 42 days
+						// else if (result.pingInterval <= 720)
+						// 	MAX_HISTORY = 168; // 84 days
+						// else if (result.pingInterval <= 1440) MAX_HISTORY = 365; // 365 days
 
-				batches.push(
-					databases.updateDocument(
-						process.env.DATABASE_ID,
-						process.env.RESULTS_COLLECTION_ID,
-						shardId,
-						{
-							results: JSON.stringify(firstHalf),
-							counter: shardCounter + 1
+						let MAX_HISTORY;
+						if (result.pingInterval <= 5)
+							MAX_HISTORY = 144; // 12 hours
+						else if (result.pingInterval <= 10)
+							MAX_HISTORY = 72; // 12 hours
+						else if (result.pingInterval <= 15)
+							MAX_HISTORY = 48; // 12 hours
+						else if (result.pingInterval <= 30)
+							MAX_HISTORY = 24; // 12 hours
+						else if (result.pingInterval <= 60)
+							MAX_HISTORY = 84; // 3.5 days
+						else if (result.pingInterval <= 180)
+							MAX_HISTORY = 84; // 10.5 days
+						else if (result.pingInterval <= 360)
+							MAX_HISTORY = 84; // 21 days
+						else if (result.pingInterval <= 720)
+							MAX_HISTORY = 84; // 42 days
+						else if (result.pingInterval <= 1440) MAX_HISTORY = 90; // 90 days
+
+						updatedResults[existingUrlIdx].timestamps.push(result.timestamp);
+						updatedResults[existingUrlIdx].statuses.push(result.status);
+						updatedResults[existingUrlIdx].responseTimes =
+							updatedResults[existingUrlIdx].responseTimes || [];
+						updatedResults[existingUrlIdx].responseTimes.push(result.responseTime);
+
+						if (updatedResults[existingUrlIdx].timestamps.length > MAX_HISTORY) {
+							updatedResults[existingUrlIdx].timestamps =
+								updatedResults[existingUrlIdx].timestamps.slice(-MAX_HISTORY);
+							updatedResults[existingUrlIdx].statuses =
+								updatedResults[existingUrlIdx].statuses.slice(-MAX_HISTORY);
+							updatedResults[existingUrlIdx].responseTimes =
+								updatedResults[existingUrlIdx].responseTimes.slice(-MAX_HISTORY);
 						}
-					)
-				);
+					} else {
+						updatedResults.push({
+							urlId: result.urlId,
+							timestamps: [result.timestamp],
+							statuses: [result.status],
+							responseTimes: [result.responseTime]
+						});
+					}
+				}
 
-				batches.push(
-					databases.createDocument(
-						process.env.DATABASE_ID,
-						process.env.RESULTS_COLLECTION_ID,
-						newShardId,
-						{
-							userId,
-							date: today,
-							shardId: newShardId,
-							results: JSON.stringify(secondHalf)
-						}
-					)
-				);
-			} else {
+				const resultsJson = JSON.stringify(updatedResults);
+				console.log(`Updating existing shard for ${userId}: ${updatedResults.length} URLs`);
+
+				// Simple update without complex sharding for now
 				batches.push(
 					databases.updateDocument(
 						process.env.DATABASE_ID,
@@ -475,33 +467,71 @@ async function storeResultsByUser(databases, resultsByUser) {
 						}
 					)
 				);
+			} else {
+				// Create new document with race condition protection
+				const newResults = results.map((result) => ({
+					urlId: result.urlId,
+					timestamps: [result.timestamp],
+					statuses: [result.status],
+					responseTimes: [result.responseTime]
+				}));
+
+				console.log(`Creating new shard for ${userId}: ${newResults.length} URLs`);
+
+				// Use upsert pattern to handle race conditions
+				batches.push(
+					databases
+						.createDocument(process.env.DATABASE_ID, process.env.RESULTS_COLLECTION_ID, shardId, {
+							userId,
+							date: today,
+							shardId,
+							results: JSON.stringify(newResults)
+						})
+						.catch(async (createError) => {
+							// If creation fails due to existing document, try to update instead
+							if (createError.message.includes('already exists')) {
+								console.log(`Shard ${shardId} was created by another process, updating instead`);
+								try {
+									const existingDoc = await databases.getDocument(
+										process.env.DATABASE_ID,
+										process.env.RESULTS_COLLECTION_ID,
+										shardId
+									);
+
+									// Merge our results with existing ones
+									const existingResults = JSON.parse(existingDoc.results || '[]');
+									const mergedResults = [...existingResults, ...newResults];
+
+									return databases.updateDocument(
+										process.env.DATABASE_ID,
+										process.env.RESULTS_COLLECTION_ID,
+										shardId,
+										{
+											results: JSON.stringify(mergedResults)
+										}
+									);
+								} catch (fallbackError) {
+									console.error('Fallback update also failed:', fallbackError);
+									throw fallbackError;
+								}
+							} else {
+								throw createError;
+							}
+						})
+				);
 			}
-		} catch {
-			// Create new shard
-			const newResults = results.map((result) => ({
-				urlId: result.urlId,
-				timestamps: [result.timestamp],
-				statuses: [result.status],
-				responseTimes: [result.responseTime]
-			}));
-
-			console.log(`Creating new shard for ${userId}: ${newResults.length} URLs`);
-
-			batches.push(
-				databases.createDocument(
-					process.env.DATABASE_ID,
-					process.env.RESULTS_COLLECTION_ID,
-					shardId,
-					{
-						userId,
-						date: today,
-						shardId,
-						results: JSON.stringify(newResults)
-					}
-				)
-			);
+		} catch (error) {
+			console.error(`Error processing results for user ${userId}:`, error);
+			// Continue processing other users instead of failing completely
+			continue;
 		}
 	}
 
-	await Promise.all(batches);
+	// Execute all batches with error handling
+	try {
+		await Promise.all(batches);
+	} catch (error) {
+		console.error('Some batch operations failed:', error);
+		// Don't throw - allow function to complete partially
+	}
 }

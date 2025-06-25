@@ -91,7 +91,7 @@ export const urlService = {
 			url: normalizedUrl,
 			userId,
 			isEnabled: false, // Start disabled by default for safety
-			lastPingTime: '',
+			lastPingTime: null,
 			lastPingStatus: '',
 			lastPingStatusCode: null,
 			lastResponseTime: 0,
@@ -170,21 +170,33 @@ export const urlService = {
 			}
 		}
 
-		// If nextPingTime is being manually set, ensure it's in the correct format
-		if (data.nextPingTime) {
-			const nextPingDate = new Date(data.nextPingTime);
-			if (!isNaN(nextPingDate.getTime())) {
-				// Ensure we always use ISO string format for DateTime attributes
-				dbData.nextPingTime = nextPingDate.toISOString();
-			} else {
-				console.error('Invalid nextPingTime provided:', data.nextPingTime);
-				// Don't update if invalid
-				delete dbData.nextPingTime;
-			}
-		}
+		// // validation for lastPingTime
+		// if (data.lastPingTime) {
+		// 	const lastPingDate = new Date(data.lastPingTime);
+		// 	if (!isNaN(lastPingDate.getTime())) {
+		// 		// Ensure we always use ISO string format for DateTime attributes
+		// 		dbData.lastPingTime = lastPingDate.toISOString();
+		// 	} else {
+		// 		console.error('Invalid lastPingTime provided:', data.lastPingTime);
+		// 		// Don't update if invalid
+		// 		delete dbData.lastPingTime;
+		// 	}
+		// }
+
+		// // validation for nextPingTime
+		// if (data.nextPingTime) {
+		// 	const nextPingDate = new Date(data.nextPingTime);
+		// 	if (!isNaN(nextPingDate.getTime())) {
+		// 		// Ensure we always use ISO string format for DateTime attributes
+		// 		dbData.nextPingTime = nextPingDate.toISOString();
+		// 	} else {
+		// 		console.error('Invalid nextPingTime provided:', data.nextPingTime);
+		// 		// Don't update if invalid
+		// 		delete dbData.nextPingTime;
+		// 	}
+		// }
 
 		// Only update specific fields to avoid overwriting server-side updates
-		// Remove any undefined values to prevent overwriting existing data
 		const cleanedData = Object.fromEntries(
 			Object.entries(dbData).filter(([key, value]) => {
 				// Always allow these fields to be updated

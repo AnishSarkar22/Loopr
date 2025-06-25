@@ -14,7 +14,7 @@ export type PingURLDatabase = {
     // Optional attributes
     name?: string;
     description?: string; 
-    lastPingTime?: string;
+    lastPingTime?: string | null;
     lastPingStatus?: string;
     lastPingStatusCode?: number | null;
     lastResponseTime?: number;

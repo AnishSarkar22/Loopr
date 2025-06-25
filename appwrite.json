@@ -63,7 +63,7 @@
                 "documents.read",
                 "documents.write"
             ],
-            "schedule": "0 2 * * *",
+            "schedule": "0 2 */2 * *",
             "timeout": 900,
             "enabled": true,
             "logging": true,
