@@ -30,7 +30,6 @@ export default async function ({ res }) {
 		if (oldResultShards.documents.length > 0) {
 			for (let i = 0; i < oldResultShards.documents.length; i += DELETION_BATCH_SIZE) {
 				const batch = oldResultShards.documents.slice(i, i + DELETION_BATCH_SIZE);
-
 				try {
 					await Promise.all(
 						batch.map((doc) =>

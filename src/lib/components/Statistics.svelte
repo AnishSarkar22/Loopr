@@ -31,7 +31,7 @@
 		}, duration);
 	}
 
-	// ADD THIS: Helper function to get hostname from URL
+	// Helper function to get hostname from URL
 	function getUrlHostname(urlString: string): string {
 		try {
 			return new URL(urlString).hostname;
@@ -88,71 +88,52 @@
 
 	// Load logs from all user URLs
 	async function loadAllUserLogs() {
-		if (!userId) return;
-
-		try {
-			console.log('Loading user URLs...');
-			const urls = await urlService.getURLs(userId);
-			userUrls = urls;
-
-			console.log(`Found ${urls.length} URLs for user`);
-
-			if (urls && urls.length > 0) {
-				// Collect all logs from all URLs
-				const allLogs: Log[] = [];
-
-				urls.forEach((url) => {
-					console.log(`Processing URL ${url.url}, logs:`, url.logs);
-
-					// Check if logs exist and are an array
-					if (url.logs && Array.isArray(url.logs) && url.logs.length > 0) {
-						// Add URL info to each log message for context
-						const urlLogs = url.logs.map((log) => ({
-							...log,
-							message: `[${getUrlHostname(url.url)}] ${log.message}`
-						}));
-						allLogs.push(...urlLogs);
-					} else if (url.logs && typeof url.logs === 'string') {
-						// Handle case where logs are still a string (fallback)
-						try {
-							const parsedLogs = JSON.parse(url.logs);
-							if (Array.isArray(parsedLogs) && parsedLogs.length > 0) {
-								const urlLogs = parsedLogs.map((log) => ({
-									...log,
-									message: `[${getUrlHostname(url.url)}] ${log.message}`
-								}));
-								allLogs.push(...urlLogs);
-							}
-						} catch (error) {
-							console.error('Failed to parse logs for URL', url.url, error);
-						}
-					}
-				});
-
-				console.log(`Collected ${allLogs.length} total logs`);
-
-				// Sort logs by timestamp (newest first)
-				allLogs.sort((a, b) => {
-					const timeA = new Date(a.timestamp).getTime();
-					const timeB = new Date(b.timestamp).getTime();
-					return timeB - timeA;
-				});
-
-				logs = allLogs.slice(0, 100); // Keep only the last 100 logs
-
-				if (allLogs.length > 0) {
-					addLog(`Loaded ${allLogs.length} activity logs from ${urls.length} URLs`, 'success');
-				} else {
-					addLog(`No activity logs found yet. Enable monitoring on your URLs to see logs.`, 'info');
-				}
-			} else {
-				addLog('No URLs found. Add some URLs to see activity logs.', 'info');
-			}
-		} catch (error) {
-			console.error('Error loading user logs', error);
-			addLog('Failed to load activity logs', 'error');
-		}
-	}
+    if (!userId) return;
+    
+    try {
+        console.log('Loading user URLs...');
+        const urls = await urlService.getURLs(userId);
+        userUrls = urls;
+        
+        console.log(`Found ${urls.length} URLs for user`);
+        
+        // More efficient log aggregation with better error handling
+        const allLogs = urls
+            .filter(url => url.logs)
+            .flatMap(url => {
+                try {
+                    const logs = Array.isArray(url.logs) 
+                        ? url.logs 
+                        : JSON.parse(url.logs || '[]');
+                    
+                    return Array.isArray(logs) 
+                        ? logs.map(log => ({
+                            ...log,
+                            message: `[${getUrlHostname(url.url)}] ${log.message}`
+                        }))
+                        : [];
+                } catch (error) {
+                    console.error(`Failed to parse logs for URL ${url.url}:`, error);
+                    return [];
+                }
+            })
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .slice(0, 100);
+            
+        logs = allLogs;
+        
+        // Add appropriate user feedback
+        if (allLogs.length > 0) {
+            addLog(`Loaded ${allLogs.length} activity logs from ${urls.length} URLs`, 'success');
+        } else {
+            addLog(`No activity logs found yet. Enable monitoring on your URLs to see logs.`, 'info');
+        }
+        
+    } catch (error) {
+        console.error('Failed to load logs:', error);
+        addLog('Failed to load activity logs', 'error');
+    }
+}
 
 	// Function to refresh logs from all URLs
 	async function refreshLogs() {

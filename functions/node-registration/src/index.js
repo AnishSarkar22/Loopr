@@ -2,9 +2,184 @@
 
 import { Client, Databases, Query } from 'node-appwrite';
 
-const REDISTRIBUTION_BATCH_SIZE = parseInt(process.env.REDISTRIBUTION_BATCH_SIZE) || 10;
 const MAX_REDISTRIBUTION_ATTEMPTS = parseInt(process.env.MAX_REDISTRIBUTION_ATTEMPTS) || 3;
 const LOAD_BALANCE_BATCH_SIZE = parseInt(process.env.LOAD_BALANCE_BATCH_SIZE) || 10;
+
+class LoadBalancer {
+    constructor(databases) {
+        this.databases = databases;
+        this.batchSize = LOAD_BALANCE_BATCH_SIZE;
+        this.maxRetries = MAX_REDISTRIBUTION_ATTEMPTS;
+    }
+
+    async getActiveNodesWithCounts() {
+        const activeNodes = await this.databases.listDocuments(
+            process.env.DATABASE_ID,
+            process.env.WORKER_NODES_COLLECTION_ID,
+            [Query.equal('status', 'online')],
+            100
+        );
+
+        const nodeCounts = [];
+        for (const node of activeNodes.documents) {
+            try {
+                const urls = await this.databases.listDocuments(
+                    process.env.DATABASE_ID,
+                    process.env.URLS_COLLECTION_ID,
+                    [Query.equal('nodeId', node.$id)]
+                );
+
+                nodeCounts.push({
+                    nodeId: node.$id,
+                    count: urls.total,
+                    nodeType: node.nodeType || 'dynamic'
+                });
+            } catch (error) {
+                console.error(`Failed to get URL count for node ${node.$id}:`, error.message);
+                nodeCounts.push({
+                    nodeId: node.$id,
+                    count: 0,
+                    nodeType: node.nodeType || 'dynamic'
+                });
+            }
+        }
+
+        return nodeCounts;
+    }
+
+    async reassignUrls(sourceNodeId, targetNodeId, count) {
+        const urlsToReassign = await this.databases.listDocuments(
+            process.env.DATABASE_ID,
+            process.env.URLS_COLLECTION_ID,
+            [Query.equal('nodeId', sourceNodeId)],
+            count
+        );
+
+        if (urlsToReassign.documents.length === 0) return 0;
+
+        let successCount = 0;
+        const batches = [];
+        for (let i = 0; i < urlsToReassign.documents.length; i += this.batchSize) {
+            batches.push(urlsToReassign.documents.slice(i, i + this.batchSize));
+        }
+
+        for (const batch of batches) {
+            try {
+                await retryOperation(async () => {
+                    await Promise.all(
+                        batch.map(async (url) => {
+                            await this.databases.updateDocument(
+                                process.env.DATABASE_ID,
+                                process.env.URLS_COLLECTION_ID,
+                                url.$id,
+                                { nodeId: targetNodeId }
+                            );
+                            successCount++;
+                        })
+                    );
+                }, this.maxRetries);
+            } catch (error) {
+                console.error(`Batch reassignment error:`, error.message);
+            }
+        }
+
+        return successCount;
+    }
+}
+
+class FixedNodeBalancer extends LoadBalancer {
+    async balance(currentNodeId, nodeCounts) {
+        const currentNode = nodeCounts.find(node => node.nodeId === currentNodeId);
+        if (!currentNode) return;
+
+        const avgLoad = nodeCounts.reduce((sum, node) => sum + node.count, 0) / nodeCounts.length;
+
+        if (currentNode.count < avgLoad * 0.5) {
+            const maxNode = nodeCounts.reduce((max, node) => 
+                node.count > max.count ? node : max
+            );
+
+            if (maxNode.nodeId !== currentNodeId && maxNode.count > currentNode.count + 20) {
+                const toReassign = Math.min(25, Math.floor((maxNode.count - currentNode.count) / 3));
+                
+                if (toReassign > 0) {
+                    console.log(`Fixed node balancing: moving ${toReassign} URLs from ${maxNode.nodeId} to ${currentNodeId}`);
+                    await this.reassignUrls(maxNode.nodeId, currentNodeId, toReassign);
+                }
+            }
+        }
+    }
+}
+
+class DynamicNodeBalancer extends LoadBalancer {
+    async balance(currentNodeId, nodeCounts) {
+        const currentNode = nodeCounts.find(node => node.nodeId === currentNodeId);
+        if (!currentNode) return;
+
+        const maxNode = nodeCounts.reduce((max, node) => 
+            node.count > max.count ? node : max, { count: -1 }
+        );
+
+        if (maxNode.count > currentNode.count + 10) {
+            const diff = Math.floor((maxNode.count - currentNode.count) / 2);
+            const toReassign = Math.min(diff, 50);
+
+            if (toReassign > 0) {
+                console.log(`Dynamic balancing: moving ${toReassign} URLs from ${maxNode.nodeId} to ${currentNodeId}`);
+                await this.reassignUrls(maxNode.nodeId, currentNodeId, toReassign);
+            }
+        }
+    }
+}
+
+// Consolidated load balancing function
+async function performLoadBalancing(databases, currentNodeId, strategy = 'dynamic') {
+    try {
+        const balancer = strategy === 'fixed' ? 
+            new FixedNodeBalancer(databases) : 
+            new DynamicNodeBalancer(databases);
+        
+        const activeNodes = await balancer.getActiveNodesWithCounts();
+        
+        if (activeNodes.length <= 1) {
+            console.log('Skipping load balancing: only one active node');
+            return;
+        }
+        
+        await balancer.balance(currentNodeId, activeNodes);
+    } catch (error) {
+        console.error('Load balancing error:', error.message);
+    }
+}
+
+// Simplified URL assignment utility
+async function assignUrlsToNodes(databases, urls, activeNodes) {
+    if (!urls.length || !activeNodes.length) return;
+
+    const assignments = urls.map((url, index) => {
+        const nodeIndex = index % activeNodes.length;
+        const targetNode = activeNodes[nodeIndex];
+        
+        return databases.updateDocument(
+            process.env.DATABASE_ID,
+            process.env.URLS_COLLECTION_ID,
+            url.$id,
+            { nodeId: targetNode.$id }
+        );
+    });
+
+    // Process in batches
+    const batchSize = LOAD_BALANCE_BATCH_SIZE;
+    for (let i = 0; i < assignments.length; i += batchSize) {
+        const batch = assignments.slice(i, i + batchSize);
+        try {
+            await Promise.all(batch);
+        } catch (error) {
+            console.error(`Assignment batch error:`, error);
+        }
+    }
+}
+
 
 async function retryOperation(operation, maxRetries = 3, delay = 1000) {
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -73,7 +248,7 @@ export default async function ({ res }) {
         await assignUnassignedUrls(databases);
 
 		// load balancing
-		await balanceNodeLoad(databases, nodeId, !!process.env.NODE_ID);
+		await performLoadBalancing(databases, nodeId, process.env.NODE_ID ? 'fixed' : 'dynamic');
 
 		// Getting current URL count for load balancing decisions
 		const urlCount = await databases.listDocuments(
@@ -137,226 +312,13 @@ async function assignUnassignedUrls(databases) {
             return;
         }
 
-        console.log(`Found ${activeNodes.documents.length} active nodes for assignment`);
-
-        // Assign URLs to nodes in round-robin fashion
-        const assignments = unassignedUrls.documents.map((url, index) => {
-            const nodeIndex = index % activeNodes.documents.length;
-            const assignedNode = activeNodes.documents[nodeIndex];
-            
-            console.log(`Assigning URL ${url.$id} to node ${assignedNode.$id}`);
-            
-            return databases.updateDocument(
-                process.env.DATABASE_ID,
-                process.env.URLS_COLLECTION_ID,
-                url.$id,
-                { nodeId: assignedNode.$id }
-            );
-        });
-
-        await Promise.all(assignments);
-        console.log(`Successfully assigned ${assignments.length} URLs to nodes`);
+        console.log(`Assigning ${unassignedUrls.documents.length} URLs to ${activeNodes.documents.length} nodes`);
+        await assignUrlsToNodes(databases, unassignedUrls.documents, activeNodes.documents);
 
     } catch (error) {
         console.error('Error assigning unassigned URLs:', error);
         // Don't throw - let the main registration continue
     }
-}
-
-// Enhanced helper function with different strategies for fixed vs dynamic nodes
-async function balanceNodeLoad(databases, currentNodeId, isFixedNode = false) {
-	try {
-		// Get all active nodes with error handling
-		const activeNodes = await databases.listDocuments(
-			process.env.DATABASE_ID,
-			process.env.WORKER_NODES_COLLECTION_ID,
-			[Query.equal('status', 'online')],
-			100
-		);
-
-		if (activeNodes.total <= 1) {
-			console.log('Skipping load balancing: only one active node');
-			return;
-		}
-
-		// Calculate URL count for each node with individual error handling
-		const nodeCounts = [];
-		for (const node of activeNodes.documents) {
-			try {
-				const urls = await databases.listDocuments(
-					process.env.DATABASE_ID,
-					process.env.URLS_COLLECTION_ID,
-					[Query.equal('nodeId', node.$id)]
-				);
-
-				nodeCounts.push({
-					nodeId: node.$id,
-					count: urls.total,
-					nodeType: node.nodeType || 'dynamic'
-				});
-			} catch (error) {
-				console.error(`Failed to get URL count for node ${node.$id}:`, error.message);
-				// Add node with count 0 to avoid excluding it from balancing
-				nodeCounts.push({
-					nodeId: node.$id,
-					count: 0,
-					nodeType: node.nodeType || 'dynamic'
-				});
-			}
-		}
-
-		const currentNode = nodeCounts.find((node) => node.nodeId === currentNodeId);
-		if (!currentNode) {
-			console.warn(`Current node ${currentNodeId} not found in active nodes`);
-			return;
-		}
-
-		// Different balancing strategies with improved error handling
-		if (isFixedNode) {
-			const avgLoad = nodeCounts.reduce((sum, node) => sum + node.count, 0) / nodeCounts.length;
-
-			if (currentNode.count < avgLoad * 0.5) {
-				console.log(`Fixed node ${currentNodeId} is underloaded, attempting redistribution`);
-				await redistributeToUnderloadedNode(databases, nodeCounts, currentNodeId);
-			}
-		} else {
-			const maxNode = nodeCounts.reduce((max, node) => (node.count > max.count ? node : max), {
-				count: -1
-			});
-
-			if (maxNode.count > currentNode.count + 10) {
-				console.log(`Dynamic balancing: moving URLs from ${maxNode.nodeId} to ${currentNodeId}`);
-
-				const diff = Math.floor((maxNode.count - currentNode.count) / 2);
-				const toReassign = Math.min(diff, 50);
-
-				try {
-					const urlsToReassign = await databases.listDocuments(
-						process.env.DATABASE_ID,
-						process.env.URLS_COLLECTION_ID,
-						[Query.equal('nodeId', maxNode.nodeId)],
-						toReassign
-					);
-
-					// Process in smaller batches for better reliability
-					const batchSize = LOAD_BALANCE_BATCH_SIZE;
-					for (let i = 0; i < urlsToReassign.documents.length; i += batchSize) {
-						const batch = urlsToReassign.documents.slice(i, i + batchSize);
-
-						try {
-							// Retry logic for critical operations
-							await retryOperation(async () => {
-								await Promise.all(
-									batch.map((url) =>
-										databases.updateDocument(
-											process.env.DATABASE_ID,
-											process.env.URLS_COLLECTION_ID,
-											url.$id,
-											{ nodeId: currentNodeId }
-										)
-									)
-								);
-							}, MAX_REDISTRIBUTION_ATTEMPTS);
-						} catch (batchError) {
-							console.error(`Failed to process batch starting at index ${i}:`, batchError.message);
-						}
-					}
-				} catch (error) {
-					console.error('Dynamic balancing error:', error.message);
-				}
-			}
-		}
-	} catch (error) {
-		console.error('Load balancing error:', error.message);
-		// Don't throw - let the main registration continue
-	}
-}
-
-// Helper for fixed node redistribution
-async function redistributeToUnderloadedNode(databases, nodeCounts, targetNodeId) {
-	try {
-		// Input validation
-		if (!nodeCounts || nodeCounts.length === 0) {
-			console.warn('No node counts provided for redistribution');
-			return;
-		}
-
-		const maxNode = nodeCounts.reduce((max, node) => (node.count > max.count ? node : max));
-		const currentNode = nodeCounts.find((node) => node.nodeId === targetNodeId);
-
-		// Additional validation
-		if (!currentNode) {
-			console.warn(`Target node ${targetNodeId} not found in node counts`);
-			return;
-		}
-
-		if (!maxNode || maxNode.nodeId === targetNodeId) {
-			// No redistribution needed if current node is the max or only node
-			return;
-		}
-
-		if (maxNode.count > currentNode.count + 20) {
-			const toReassign = Math.min(25, Math.floor((maxNode.count - currentNode.count) / 3));
-
-			if (toReassign <= 0) {
-				return; // Nothing to reassign
-			}
-
-			const urlsToReassign = await databases.listDocuments(
-				process.env.DATABASE_ID,
-				process.env.URLS_COLLECTION_ID,
-				[Query.equal('nodeId', maxNode.nodeId)],
-				toReassign
-			);
-
-			if (urlsToReassign.documents.length === 0) {
-				console.warn(`No URLs found to redistribute from node ${maxNode.nodeId}`);
-				return;
-			}
-
-			// Process in batches to avoid overwhelming the database
-			const batchSize = REDISTRIBUTION_BATCH_SIZE;
-			const batches = [];
-			for (let i = 0; i < urlsToReassign.documents.length; i += batchSize) {
-				batches.push(urlsToReassign.documents.slice(i, i + batchSize));
-			}
-
-			let successCount = 0;
-			let errorCount = 0;
-
-			for (const batch of batches) {
-				try {
-					// Retry logic for redistribution
-					await retryOperation(async () => {
-						await Promise.all(
-							batch.map(async (url) => {
-								try {
-									await databases.updateDocument(
-										process.env.DATABASE_ID,
-										process.env.URLS_COLLECTION_ID,
-										url.$id,
-										{ nodeId: targetNodeId }
-									);
-									successCount++;
-								} catch (updateError) {
-									console.error(`Failed to update URL ${url.$id}:`, updateError.message);
-									errorCount++;
-								}
-							})
-						);
-					}, MAX_REDISTRIBUTION_ATTEMPTS);
-				} catch (batchError) {
-					console.error('Batch redistribution error:', batchError.message);
-					errorCount += batch.length;
-				}
-			}
-
-			console.log(`Redistribution completed: ${successCount} successful, ${errorCount} failed`);
-		}
-	} catch (error) {
-		console.error('Redistribution error:', error.message);
-		// Don't throw - let the main function continue
-	}
 }
 
 // function hashString(str) {

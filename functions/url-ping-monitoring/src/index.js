@@ -341,6 +341,64 @@ async function updateUrlsInBatches(databases, urlUpdates, batchSize = 50) {
 	}
 }
 
+// Add this new helper function
+async function upsertShardDocument(databases, shardId, data) {
+    try {
+        return await databases.createDocument(
+            process.env.DATABASE_ID,
+            process.env.RESULTS_COLLECTION_ID,
+            shardId,
+            data
+        );
+    } catch (error) {
+        if (error.message.includes('already exists')) {
+            // Document exists, update instead
+            const existing = await databases.getDocument(
+                process.env.DATABASE_ID,
+                process.env.RESULTS_COLLECTION_ID,
+                shardId
+            );
+            
+            const mergedResults = mergeResults(
+                JSON.parse(existing.results || '[]'),
+                JSON.parse(data.results)
+            );
+            
+            return await databases.updateDocument(
+                process.env.DATABASE_ID,
+                process.env.RESULTS_COLLECTION_ID,
+                shardId,
+                { results: JSON.stringify(mergedResults) }
+            );
+        }
+        throw error;
+    }
+}
+
+// Add this helper function for merging results
+function mergeResults(existingResults, newResults) {
+    const resultMap = new Map();
+    
+    // Add existing results to map
+    existingResults.forEach(result => {
+        resultMap.set(result.urlId, result);
+    });
+    
+    // Merge new results
+    newResults.forEach(newResult => {
+        if (resultMap.has(newResult.urlId)) {
+            const existing = resultMap.get(newResult.urlId);
+            existing.timestamps = [...existing.timestamps, ...newResult.timestamps];
+            existing.statuses = [...existing.statuses, ...newResult.statuses];
+            existing.responseTimes = [...existing.responseTimes, ...newResult.responseTimes];
+        } else {
+            resultMap.set(newResult.urlId, { ...newResult });
+        }
+    });
+    
+    return Array.from(resultMap.values());
+}
+
 // Enhanced storeResultsByUser function with response times
 async function storeResultsByUser(databases, resultsByUser) {
 	const batches = [];
@@ -391,7 +449,8 @@ async function storeResultsByUser(databases, resultsByUser) {
 					if (existingUrlIdx >= 0) {
 						// Determine MAX_HISTORY based on ping interval
 
-						// use this code on more capable server
+						// use the below commented code on more capable server
+
 						// if (result.pingInterval <= 5)
 						// 	MAX_HISTORY = 288; // 24 hours
 						// else if (result.pingInterval <= 10)
@@ -480,45 +539,13 @@ async function storeResultsByUser(databases, resultsByUser) {
 
 				// Use upsert pattern to handle race conditions
 				batches.push(
-					databases
-						.createDocument(process.env.DATABASE_ID, process.env.RESULTS_COLLECTION_ID, shardId, {
-							userId,
-							date: today,
-							shardId,
-							results: JSON.stringify(newResults)
-						})
-						.catch(async (createError) => {
-							// If creation fails due to existing document, try to update instead
-							if (createError.message.includes('already exists')) {
-								console.log(`Shard ${shardId} was created by another process, updating instead`);
-								try {
-									const existingDoc = await databases.getDocument(
-										process.env.DATABASE_ID,
-										process.env.RESULTS_COLLECTION_ID,
-										shardId
-									);
-
-									// Merge our results with existing ones
-									const existingResults = JSON.parse(existingDoc.results || '[]');
-									const mergedResults = [...existingResults, ...newResults];
-
-									return databases.updateDocument(
-										process.env.DATABASE_ID,
-										process.env.RESULTS_COLLECTION_ID,
-										shardId,
-										{
-											results: JSON.stringify(mergedResults)
-										}
-									);
-								} catch (fallbackError) {
-									console.error('Fallback update also failed:', fallbackError);
-									throw fallbackError;
-								}
-							} else {
-								throw createError;
-							}
-						})
-				);
+                    upsertShardDocument(databases, shardId, {
+                        userId,
+                        date: today,
+                        shardId,
+                        results: JSON.stringify(newResults)
+                    })
+                );
 			}
 		} catch (error) {
 			console.error(`Error processing results for user ${userId}:`, error);
