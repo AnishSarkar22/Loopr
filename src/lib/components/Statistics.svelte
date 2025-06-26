@@ -210,6 +210,8 @@
 </div>
 
 	<!-- Activity Logs -->
+	<div class="border-t border-base-300 w-1/2 mx-auto my-4"></div>
+
 	<div class="card bg-base-100 shadow-lg">
 		<div class="card-body">
 			<div class="mb-4 flex items-center justify-between">
