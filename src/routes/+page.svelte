@@ -1,5 +1,5 @@
 <script lang="ts">
-    import URLManager from '$lib/components/URLManager.svelte';
+    import URLManager from '$lib/components/url/URLManager.svelte';
 </script>
 
 <svelte:head>

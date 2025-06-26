@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { account } from '../appwrite';
+    import { account } from '../../appwrite';
     import { goto } from '$app/navigation';
     import { PUBLIC_APP_URL } from '$env/static/public';
 

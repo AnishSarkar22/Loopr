@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ForgotPassword from '$lib/components/ForgotPassword.svelte';
+    import ForgotPassword from '$lib/components/auth/ForgotPassword.svelte';
 </script>
 
 <svelte:head>

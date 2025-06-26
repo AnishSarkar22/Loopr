@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { account, AppwriteException } from '../appwrite';
+    import { account, AppwriteException } from '../../appwrite';
     import { goto } from '$app/navigation';
     
     let { userId, secret }: { userId: string; secret: string } = $props();

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import EmailVerification from '$lib/components/EmailVerfication.svelte';
+	import EmailVerification from '$lib/components/auth/EmailVerfication.svelte';
 	import { page } from '$app/stores';
 
 	const email = $page.url.searchParams.get('email') || '';

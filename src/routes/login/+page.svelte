@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Login from '$lib/components/Login.svelte';
+    import Login from '$lib/components/auth/Login.svelte';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
 

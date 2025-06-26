@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { account, AppwriteException } from '../appwrite';
+    import { account, AppwriteException } from '../../appwrite';
     import { PUBLIC_APP_URL } from '$env/static/public';
 
     let email = $state('');

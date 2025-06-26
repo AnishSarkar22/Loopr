@@ -1,5 +1,5 @@
 <script lang="ts">
-    import EditURL from '$lib/components/EditURL.svelte';
+    import EditURL from '$lib/components/url/EditURL.svelte';
 </script>
 
 <svelte:head>
