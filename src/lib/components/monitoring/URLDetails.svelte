@@ -177,13 +177,17 @@
 				<div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
 					<div>
 						<div class="mb-2 flex items-center gap-3">
-							<div
-								class="h-4 w-4 rounded-full"
-								class:bg-success={url.isEnabled && url.lastPingStatus === 'success'}
-								class:bg-error={url.isEnabled && url.lastPingStatus === 'error'}
-								class:bg-base-content={!url.isEnabled}
-								class:opacity-30={!url.isEnabled}
-							></div>
+							<div class="mr-1 inline-grid *:[grid-area:1/1]">
+								{#if url.isEnabled && url.lastPingStatus === 'success'}
+									<div class="status status-success animate-ping"></div>
+									<div class="status status-success"></div>
+								{:else if url.isEnabled && url.lastPingStatus === 'error'}
+									<div class="status status-error animate-ping"></div>
+									<div class="status status-error"></div>
+								{:else}
+									<div class="status status-neutral opacity-30"></div>
+								{/if}
+							</div>
 							<h1 class="text-2xl font-bold">
 								{url.name || getUrlHostname(url.url)}
 							</h1>
@@ -201,7 +205,7 @@
 						{/if}
 					</div>
 
-					<div class="flex gap-2">
+					<div class="flex justify-center gap-2 lg:justify-end">
 						<button class="btn btn-sm btn-outline" onclick={refreshStatus} disabled={refreshing}>
 							{#if refreshing}
 								<span class="loading loading-spinner loading-xs"></span>
@@ -256,42 +260,107 @@
 		</div>
 
 		<!-- Stats Cards -->
-		<div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-			<div class="stat bg-base-100 rounded-lg shadow-lg">
-				<div class="stat-title">Success Count</div>
-				<div class="stat-value text-success">{url.successCount}</div>
-			</div>
-
-			<div class="stat bg-base-100 rounded-lg shadow-lg">
-				<div class="stat-title">Last Ping</div>
-				<div class="stat-value text-sm">
-					{formatTimestamp(url.lastPingTime || '').split(' ')[0]}
-				</div>
-				<div class="stat-desc">
-					{formatTimestamp(url.lastPingTime || '').split(' ')[1] || ''}
-				</div>
-			</div>
-
-			<div class="stat bg-base-100 rounded-lg shadow-lg">
-				<div class="stat-title">Last Status</div>
+		{#if url}
+			<!-- Collapsible Statistics Overview (Mobile Only) -->
+			<div class="mb-4 lg:hidden">
 				<div
-					class="stat-value"
-					class:text-success={url.lastPingStatus === 'success'}
-					class:text-error={url.lastPingStatus === 'error'}
+					class="collapse-arrow bg-base-100 border-base-300 collapse rounded-xl border shadow-lg"
 				>
-					{url.lastPingStatusCode || 'N/A'}
-				</div>
-				<div class="stat-desc">
-					{url.lastPingStatus === 'success' ? 'OK' : url.lastPingStatus === 'error' ? 'Error' : ''}
+					<input type="checkbox" class="peer" />
+					<div
+						class="collapse-title border-base-content/5 flex items-center justify-between border-b text-sm font-medium"
+					>
+						<span>Statistics Overview</span>
+					</div>
+					<div class="collapse-content bg-base-50/50">
+						<div class="grid grid-cols-2 gap-3 pt-3 pb-1">
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Success Count</div>
+								<div class="text-success text-lg font-bold">{url.successCount}</div>
+								<div class="text-base-content/50 text-xs">Successful pings</div>
+							</div>
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Last Ping</div>
+								<div class="text-primary text-lg font-bold">
+									{formatTimestamp(url.lastPingTime || '').split(' ')[0]}
+								</div>
+								<div class="text-base-content/50 text-xs">
+									{formatTimestamp(url.lastPingTime || '').split(' ')[1] || ''}
+								</div>
+							</div>
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Last Status</div>
+								<div
+									class={url.lastPingStatus === 'success'
+										? 'text-success'
+										: url.lastPingStatus === 'error'
+											? 'text-error'
+											: 'text-base-content'}
+								>
+									{url.lastPingStatusCode || 'N/A'}
+								</div>
+								<div class="text-base-content/50 text-xs">
+									{url.lastPingStatus === 'success'
+										? 'OK'
+										: url.lastPingStatus === 'error'
+											? 'Error'
+											: ''}
+								</div>
+							</div>
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Ping Interval</div>
+								<div class="text-primary text-lg font-bold">{url.pingInterval || 15}</div>
+								<div class="text-base-content/50 text-xs">minutes</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 
-			<div class="stat bg-base-100 rounded-lg shadow-lg">
-				<div class="stat-title">Ping Interval</div>
-				<div class="stat-value text-primary">{url.pingInterval || 15}</div>
-				<div class="stat-desc">minutes</div>
+			<!-- Non-collapsible Statistics Overview (Desktop Only) -->
+			<div class=" mb-6 hidden grid-cols-4 gap-4 lg:grid">
+				<div class="stat bg-base-100 shadow-lg">
+					<div class="stat-title">Success Count</div>
+					<div class="stat-value text-success">{url.successCount}</div>
+				</div>
+
+				<div class="stat bg-base-100 shadow-lg">
+					<div class="stat-title">Last Ping</div>
+					<div class="stat-value text-sm">
+						{formatTimestamp(url.lastPingTime || '').split(' ')[0]}
+					</div>
+					<div class="stat-desc">
+						{formatTimestamp(url.lastPingTime || '').split(' ')[1] || ''}
+					</div>
+				</div>
+
+				<div class="stat bg-base-100 shadow-lg">
+					<div class="stat-title">Last Status</div>
+					<div
+						class="stat-value"
+						class:text-success={url.lastPingStatus === 'success'}
+						class:text-error={url.lastPingStatus === 'error'}
+					>
+						{url.lastPingStatusCode || 'N/A'}
+					</div>
+					<div class="stat-desc">
+						{url.lastPingStatus === 'success'
+							? 'OK'
+							: url.lastPingStatus === 'error'
+								? 'Error'
+								: ''}
+					</div>
+				</div>
+
+				<div class="stat bg-base-100 shadow-lg">
+					<div class="stat-title">Ping Interval</div>
+					<div class="stat-value text-primary">{url.pingInterval || 15}</div>
+					<div class="stat-desc">minutes</div>
+				</div>
 			</div>
-		</div>
+		{/if}
+
+		<!-- ...existing code... -->
 
 		<!-- Auto Refresh Toggle -->
 		<div class="card bg-base-100 mb-6 shadow-lg">
