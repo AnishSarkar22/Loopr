@@ -181,66 +181,63 @@
 				<table class="table-xl table">
 					<thead>
 						<tr>
-							<th>URL</th>
-							<th>Status</th>
-							<th>Interval</th>
-							<th>Last Ping</th>
-							<th>Next Ping</th>
-							<th></th>
+							<th class="text-center">URL</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Interval</th>
+                            <th class="text-center">Last Ping</th>
+                            <th class="text-center">Next Ping</th>
+                            <th class="text-center"></th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each paginatedUrls as url, index (url.id)}
-							<tr class="hover:bg-base-300">
+							<tr class="hover:bg-base-200">
 								<td>
-									<div class="flex items-center gap-3">
-										<div class="avatar placeholder">
-											<div class="bg-neutral text-neutral-content w-8 rounded-full">
-												<span class="text-xs">🔗</span>
-											</div>
-										</div>
-										<div>
-											<div class="max-w-xs truncate text-base font-medium" title={url.url}>
-												<span> {url.name || 'Unnamed'} </span>
-											</div>
-											<div class="text-base-content/60 text-xs">
-												<a
-													href={url.url}
-													target="_blank"
-													rel="noopener noreferrer"
-													class="link link-hover"
-												>
-													{url.url}
-												</a>
-											</div>
-										</div>
-									</div>
-								</td>
-								<td>
-									<div class="badge {getStatusBadge(url)} badge-sm">
-										{getStatusText(url)}
-									</div>
-								</td>
-								<td>
-									<span class="text-sm">{url.pingInterval || 15} mins</span>
-								</td>
-								<td>
-									<div class="flex flex-col">
-										<span class="text-base-content/60 text-xs">
-											{url.lastPingTime ? formatLastPing(url.lastPingTime) : 'Never'}
-										</span>
-										{#if url.lastPingStatusCode}
-											<span class="text-xs {getStatusColor(url.lastPingStatus || '')}">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-2 h-8 rounded-full bg-base-300 "></div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="font-semibold text-base truncate" title={url.name || url.url}>
+                                                {url.name || 'Unnamed URL'}
+                                            </div>
+                                            <div class="text-sm text-base-content/60 truncate">
+                                                <a
+                                                    href={url.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="link link-hover"
+                                                    title={url.url}
+                                                >
+                                                    {url.url.replace(/^https?:\/\//, '')}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="badge {getStatusBadge(url)} badge-sm">
+                                        {getStatusText(url)}
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-sm">{url.pingInterval || 15} mins</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex flex-col items-center">
+                                        <span class="text-base-content/60 text-xs">
+                                            {url.lastPingTime ? formatLastPing(url.lastPingTime) : 'Never'}
+                                        </span>
+                                        <!-- {#if url.lastPingStatusCode}
+											<span class="text-xs text-center {getStatusColor(url.lastPingStatus || '')}">
 												{url.lastPingStatusCode}
 											</span>
-										{/if}
-									</div>
-								</td>
-								<td>
-									<span class="text-base-content/60 text-xs">
-										{url.nextPingTime ? formatNextPing(url.nextPingTime) : 'N/A'}
-									</span>
-								</td>
+										{/if} -->
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-base-content/60 text-xs">
+                                        {url.nextPingTime ? formatNextPing(url.nextPingTime) : 'N/A'}
+                                    </span>
+                                </td>
 								<td class="relative">
 									<div class="dropdown dropdown-end">
 										<button tabindex="0" class="btn btn-ghost btn-sm" aria-label="URL actions menu">
@@ -305,23 +302,23 @@
 												</button>
 											</li>
 											<li>
-												<button onclick={() => url.id && toggleDetails(url.id)}>
-													<svg
-														class="h-4 w-4"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															stroke-linecap="round"
-															stroke-linejoin="round"
-															stroke-width="2"
-															d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-														></path>
-													</svg>
-													{showDetails[url.id || ''] ? 'Hide Details' : 'Show Details'}
-												</button>
-											</li>
+                                                <a href="/urls/{url.id}">
+                                                    <svg
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        ></path>
+                                                    </svg>
+                                                    View Details
+                                                </a>
+                                            </li>
 											<li>
 												<a href="/urls/{url.id}/edit">
 													<svg
@@ -346,66 +343,54 @@
 							</tr>
 							<!-- Detailed View Row -->
 							{#if showDetails[url.id || '']}
-								<tr transition:fade>
-									<td colspan="7" class="bg-base-200/50">
-										<div class="space-y-3 p-4">
-											<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-												<div>
-													<div class="text-base-content/70 text-xs font-semibold">
-														Success Count
-													</div>
-													<div class="text-primary text-lg font-bold">{url.successCount || 0}</div>
-												</div>
-												<div>
-													<div class="text-base-content/70 text-xs font-semibold">Created</div>
-													<div class="text-sm">{formatTimestamp(url.$createdAt || '')}</div>
-												</div>
-												<div>
-													<div class="text-base-content/70 text-xs font-semibold">Updated</div>
-													<div class="text-sm">{formatTimestamp(url.$updatedAt || '')}</div>
-												</div>
-												<div>
-													<div class="text-base-content/70 text-xs font-semibold">Status</div>
-													<div
-														class="badge {url.isEnabled
-															? 'badge-success'
-															: 'badge-warning'} badge-sm"
-													>
-														{url.isEnabled ? 'Active' : 'Inactive'}
-													</div>
-												</div>
-											</div>
+                                <tr transition:fade>
+                                    <td colspan="7" class="bg-base-200/50">
+                                        <div class="space-y-3 p-4">
+                                            <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                                                <div>
+                                                    <div class="text-base-content/70 text-xs font-semibold">
+                                                        Success Count
+                                                    </div>
+                                                    <div class="text-primary text-lg font-bold">{url.successCount || 0}</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-base-content/70 text-xs font-semibold">Created</div>
+                                                    <div class="text-sm">{formatTimestamp(url.$createdAt || '')}</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-base-content/70 text-xs font-semibold">Updated</div>
+                                                    <div class="text-sm">{formatTimestamp(url.$updatedAt || '')}</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-base-content/70 text-xs font-semibold">Status</div>
+                                                    <div
+                                                        class="badge {url.isEnabled
+                                                            ? 'badge-success'
+                                                            : 'badge-warning'} badge-sm"
+                                                    >
+                                                        {url.isEnabled ? 'Active' : 'Inactive'}
+                                                    </div>
+                                                </div>
+                                            </div>
 
-											{#if url.description}
-												<div>
-													<div class="text-base-content/70 mb-1 text-xs font-semibold">
-														Description
-													</div>
-													<div class="text-sm">{url.description}</div>
-												</div>
-											{/if}
+                                            {#if url.description}
+                                                <div>
+                                                    <div class="text-base-content/70 mb-1 text-xs font-semibold">
+                                                        Description
+                                                    </div>
+                                                    <div class="text-sm">{url.description}</div>
+                                                </div>
+                                            {/if}
 
-											{#if url.logs && url.logs.length > 0}
-												<div>
-													<div class="text-base-content/70 mb-2 text-xs font-semibold">
-														Recent Activity
-													</div>
-													<div class="max-h-32 space-y-1 overflow-y-auto">
-														{#each url.logs.slice(0, 5) as log}
-															<div class="bg-base-100 rounded border p-2 text-xs">
-																<span class="text-base-content/60 font-mono"
-																	>[{formatLogTimestamp(log.timestamp)}]</span
-																>
-																<span class="ml-2">{log.message}</span>
-															</div>
-														{/each}
-													</div>
-												</div>
-											{/if}
-										</div>
-									</td>
-								</tr>
-							{/if}
+                                            <div class="mt-4">
+                                                <a href="/urls/{url.id}" class="btn btn-primary btn-sm">
+                                                    View Full Details & Activity Logs
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {/if}
 						{/each}
 					</tbody>
 				</table>

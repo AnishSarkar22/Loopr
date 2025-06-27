@@ -1,5 +1,5 @@
 <script lang="ts">
-    import URLManager from '$lib/components/url/URLManager.svelte';
+    import Dashboard from '$lib/components/Dashboard.svelte';
 </script>
 
 <svelte:head>
@@ -12,5 +12,5 @@
         <!-- <p class="text-base-content/70">All your services at a glance</p> -->
     </header>
 
-    <URLManager />
+    <Dashboard />
 </div>

@@ -266,18 +266,12 @@
                                 {/if}
                             </button>
 
-                            <button class="btn btn-ghost btn-sm" onclick={() => url.id && toggleDetails(url.id)}>
-                                Details
-                                <svg
-                                    class="h-4 w-4 transition-transform {showDetails[url.id || ''] ? 'rotate-180' : ''}"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"
-                                    ></path>
+                            <a href="/urls/{url.id}" class="btn btn-ghost btn-sm">
+                                View Details
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
-                            </button>
+                            </a>
                         </div>
 
                         <!-- Expandable Details -->
@@ -295,7 +289,7 @@
                                 </div>
 
                                 <div class="bg-base-200/30 rounded-lg p-3">
-                                    <div class="text-base-content/50 mb-2 text-xs">FULL URL</div>
+                                    <div class="text-base-content/50 mb-2 text-xs">Full URL</div>
                                     <div class="text-primary font-mono text-sm break-all">
                                         <a href={url.url} target="_blank" rel="noopener noreferrer" class="hover:underline">
                                             {url.url}
@@ -303,19 +297,11 @@
                                     </div>
                                 </div>
 
-                                {#if url.logs && url.logs.length > 0}
-                                    <div>
-                                        <div class="text-base-content/50 mb-2 text-xs">RECENT ACTIVITY</div>
-                                        <div class="max-h-32 space-y-1 overflow-y-auto">
-                                            {#each url.logs.slice(0, 5) as log}
-                                                <div class="bg-base-200/50 border-primary/30 rounded border-l-2 p-2 text-xs">
-                                                    <span class="text-base-content/50">[{log.timestamp}]</span>
-                                                    <span class="ml-2">{log.message}</span>
-                                                </div>
-                                            {/each}
-                                        </div>
-                                    </div>
-                                {/if}
+                                <div class="mt-4">
+                                    <a href="/urls/{url.id}" class="btn btn-primary btn-sm w-full">
+                                        View Full Details & Activity Logs
+                                    </a>
+                                </div>
                             </div>
                         {/if}
                     </div>

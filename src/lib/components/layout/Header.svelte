@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { account } from '../appwrite';
+	import { account } from '../../appwrite';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -103,22 +103,22 @@
 					class="menu menu-sm dropdown-content bg-base-100 rounded-box border-base-content/5 z-[1] mt-3 w-52 border p-2 shadow-2xl"
 				>
 					<li>
-						<a href="/profile" class="flex items-center gap-2 pl-2">
+						<a href="/" class="flex items-center gap-2 pl-2 lg:hidden">
 							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-								/>
-							</svg>
-							Profile
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM13 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM13 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
+                                />
+                            </svg>
+							Dashboard
 						</a>
 					</li>
 					<li>
@@ -138,6 +138,25 @@
 								/>
 							</svg>
 							Statistics
+						</a>
+					</li>
+					<li>
+						<a href="/profile" class="flex items-center gap-2 pl-2">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+							Profile
 						</a>
 					</li>
 					<li>
