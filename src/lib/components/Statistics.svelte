@@ -188,9 +188,9 @@
         </div>
     </div>
 
+    <div class="divider w-1/2 mx-auto"></div>
+    
     <!-- Activity Logs -->
-    <div class="border-t border-base-300 w-1/2 mx-auto my-4"></div>
-
     <ActivityLogs 
         {logs}
         title="Activity Logs"

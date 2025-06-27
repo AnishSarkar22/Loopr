@@ -1,6 +1,18 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
-    
+    import { account, AppwriteException } from '../appwrite';
+
+    let currentPassword = $state('');
+    let newPassword = $state('');
+    let confirmNewPassword = $state('');
+    let loading = $state(false);
+    let showToast = $state(false);
+    let toastMessage = $state('');
+    let isError = $state(false);
+    let isNewPasswordValid = $state(true);
+    let doPasswordsMatch = $state(true);
+    let isCurrentPasswordValid = $state(true);
+
     let showDeleteConfirm = $state(false);
     let deleteTimeout: number | null = null;
     const DELETE_TIMEOUT = 5000;
@@ -24,24 +36,167 @@
         showDeleteConfirm = false;
         if (deleteTimeout) clearTimeout(deleteTimeout);
     }
+
+    function validateNewPassword(value: string) {
+        const passwordRegex = /^[a-zA-Z0-9]{8,}$/;
+        isNewPasswordValid = passwordRegex.test(value);
+        if (confirmNewPassword) {
+            doPasswordsMatch = value === confirmNewPassword;
+        }
+    }
+
+    function validateConfirmPassword(value: string) {
+        doPasswordsMatch = newPassword === value;
+    }
+
+    function showAlert(message: string, error = false) {
+        toastMessage = message;
+        isError = error;
+        showToast = true;
+        setTimeout(() => {
+            showToast = false;
+        }, 3000);
+    }
+    
+    async function handleChangePassword(e: Event) {
+        e.preventDefault();
+        if (!isNewPasswordValid || !doPasswordsMatch) return;
+        loading = true;
+        try {
+            await account.updatePassword(newPassword, currentPassword);
+            showAlert('Password changed successfully!');
+            currentPassword = '';
+            newPassword = '';
+            confirmNewPassword = '';
+        } catch (error) {
+            if (error instanceof AppwriteException) {
+                showAlert(error.message, true);
+            } else {
+                showAlert('Failed to change password', true);
+            }
+        } finally {
+            loading = false;
+        }
+    }
 </script>
 
 <div class="container mx-auto max-w-3xl px-4 mt-20">
+    <!-- Toast Notification -->
+    {#if showToast}
+        <div class="toast toast-top toast-center z-50" transition:fade>
+            <div class="alert {isError ? 'alert-error' : 'alert-success'}">
+                <span>{toastMessage}</span>
+            </div>
+        </div>
+    {/if}
+
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
             <div class="flex flex-col gap-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-bold">Profile Settings</h2>
+                <div class="flex items-center justify-center">
+
+                    <h1 class="text-3xl font-bold text-primary py-8 -mt-18">Your Profile</h1>
                 </div>
 
-                <div class="divider my-0"></div>
+                <!-- Password Change Section -->
+                <div class="card bg-base-100 border border-base-300">
+                    <div class="card-body">
+                        <h3 class="card-title text-base-content">Change Password</h3>
+                        <p class="text-sm text-base-content/70 mb-4">Update your password to keep your account secure.</p>
+                        
+                        <form class="space-y-4" onsubmit={handleChangePassword}>
+                            <!-- Current Password -->
+                            <div class="form-control w-full">
+                                <label class="label" for="current-password">
+                                    <span class="label-text font-medium text-base-content mb-1">Current Password</span>
+                                </label>
+                                <input
+                                    id="current-password"
+                                    type="password"
+                                    placeholder="Enter your current password"
+                                    class="input input-bordered w-full bg-base-100 text-base-content placeholder:text-base-content/50 {!isCurrentPasswordValid ? 'input-error' : 'focus:border-primary'}"
+                                    bind:value={currentPassword}
+                                    required
+                                />
+                            </div>
 
-                <div class="card bg-base-100">
+                            <!-- New Password -->
+                            <div class="form-control w-full">
+                                <label class="label" for="new-password">
+                                    <span class="label-text font-medium text-base-content mb-1">New Password</span>
+                                </label>
+                                <input
+                                    id="new-password"
+                                    type="password"
+                                    placeholder="Enter your new password"
+                                    class="input input-bordered w-full bg-base-100 text-base-content placeholder:text-base-content/50 {!isNewPasswordValid ? 'input-error' : 'focus:border-primary'}"
+                                    bind:value={newPassword}
+                                    oninput={(e) => {
+                                        const target = e.target as HTMLInputElement;
+                                        if (target) validateNewPassword(target.value);
+                                    }}
+                                    required
+                                    aria-describedby="new-password-error"
+                                />
+                                {#if !isNewPasswordValid && newPassword}
+                                    <label class="label" for="new-password" id="new-password-error">
+                                        <span class="label-text-alt text-error">Password must be at least 8 characters long and contain only letters and numbers</span>
+                                    </label>
+                                {/if}
+                            </div>
+
+                            <!-- Confirm New Password -->
+                            <div class="form-control w-full">
+                                <label class="label" for="confirm-password">
+                                    <span class="label-text font-medium text-base-content mb-1">Confirm New Password</span>
+                                </label>
+                                <input
+                                    id="confirm-password"
+                                    type="password"
+                                    placeholder="Confirm your new password"
+                                    class="input input-bordered w-full bg-base-100 text-base-content placeholder:text-base-content/50 {!doPasswordsMatch ? 'input-error' : 'focus:border-primary'}"
+                                    bind:value={confirmNewPassword}
+                                    oninput={(e) => {
+                                        const target = e.target as HTMLInputElement;
+                                        if (target) validateConfirmPassword(target.value);
+                                    }}
+                                    required
+                                />
+                                {#if !doPasswordsMatch && confirmNewPassword}
+                                    <label class="label" for="confirm-password">
+                                        <span class="label-text-alt text-error">Passwords do not match</span>
+                                    </label>
+                                {/if}
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="form-control mt-6">
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                    disabled={loading || !isNewPasswordValid || !doPasswordsMatch || !currentPassword || !newPassword || !confirmNewPassword}
+                                >
+                                    {#if loading}
+                                        <span class="loading loading-spinner loading-sm"></span>
+                                        Changing Password...
+                                    {:else}
+                                        Change Password
+                                    {/if}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="divider w-1/2 mx-auto"></div>
+
+                <!-- Danger Zone -->
+                <div class="card bg-base-100 border border-base-300">
                     <div class="card-body bg-error/5 rounded-box">
                         <h3 class="card-title text-error">Danger Zone</h3>
                         
                         {#if !showDeleteConfirm}
-                            <p class="text-sm opacity-70">Once you delete your account, there is no going back. Please be certain.</p>
+                            <p class="text-sm text-base-content/70">Once you delete your account, there is no going back. Please be certain.</p>
                             <div class="card-actions justify-end mt-4">
                                 <button 
                                     class="btn btn-error btn-outline" 
