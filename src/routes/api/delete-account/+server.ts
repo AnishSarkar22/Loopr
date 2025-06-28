@@ -1,4 +1,4 @@
-// for deleting account using appwrite server-side API
+// sveltekit function for deleting account using appwrite server-side API
 import { json } from '@sveltejs/kit';
 import { Client, Users, Account } from 'node-appwrite';
 import { 
