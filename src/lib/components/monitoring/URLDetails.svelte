@@ -152,7 +152,7 @@
 <div class="container mx-auto max-w-4xl px-4 py-8">
 	<!-- Back Navigation -->
 	<div class="mb-6">
-		<a href="/" class="btn btn-ghost btn-sm">
+		<a href="/dashboard" class="btn btn-ghost btn-sm">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				class="h-4 w-4"
@@ -392,7 +392,7 @@
 			<p class="text-base-content/70 mb-6">
 				The URL you're looking for doesn't exist or you don't have access to it.
 			</p>
-			<a href="/" class="btn btn-primary">Back to Dashboard</a>
+			<a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
 		</div>
 	{/if}
 </div>

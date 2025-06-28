@@ -19,6 +19,7 @@
 	// Show header on authenticated pages
     let showHeader = $derived(
         $page?.url?.pathname === '/' || 
+		$page?.url?.pathname === '/dashboard' ||
         $page?.url?.pathname?.startsWith('/urls/') ||
 		$page?.url?.pathname === '/statistics' ||
         $page?.url?.pathname === '/profile'

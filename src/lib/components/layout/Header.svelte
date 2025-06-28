@@ -58,13 +58,13 @@
 	class="navbar bg-base-100/80 supports-[backdrop-filter]:bg-base-100/50 fixed top-0 z-50 backdrop-blur-md"
 >
 	<div class="navbar-start">
-		<a href="/" class="btn btn-ghost text-primary text-xl">Loopr</a>
+		<a href="/dashboard" class="btn btn-ghost text-primary text-xl">Loopr</a>
 	</div>
 
 	<div class="navbar-center hidden lg:flex">
 		{#if isAuthenticated}
 			<ul class="menu menu-horizontal px-1">
-				<li><a href="/" class:active={$page.url.pathname === '/'}>Dashboard</a></li>
+				<li><a href="/dashboard" class:active={$page.url.pathname === '/dashboard'}>Dashboard</a></li>
 				<li>
 					<a href="/statistics" class:active={$page.url.pathname === '/statistics'}>Statistics</a>
 				</li>
@@ -103,7 +103,7 @@
 					class="menu menu-sm dropdown-content bg-base-100 rounded-box border-base-content/5 z-[1] mt-3 w-52 border p-2 shadow-2xl"
 				>
 					<li>
-						<a href="/" class="flex items-center gap-2 pl-2 lg:hidden">
+						<a href="/dashboard" class="flex items-center gap-2 pl-2 lg:hidden">
 							<svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 class="h-5 w-5"

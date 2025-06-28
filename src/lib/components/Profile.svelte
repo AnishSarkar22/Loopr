@@ -1,6 +1,7 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
     import { account, AppwriteException } from '../appwrite';
+    import { goto } from '$app/navigation';
 
     let currentPassword = $state('');
     let newPassword = $state('');
@@ -15,6 +16,7 @@
 
     let showDeleteConfirm = $state(false);
     let deleteTimeout: number | null = null;
+    let deleteLoading = $state(false);
     const DELETE_TIMEOUT = 5000;
     
     function handleDelete() {
@@ -26,10 +28,50 @@
         }, DELETE_TIMEOUT);
     }
     
-    function confirmDelete() {
-        // TODO: Add actual delete logic here
-        console.log('Account deleted');
-        window.location.href = '/';
+    async function confirmDelete() {
+        deleteLoading = true;
+        try {
+            // Get current user info
+            const user = await account.get();
+            
+            // Call your SvelteKit API endpoint with user ID
+            const response = await fetch('/api/delete-account', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: user.$id }),
+                credentials: 'include' // Include cookies
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to delete account');
+            }
+            
+            // Show success message briefly
+            showAlert('Account deleted successfully. Redirecting...');
+            
+            // Redirect to home page after a short delay
+            setTimeout(() => {
+                goto('/');
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Delete account error:', error);
+            
+            if (error instanceof AppwriteException) {
+                showAlert(`Failed to delete account: ${error.message}`, true);
+            } else {
+                showAlert('Failed to delete account. Please try again.', true);
+            }
+            
+            // Reset the confirmation state on error
+            showDeleteConfirm = false;
+            if (deleteTimeout) clearTimeout(deleteTimeout);
+        } finally {
+            deleteLoading = false;
+        }
     }
     
     function cancelDelete() {
@@ -201,8 +243,14 @@
                                 <button 
                                     class="btn btn-error btn-outline" 
                                     onclick={handleDelete}
+                                    disabled={deleteLoading}
                                 >
-                                    Delete Account
+                                    {#if deleteLoading}
+                                        <span class="loading loading-spinner loading-sm"></span>
+                                        Deleting...
+                                    {:else}
+                                        Delete Account
+                                    {/if}
                                 </button>
                             </div>
                         {:else}
@@ -220,12 +268,19 @@
                                             <button 
                                                 class="btn btn-error btn-sm" 
                                                 onclick={confirmDelete}
+                                                disabled={deleteLoading}
                                             >
-                                                Yes, Delete My Account
+                                                {#if deleteLoading}
+                                                    <span class="loading loading-spinner loading-xs"></span>
+                                                    Deleting...
+                                                {:else}
+                                                    Yes, Delete My Account
+                                                {/if}
                                             </button>
                                             <button 
                                                 class="btn btn-ghost btn-sm" 
                                                 onclick={cancelDelete}
+                                                disabled={deleteLoading}
                                             >
                                                 Cancel
                                             </button>
