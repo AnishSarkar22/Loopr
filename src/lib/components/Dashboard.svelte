@@ -1,3 +1,22 @@
+<!--
+Copyright (C) 2025 Anish Sarkar
+
+This file is part of Loopr.
+
+Loopr is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Loopr is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
@@ -125,184 +144,193 @@
 		<p class="text-base-content/70 mt-4">Loading your URLs...</p>
 	</div>
 {:else}
-		<!-- Header Section -->
-    <div class="mb-8">
-        <!-- Stats - Collapsible on Mobile -->
-        <div class="mb-6">
-            <!-- Mobile: Collapsible Stats -->
-            <div class="lg:hidden">
-                <div class="collapse collapse-arrow bg-base-100 border border-base-300 shadow-lg rounded-xl">
-                    <input type="checkbox" class="peer" />
-                    <div class="collapse-title text-sm font-medium flex items-center justify-between border-b border-base-content/5">
-                        <span>Statistics Overview</span>
-                        <div class="flex items-center gap-2 text-xs">
-                            <!-- <span class="badge badge-primary badge-sm">{urls.length}</span>
+	<!-- Header Section -->
+	<div class="mb-8">
+		<!-- Stats - Collapsible on Mobile -->
+		<div class="mb-6">
+			<!-- Mobile: Collapsible Stats -->
+			<div class="lg:hidden">
+				<div
+					class="collapse-arrow bg-base-100 border-base-300 collapse rounded-xl border shadow-lg"
+				>
+					<input type="checkbox" class="peer" />
+					<div
+						class="collapse-title border-base-content/5 flex items-center justify-between border-b text-sm font-medium"
+					>
+						<span>Statistics Overview</span>
+						<div class="flex items-center gap-2 text-xs">
+							<!-- <span class="badge badge-primary badge-sm">{urls.length}</span>
                             <span class="badge badge-success badge-sm">{urls.filter((url) => url.isEnabled).length}</span>
                             <span class="badge badge-error badge-sm">{urls.filter((url) => url.lastPingStatus === 'error').length}</span> -->
-                        </div>
-                    </div>
-                    <div class="collapse-content bg-base-50/50">
-                        <div class="grid grid-cols-2 gap-3 pt-3 pb-1">
-                            <div class="bg-base-200/80 border border-base-300/30 rounded-lg p-3 text-center">
-                                <div class="text-xs text-base-content/60">Total URLs</div>
-                                <div class="text-primary text-lg font-bold">{urls.length}</div>
-                                <div class="text-xs text-base-content/50">Monitored endpoints</div>
-                            </div>
-                            <div class="bg-base-200/80 border border-base-300/30 rounded-lg p-3 text-center">
-                                <div class="text-xs text-base-content/60">Active</div>
-                                <div class="text-success text-lg font-bold">
-                                    {urls.filter((url) => url.isEnabled).length}
-                                </div>
-                                <div class="text-xs text-base-content/50">Currently monitoring</div>
-                            </div>
-                            <div class="bg-base-200/80 border border-base-300/30 rounded-lg p-3 text-center">
-                                <div class="text-xs text-base-content/60">Inactive</div>
-                                <div class="text-warning text-lg font-bold">
-                                    {urls.filter((url) => !url.isEnabled).length}
-                                </div>
-                                <div class="text-xs text-base-content/50">Paused monitoring</div>
-                            </div>
-                            <div class="bg-base-200/80 border border-base-300/30 rounded-lg p-3 text-center">
-                                <div class="text-xs text-base-content/60">Failed</div>
-                                <div class="text-error text-lg font-bold">
-                                    {urls.filter((url) => url.lastPingStatus === 'error').length}
-                                </div>
-                                <div class="text-xs text-base-content/50">Need attention</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Desktop: Full Stats Bar -->
-            <div class="hidden lg:block">
-                <div class="stats stats-horizontal bg-base-100 w-full shadow-lg">
-                    <div class="stat place-items-center py-4">
-                        <div class="stat-title text-sm">Total URLs</div>
-                        <div class="stat-value text-primary text-3xl">{urls.length}</div>
-                        <div class="stat-desc text-sm">Monitored endpoints</div>
-                    </div>
-                    <div class="stat place-items-center py-4">
-                        <div class="stat-title text-sm">Active</div>
-                        <div class="stat-value text-success text-3xl">
-                            {urls.filter((url) => url.isEnabled).length}
-                        </div>
-                        <div class="stat-desc text-sm">Currently monitoring</div>
-                    </div>
-                    <div class="stat place-items-center py-4">
-                        <div class="stat-title text-sm">Inactive</div>
-                        <div class="stat-value text-warning text-3xl">
-                            {urls.filter((url) => !url.isEnabled).length}
-                        </div>
-                        <div class="stat-desc text-sm">Paused monitoring</div>
-                    </div>
-                    <div class="stat place-items-center py-4">
-                        <div class="stat-title text-sm">Failed</div>
-                        <div class="stat-value text-error text-3xl">
-                            {urls.filter((url) => url.lastPingStatus === 'error').length}
-                        </div>
-                        <div class="stat-desc text-sm">Need attention</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+						</div>
+					</div>
+					<div class="collapse-content bg-base-50/50">
+						<div class="grid grid-cols-2 gap-3 pt-3 pb-1">
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Total URLs</div>
+								<div class="text-primary text-lg font-bold">{urls.length}</div>
+								<div class="text-base-content/50 text-xs">Monitored endpoints</div>
+							</div>
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Active</div>
+								<div class="text-success text-lg font-bold">
+									{urls.filter((url) => url.isEnabled).length}
+								</div>
+								<div class="text-base-content/50 text-xs">Currently monitoring</div>
+							</div>
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Inactive</div>
+								<div class="text-warning text-lg font-bold">
+									{urls.filter((url) => !url.isEnabled).length}
+								</div>
+								<div class="text-base-content/50 text-xs">Paused monitoring</div>
+							</div>
+							<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+								<div class="text-base-content/60 text-xs">Failed</div>
+								<div class="text-error text-lg font-bold">
+									{urls.filter((url) => url.lastPingStatus === 'error').length}
+								</div>
+								<div class="text-base-content/50 text-xs">Need attention</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Desktop: Full Stats Bar -->
+			<div class="hidden lg:block">
+				<div class="stats stats-horizontal bg-base-100 w-full shadow-lg">
+					<div class="stat place-items-center py-4">
+						<div class="stat-title text-sm">Total URLs</div>
+						<div class="stat-value text-primary text-3xl">{urls.length}</div>
+						<div class="stat-desc text-sm">Monitored endpoints</div>
+					</div>
+					<div class="stat place-items-center py-4">
+						<div class="stat-title text-sm">Active</div>
+						<div class="stat-value text-success text-3xl">
+							{urls.filter((url) => url.isEnabled).length}
+						</div>
+						<div class="stat-desc text-sm">Currently monitoring</div>
+					</div>
+					<div class="stat place-items-center py-4">
+						<div class="stat-title text-sm">Inactive</div>
+						<div class="stat-value text-warning text-3xl">
+							{urls.filter((url) => !url.isEnabled).length}
+						</div>
+						<div class="stat-desc text-sm">Paused monitoring</div>
+					</div>
+					<div class="stat place-items-center py-4">
+						<div class="stat-title text-sm">Failed</div>
+						<div class="stat-value text-error text-3xl">
+							{urls.filter((url) => url.lastPingStatus === 'error').length}
+						</div>
+						<div class="stat-desc text-sm">Need attention</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <!-- Controls -->
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <!-- Mobile: Stack all controls vertically, Desktop: Group left and right -->
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
-                <button class="btn btn-outline btn-sm gap-2 w-full sm:w-auto" onclick={handleRefreshAll}>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                        />
-                    </svg>
-                    Refresh All
-                </button>
+		<!-- Controls -->
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<!-- Mobile: Stack all controls vertically, Desktop: Group left and right -->
+			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
+				<button class="btn btn-outline btn-sm w-full gap-2 sm:w-auto" onclick={handleRefreshAll}>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-4 w-4"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+						/>
+					</svg>
+					Refresh All
+				</button>
 
-                <!-- View Mode Toggle -->
-                <div class="join w-full sm:w-auto">
-                    <div class="tooltip flex-1 sm:flex-none" data-tip="Table View">
-                        <button
-                            class="btn join-item btn-sm border-base-content/5 border w-full sm:w-auto {viewMode === 'table'
-                                ? 'btn-active'
-                                : 'btn-ghost'}"
-                            onclick={() => (viewMode = 'table')}
-                            aria-label="Table View"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                                />
-                            </svg>
-                            <span class="sm:hidden">Table</span>
-                        </button>
-                    </div>
-                    <div class="tooltip flex-1 sm:flex-none" data-tip="Cards View">
-                        <button
-                            class="btn join-item btn-sm border-base-content/5 border w-full sm:w-auto {viewMode === 'cards'
-                                ? 'btn-active'
-                                : 'btn-ghost'}"
-                            onclick={() => (viewMode = 'cards')}
-                            aria-label="Cards View"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                                />
-                            </svg>
-                            <span class="sm:hidden">Cards</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+				<!-- View Mode Toggle -->
+				<div class="join w-full sm:w-auto">
+					<div class="tooltip flex-1 sm:flex-none" data-tip="Table View">
+						<button
+							class="btn join-item btn-sm border-base-content/5 w-full border sm:w-auto {viewMode ===
+							'table'
+								? 'btn-active'
+								: 'btn-ghost'}"
+							onclick={() => (viewMode = 'table')}
+							aria-label="Table View"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M4 6h16M4 10h16M4 14h16M4 18h16"
+								/>
+							</svg>
+							<span class="sm:hidden">Table</span>
+						</button>
+					</div>
+					<div class="tooltip flex-1 sm:flex-none" data-tip="Cards View">
+						<button
+							class="btn join-item btn-sm border-base-content/5 w-full border sm:w-auto {viewMode ===
+							'cards'
+								? 'btn-active'
+								: 'btn-ghost'}"
+							onclick={() => (viewMode = 'cards')}
+							aria-label="Cards View"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+								/>
+							</svg>
+							<span class="sm:hidden">Cards</span>
+						</button>
+					</div>
+				</div>
+			</div>
 
-            <!-- Add New URL Button -->
-            <button class="btn btn-primary btn-sm gap-2 w-full sm:w-auto" onclick={() => (showAddForm = true)}>
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4"
-                    />
-                </svg>
-                Add New URL
-            </button>
-        </div>
-    </div>
+			<!-- Add New URL Button -->
+			<button
+				class="btn btn-primary btn-sm w-full gap-2 sm:w-auto"
+				onclick={() => (showAddForm = true)}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					class="h-4 w-4"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M12 4v16m8-8H4"
+					/>
+				</svg>
+				Add New URL
+			</button>
+		</div>
+	</div>
 
 	<!-- Add URL Form Modal -->
 	{#if showAddForm}

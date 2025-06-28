@@ -128,7 +128,7 @@
 			// Redirect back to details page after a short delay
 			setTimeout(() => {
 				// goto(`/urls/${url!.id}`);
-				goto('/');
+				goto('/dashboard');
 			}, 1500);
 		} catch (error) {
 			console.error('Error updating URL:', error);
@@ -147,7 +147,7 @@
 				showAlert('URL deleted successfully', 'success');
 
 				setTimeout(() => {
-					goto('/');
+					goto('/dashboard');
 				}, 1500);
 			} catch (error) {
 				showAlert('Failed to delete URL', 'error');

@@ -12,9 +12,14 @@
 		theme = theme === 'luxury' ? 'light' : 'luxury';
 	}
 
-	// Show footer only on dashboard (home) page
-	let showFooter = $derived($page?.url?.pathname === '/');
-	let isDashboard = $derived($page?.url?.pathname === '/');
+	// Show footer
+	let showFooter = $derived(
+		$page?.url?.pathname === '/' || 
+		$page?.url?.pathname === '/dashboard'
+		// $page?.url?.pathname === '/statistics' ||
+		// $page?.url?.pathname === '/profile' ||
+		// $page?.url?.pathname?.startsWith('/urls/')
+	);
 
 	// Show header on authenticated pages
     let showHeader = $derived(

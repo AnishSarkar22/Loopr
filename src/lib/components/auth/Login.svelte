@@ -89,7 +89,7 @@
 			}
 
 			// If email is verified, redirect to dashboard
-			window.location.href = '/';
+			window.location.href = '/dashboard';
 		} catch (error) {
 			console.error('Login failed:', error);
 
