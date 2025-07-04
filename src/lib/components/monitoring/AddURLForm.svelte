@@ -214,15 +214,15 @@
                 class="select select-bordered w-full focus:select-primary"
                 class:select-error={errors.pingInterval}
             >
-                <option value={5}>⚡ Every 5 minutes (Frequent)</option>
+                <option value={5}>⚡ Every 5 minutes</option>
                 <option value={10}>🔄 Every 10 minutes</option>
-                <option value={15}>✨ Every 15 minutes (Recommended)</option>
+                <option value={15}>✨ Every 15 minutes</option>
                 <option value={30}>⏰ Every 30 minutes</option>
                 <option value={60}>🕐 Every hour</option>
                 <option value={180}>🕒 Every 3 hours</option>
                 <option value={360}>🕕 Every 6 hours</option>
                 <option value={720}>🕘 Every 12 hours</option>
-                <option value={1440}>📅 Every 24 hours (Daily)</option>
+                <option value={1440}>📅 Every 24 hours</option>
             </select>
             {#if errors.pingInterval}
                 <div class="label">

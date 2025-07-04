@@ -1,6 +1,8 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
     import type { Log } from '$lib/types';
+    import { formatTimestamp } from '$lib/utils/format';
+
 
     interface Props {
         logs: Log[];
@@ -24,33 +26,16 @@
         showHostname = true
     }: Props = $props();
 
-    function formatTimestamp(timestamp: string): string {
-        if (!timestamp) return '';
-
-        const date = new Date(timestamp);
-        const today = new Date();
-
-        // Format date part
-        let datePart = '';
-        if (date.toDateString() === today.toDateString()) {
-            datePart = 'Today';
-        } else {
-            datePart = `${date.getMonth() + 1}/${date.getDate()}`;
-        }
-
-        // Format time part
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        const timePart = `${hours}:${minutes}`;
-
-        return `${datePart} ${timePart}`;
-    }
-
     // Simplified refresh handler
     function refreshLogs() {
         if (onRefresh) {
             onRefresh();
         }
+    }
+    // Helper function to get formatted timestamp
+    function getFormattedTimestamp(log: any): string {
+        // Use pre-formatted timestamp if available, otherwise format the original
+        return log.formattedTimestamp || formatTimestamp(log.timestamp);
     }
 </script>
 
@@ -74,7 +59,7 @@
                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                     />
                 </svg>
-                {refreshing ? 'Refreshing...' : 'Refresh Logs'}
+                {refreshing ? '' : 'Refresh Logs'}
             </button>
         </div>
 
@@ -88,7 +73,7 @@
             {#if logs.length > 0}
                 {#each logs as log}
                     <div class="border-base-300 border-b px-4 py-2 last:border-0">
-                        <span class="text-sm opacity-70">[{formatTimestamp(log.timestamp)}]</span>
+                        <span class="text-sm opacity-70">[{getFormattedTimestamp(log)}]</span>
                         <span
                             class={`ml-2 ${
                                 log.type === 'success'

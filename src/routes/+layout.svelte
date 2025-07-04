@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Header from '$lib/components/layout/Header.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
+	import HomepageLayout from '$lib/components/layout/HomepageLayout.svelte';
 	import '../app.css';
 	import { page } from '$app/stores';
 
@@ -12,18 +13,19 @@
 		theme = theme === 'luxury' ? 'light' : 'luxury';
 	}
 
-	// Show footer
+	// Check if we're on the homepage
+	let isHomepage = $derived($page?.url?.pathname === '/');
+
+	// Show footer for authenticated pages
 	let showFooter = $derived(
-		// $page?.url?.pathname === '/' || 
-		$page?.url?.pathname === '/dashboard'
-		// $page?.url?.pathname === '/statistics' ||
-		// $page?.url?.pathname === '/profile' ||
-		// $page?.url?.pathname?.startsWith('/urls/')
+		$page?.url?.pathname === '/dashboard' ||
+		$page?.url?.pathname === '/statistics' ||
+		$page?.url?.pathname === '/profile' ||
+		$page?.url?.pathname?.startsWith('/urls/')
 	);
 
-	// Show header on authenticated pages
+	// Show header for authenticated pages
     let showHeader = $derived(
-        // $page?.url?.pathname === '/' || 
 		$page?.url?.pathname === '/dashboard' ||
         $page?.url?.pathname?.startsWith('/urls/') ||
 		$page?.url?.pathname === '/statistics' ||
@@ -32,16 +34,20 @@
 </script>
 
 <div class="app" data-theme={theme}>
-	{#if showHeader}
+	{#if isHomepage}
+		<HomepageLayout>
+			{@render children?.()}
+		</HomepageLayout>
+	{:else if showHeader}
         <Header />
-        <div class="pt-16"> <!-- Add padding for fixed header -->
+        <div class="pt-16">
             <main>
-                {@render children()}
+                {@render children?.()}
             </main>
         </div>
     {:else}
         <main>
-            {@render children()}
+            {@render children?.()}
         </main>
     {/if}
 

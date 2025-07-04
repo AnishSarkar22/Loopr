@@ -103,7 +103,7 @@
                     {#if loading}
                         <span class="loading loading-spinner"></span>
                     {/if}
-                    {loading ? 'Sending...' : 'Send Reset Link'}
+                    {loading ? '' : 'Send Reset Link'}
                 </button>
             </div>
 

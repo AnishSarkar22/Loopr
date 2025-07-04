@@ -151,18 +151,18 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 			<!-- Mobile: Collapsible Stats -->
 			<div class="lg:hidden">
 				<div
-					class="collapse-arrow bg-base-100 border-base-300 collapse rounded-xl border shadow-lg"
+					class="collapse-arrow bg-base-100 border-base-300 collapse rounded-xl border shadow-lg "
 				>
 					<input type="checkbox" class="peer" />
 					<div
 						class="collapse-title border-base-content/5 flex items-center justify-between border-b text-sm font-medium"
 					>
 						<span>Statistics Overview</span>
-						<div class="flex items-center gap-2 text-xs">
-							<!-- <span class="badge badge-primary badge-sm">{urls.length}</span>
+						<!-- <div class="flex items-center gap-2 text-xs">
+							<span class="badge badge-primary badge-sm">{urls.length}</span>
                             <span class="badge badge-success badge-sm">{urls.filter((url) => url.isEnabled).length}</span>
-                            <span class="badge badge-error badge-sm">{urls.filter((url) => url.lastPingStatus === 'error').length}</span> -->
-						</div>
+                            <span class="badge badge-error badge-sm">{urls.filter((url) => url.lastPingStatus === 'error').length}</span>
+						</div> -->
 					</div>
 					<div class="collapse-content bg-base-50/50">
 						<div class="grid grid-cols-2 gap-3 pt-3 pb-1">
@@ -190,7 +190,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 								<div class="text-error text-lg font-bold">
 									{urls.filter((url) => url.lastPingStatus === 'error').length}
 								</div>
-								<div class="text-base-content/50 text-xs">Need attention</div>
+								<div class="text-base-content/50 text-xs">Needs attention</div>
 							</div>
 						</div>
 					</div>
@@ -223,7 +223,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 						<div class="stat-value text-error text-3xl">
 							{urls.filter((url) => url.lastPingStatus === 'error').length}
 						</div>
-						<div class="stat-desc text-sm">Need attention</div>
+						<div class="stat-desc text-sm">Needs attention</div>
 					</div>
 				</div>
 			</div>

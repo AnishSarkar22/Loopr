@@ -146,7 +146,7 @@
                     {#if loading}
                         <span class="loading loading-spinner"></span>
                     {/if}
-                    {loading ? 'Resetting...' : 'Reset Password'}
+                    {loading ? '' : 'Reset Password'}
                 </button>
             </div>
         </form>

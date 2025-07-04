@@ -7,7 +7,8 @@
 	import { fade } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 	import ActivityLogs from '../shared/ActivityLogs.svelte';
-
+	import { formatTimestamp } from '$lib/utils/format';
+ 
 	let url = $state<PingURL | null>(null);
 	let userId = $state<string | null>(null);
 	let loading = $state(true);
@@ -24,17 +25,15 @@
 
 	// Parse logs from URL object
 	let urlLogs = $derived(() => {
-		if (!url?.logs) return [];
-
-		try {
-			const logs = Array.isArray(url.logs) ? url.logs : JSON.parse(url.logs || '[]');
-
-			return Array.isArray(logs) ? logs : [];
-		} catch (error) {
-			console.error('Failed to parse logs:', error);
-			return [];
-		}
-	});
+        if (!url?.logs) return [];
+        try {
+            const logs = Array.isArray(url.logs) ? url.logs : JSON.parse(url.logs || '[]');
+            return Array.isArray(logs) ? logs : [];
+        } catch (error) {
+            console.error('Failed to parse logs:', error);
+            return [];
+        }
+    });
 
 	onMount(async () => {
 		try {
@@ -121,19 +120,6 @@
 		setTimeout(() => {
 			showToast = false;
 		}, 3000);
-	}
-
-	function formatTimestamp(timestamp: string): string {
-		if (!timestamp) return 'Never';
-
-		const date = new Date(timestamp);
-		const now = new Date();
-
-		if (date.toDateString() === now.toDateString()) {
-			return 'Today ' + date.toLocaleTimeString();
-		} else {
-			return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-		}
 	}
 
 	function getUrlHostname(urlString: string): string {
