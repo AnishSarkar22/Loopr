@@ -255,7 +255,7 @@
 					</div>
 				</div>
 				<!-- For mobile view -->
-				<!-- <div class="md:hidden">
+				<div class="md:hidden">
 					<a href="https://loopr-pi.vercel.app/" target="_blank" class="link">
 						<div class="card overflow-hidden bg-base-300 border-1 border-gray-900 shadow-xl">
 							<img
@@ -265,19 +265,19 @@
 							/>
 						</div></a
 					>
-				</div> -->
-				<div class="md:hidden justify-center">
+				</div>
+				<!-- <div class="md:hidden justify-center">
 					<div class="mockup-phone border-primary max-w-sm">
 						<div class="mockup-phone-camera"></div>
 						<div class="mockup-phone-display bg-base-100">
 							<img
 								alt="Screenshot of Loopr Dashboard"
 								class="w-full h-full object-cover"
-								src="/images/SCR-20250704-kwyp.png"
+								src="/images/dashboard-phone.png"
 							/>
 						</div>
 					</div>
-				</div>
+				</div> -->
 				<div class="mt-6 flex min-w-[270px] lg:mt-0 lg:min-w-[420px]">
 					<div class="my-auto">
 						<div class="px-4 text-lg md:text-xl">
