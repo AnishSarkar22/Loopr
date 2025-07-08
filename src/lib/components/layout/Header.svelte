@@ -10,6 +10,7 @@
 	let showToast = $state(false);
 	let toastMessage = $state('');
 	let isError = $state(false);
+	let loading = $state(true);
 
 	function getInitials(name: string): string {
         if (!name) return '';
@@ -29,6 +30,8 @@
         userName = '';
         userInitials = '';
         isAuthenticated = false;
+    } finally {
+        loading = false;
     }
 });
 
@@ -62,14 +65,12 @@
 	</div>
 
 	<div class="navbar-center hidden lg:flex">
-		{#if isAuthenticated}
 			<ul class="menu menu-horizontal px-1">
 				<li><a href="/dashboard" class:active={$page.url.pathname === '/dashboard'}>Dashboard</a></li>
 				<li>
 					<a href="/statistics" class:active={$page.url.pathname === '/statistics'}>Statistics</a>
 				</li>
 			</ul>
-		{/if}
 	</div>
 
 	<div class="navbar-end">
@@ -89,7 +90,9 @@
 			</svg>
 		</a>
 
-		{#if isAuthenticated}
+		{#if loading}
+		<div class="skeleton w-10 h-10 rounded-full"></div>
+		{:else if isAuthenticated}
 			<div class="dropdown dropdown-end">
 				<div tabindex="0" role="button" class="btn btn-ghost btn-circle">
 					<div class="avatar avatar-placeholder">

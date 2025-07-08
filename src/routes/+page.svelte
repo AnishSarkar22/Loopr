@@ -179,7 +179,7 @@
 					</button>
 				</a>
 				<a href="/signup">
-					<button class="btn border-base-content/5 btn-outline border px-6">Signup</button>
+					<button class="btn border-base-content/5 btn-outline border px-6">Sign Up</button>
 				</a>
 			</div>
 		</div>

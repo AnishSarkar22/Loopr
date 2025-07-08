@@ -9,11 +9,11 @@
 	let successMessage = $state('');
 	let errorMessage = $state('');
 	let nameLoading = $state(false);
-   	let passwordLoading = $state(false);
+	let passwordLoading = $state(false);
 	let currentPassword = $state('');
 	let newPassword = $state('');
 	let confirmNewPassword = $state('');
-	let loading = $state(false);
+	let loading = $state(true);
 	let showToast = $state(false);
 	let toastMessage = $state('');
 	let isError = $state(false);
@@ -24,6 +24,7 @@
 	let showDeleteConfirm = $state(false);
 	let deleteTimeout: number | null = null;
 	let deleteLoading = $state(false);
+
 	const DELETE_TIMEOUT = 5000;
 
 	// Change name functions
@@ -34,22 +35,23 @@
 			newName = currentName;
 		} catch (e) {
 			errorMessage = 'Failed to load profile.';
+		} finally {
+			loading = false;
 		}
 	});
 
 	async function handleNameChange(e: Event) {
 		e.preventDefault();
 		nameLoading = true;
-		successMessage = '';
-		errorMessage = '';
 		try {
 			await account.updateName(newName);
 			currentName = newName;
-			successMessage = 'Name updated successfully!';
+			
+			showAlert('Name updated successfully!', false);
 		} catch (e) {
-			errorMessage = 'Failed to update name. Please try again.';
+			showAlert('Failed to update name. Please try again.', true);
 		} finally {
-			loading = false;
+			nameLoading = false;
 		}
 	}
 
@@ -154,276 +156,309 @@
 				showAlert('Failed to change password', true);
 			}
 		} finally {
-			loading = false;
+			passwordLoading = false;
 		}
 	}
 </script>
 
-<div class="container mx-auto mt-20 max-w-3xl px-4">
-	<!-- Toast Notification -->
-	{#if showToast}
-		<div class="toast toast-top toast-center z-50" transition:fade>
-			<div class="alert {isError ? 'alert-error' : 'alert-success'}">
-				<span>{toastMessage}</span>
-			</div>
-		</div>
-	{/if}
-
-	<div class="card bg-base-100 shadow-sm">
-		<div class="card-body">
-			<div class="flex flex-col gap-6">
-				<div class="flex items-center justify-center">
-					<h1 class="text-primary -mt-18 py-8 text-3xl font-bold">Your Profile</h1>
-				</div>
-
-				<!-- Change Name Section -->
-				<div class="card bg-base-100 border-base-300 border">
-					<div class="card-body">
-						<h3 class="card-title text-base-content">Change Name</h3>
-						<p class="text-base-content/70 mb-4 text-sm">
-							Update your display name for your account.
-						</p>
-						<form class="space-y-4" onsubmit={handleNameChange}>
-							<!-- Current Name -->
-							<div class="form-control w-full">
-								<label class="label" for="current-name">
-									<span class="label-text text-base-content mb-1 font-medium">Current Name</span>
-								</label>
-								<input
-									id="current-name"
-									type="text"
-									class="input input-bordered bg-base-100 text-base-content w-full"
-									value={currentName}
-									readonly
-								/>
-							</div>
-							<!-- New Name -->
-							<div class="form-control w-full">
-								<label class="label" for="new-name">
-									<span class="label-text text-base-content mb-1 font-medium">New Name</span>
-								</label>
-								<input
-									id="new-name"
-									type="text"
-									class="input input-bordered bg-base-100 text-base-content w-full"
-									bind:value={newName}
-									required
-									minlength="2"
-									placeholder="Enter your new name"
-								/>
-							</div>
-							<!-- Submit Button -->
-							<div class="form-control mt-6">
-								<button
-									type="submit"
-									class="btn btn-primary"
-									disabled={nameLoading || newName === currentName}
-								>
-									{#if loading}
-										<span class="loading loading-spinner loading-sm"></span>
-										<!-- Updating... -->
-									{:else}
-										Update Name
-									{/if}
-								</button>
-							</div>
-							{#if successMessage}
-								<div class="alert alert-success mt-4">{successMessage}</div>
-							{/if}
-							{#if errorMessage}
-								<div class="alert alert-error mt-4">{errorMessage}</div>
-							{/if}
-						</form>
+{#if loading}
+	<!-- Skeleton Loader -->
+	<div class="container mx-auto mt-20 max-w-3xl px-4">
+		<div class="card bg-base-100 shadow-sm">
+			<div class="card-body">
+				<div class="flex flex-col gap-6">
+					<div class="flex items-center justify-center">
+						<div class="skeleton h-10 w-40 mb-4"></div>
 					</div>
-				</div>
-
-				<div class="divider mx-auto w-1/2"></div>
-
-				<!-- Password Change Section -->
-				<div class="card bg-base-100 border-base-300 border">
-					<div class="card-body">
-						<h3 class="card-title text-base-content">Change Password</h3>
-						<p class="text-base-content/70 mb-4 text-sm">
-							Update your password to keep your account secure.
-						</p>
-
-						<form class="space-y-4" onsubmit={handleChangePassword}>
-							<!-- Current Password -->
-							<div class="form-control w-full">
-								<label class="label" for="current-password">
-									<span class="label-text text-base-content mb-1 font-medium">Current Password</span
-									>
-								</label>
-								<input
-									id="current-password"
-									type="password"
-									placeholder="Enter your current password"
-									class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!isCurrentPasswordValid
-										? 'input-error'
-										: 'focus:border-primary'}"
-									bind:value={currentPassword}
-									required
-								/>
-							</div>
-
-							<!-- New Password -->
-							<div class="form-control w-full">
-								<label class="label" for="new-password">
-									<span class="label-text text-base-content mb-1 font-medium">New Password</span>
-								</label>
-								<input
-									id="new-password"
-									type="password"
-									placeholder="Enter your new password"
-									class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!isNewPasswordValid
-										? 'input-error'
-										: 'focus:border-primary'}"
-									bind:value={newPassword}
-									oninput={(e) => {
-										const target = e.target as HTMLInputElement;
-										if (target) validateNewPassword(target.value);
-									}}
-									required
-									aria-describedby="new-password-error"
-								/>
-								{#if !isNewPasswordValid && newPassword}
-									<label class="label" for="new-password" id="new-password-error">
-										<span class="label-text-alt text-error"
-											>Password must be at least 8 characters long and contain only letters and
-											numbers</span
-										>
-									</label>
-								{/if}
-							</div>
-
-							<!-- Confirm New Password -->
-							<div class="form-control w-full">
-								<label class="label" for="confirm-password">
-									<span class="label-text text-base-content mb-1 font-medium"
-										>Confirm New Password</span
-									>
-								</label>
-								<input
-									id="confirm-password"
-									type="password"
-									placeholder="Confirm your new password"
-									class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!doPasswordsMatch
-										? 'input-error'
-										: 'focus:border-primary'}"
-									bind:value={confirmNewPassword}
-									oninput={(e) => {
-										const target = e.target as HTMLInputElement;
-										if (target) validateConfirmPassword(target.value);
-									}}
-									required
-								/>
-								{#if !doPasswordsMatch && confirmNewPassword}
-									<label class="label" for="confirm-password">
-										<span class="label-text-alt text-error">Passwords do not match</span>
-									</label>
-								{/if}
-							</div>
-
-							<!-- Submit Button -->
-							<div class="form-control mt-6">
-								<button
-									type="submit"
-									class="btn btn-primary"
-									disabled={loading ||
-										!isNewPasswordValid ||
-										!doPasswordsMatch ||
-										!currentPassword ||
-										!newPassword ||
-										!confirmNewPassword}
-								>
-									{#if passwordLoading}
-										<span class="loading loading-spinner loading-sm"></span>
-										<!-- Changing Password... -->
-									{:else}
-										Change Password
-									{/if}
-								</button>
-							</div>
-						</form>
+					<div class="card bg-base-100 border-base-300 border">
+						<div class="card-body">
+							<div class="skeleton h-6 w-32 mb-2"></div>
+							<div class="skeleton h-10 w-full mb-2"></div>
+							<div class="skeleton h-6 w-32 mb-2"></div>
+							<div class="skeleton h-10 w-full mb-2"></div>
+							<div class="skeleton h-10 w-32"></div>
+						</div>
 					</div>
-				</div>
-
-				<div class="divider mx-auto w-1/2"></div>
-
-				<!-- Danger Zone -->
-				<div class="card bg-base-100 border-base-300 border">
-					<div class="card-body bg-error/5 rounded-box">
-						<h3 class="card-title text-error">Danger Zone</h3>
-
-						{#if !showDeleteConfirm}
-							<p class="text-base-content/70 text-sm">
-								Once you delete your account, there is no going back. Please be certain.
-							</p>
-							<div class="card-actions mt-4 justify-end">
-								<button
-									class="btn btn-error btn-outline"
-									onclick={handleDelete}
-									disabled={deleteLoading}
-								>
-									{#if deleteLoading}
-										<span class="loading loading-spinner loading-sm"></span>
-										Deleting...
-									{:else}
-										Delete Account
-									{/if}
-								</button>
-							</div>
-						{:else}
-							<div class="alert alert-warning shadow-lg" transition:fade>
-								<div class="flex items-start gap-4">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										class="h-6 w-6 shrink-0"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-										/>
-									</svg>
-									<div class="flex-1">
-										<h3 class="font-bold">Are you absolutely sure?</h3>
-										<p class="text-sm">
-											This action cannot be undone. This will permanently delete your account and
-											remove your data from our servers.
-										</p>
-										<div class="mt-4 flex flex-col gap-2 sm:flex-row">
-											<button
-												class="btn btn-error btn-sm w-full text-xs sm:w-auto"
-												onclick={confirmDelete}
-												disabled={deleteLoading}
-											>
-												{#if deleteLoading}
-													<span class="loading loading-spinner loading-xs"></span>
-													Deleting...
-												{:else}
-													Yes, Delete My Account
-												{/if}
-											</button>
-											<button
-												class="btn btn-ghost btn-sm w-full sm:w-auto"
-												onclick={cancelDelete}
-												disabled={deleteLoading}
-											>
-												Cancel
-											</button>
-										</div>
-									</div>
-								</div>
-							</div>
-						{/if}
+					<div class="divider mx-auto w-1/2"></div>
+					<div class="card bg-base-100 border-base-300 border">
+						<div class="card-body">
+							<div class="skeleton h-6 w-32 mb-2"></div>
+							<div class="skeleton h-10 w-full mb-2"></div>
+							<div class="skeleton h-10 w-32"></div>
+						</div>
+					</div>
+					<div class="divider mx-auto w-1/2"></div>
+					<div class="card bg-base-100 border-base-300 border">
+						<div class="card-body bg-error/5 rounded-box">
+							<div class="skeleton h-6 w-32 mb-2"></div>
+							<div class="skeleton h-10 w-full"></div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-</div>
+{:else}
+	<div class="container mx-auto mt-20 max-w-3xl px-4">
+		<!-- Toast Notification -->
+		{#if showToast}
+			<div class="toast toast-top toast-center z-50" transition:fade>
+				<div class="alert {isError ? 'alert-error' : 'alert-success'}">
+					<span>{toastMessage}</span>
+				</div>
+			</div>
+		{/if}
+
+		<div class="card bg-base-100 shadow-sm">
+			<div class="card-body">
+				<div class="flex flex-col gap-6">
+					<div class="flex items-center justify-center">
+						<h1 class="text-primary -mt-18 py-8 text-3xl font-bold">Your Profile</h1>
+					</div>
+
+					<!-- Change Name Section -->
+					<div class="card bg-base-100 border-base-300 border">
+						<div class="card-body">
+							<h3 class="card-title text-base-content">Change Name</h3>
+							<p class="text-base-content/70 mb-4 text-sm">
+								Update your display name for your account.
+							</p>
+							<form class="space-y-4" onsubmit={handleNameChange}>
+								<!-- Current Name -->
+								<div class="form-control w-full">
+									<label class="label" for="current-name">
+										<span class="label-text text-base-content mb-1 font-medium">Current Name</span>
+									</label>
+									<input
+										id="current-name"
+										type="text"
+										class="input input-bordered bg-base-100 text-base-content w-full"
+										value={currentName}
+										readonly
+									/>
+								</div>
+								<!-- New Name -->
+								<div class="form-control w-full">
+									<label class="label" for="new-name">
+										<span class="label-text text-base-content mb-1 font-medium">New Name</span>
+									</label>
+									<input
+										id="new-name"
+										type="text"
+										class="input input-bordered bg-base-100 text-base-content w-full"
+										bind:value={newName}
+										required
+										minlength="2"
+										placeholder="Enter your new name"
+									/>
+								</div>
+								<!-- Submit Button -->
+								<div class="form-control mt-6">
+									<button
+										type="submit"
+										class="btn btn-primary"
+										disabled={nameLoading || !newName || newName === currentName}
+									>
+										{#if loading}
+											<span class="loading loading-spinner loading-sm"></span>
+											<!-- Updating... -->
+										{:else}
+											Update Name
+										{/if}
+									</button>
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<div class="divider mx-auto w-1/2"></div>
+
+					<!-- Password Change Section -->
+					<div class="card bg-base-100 border-base-300 border">
+						<div class="card-body">
+							<h3 class="card-title text-base-content">Change Password</h3>
+							<p class="text-base-content/70 mb-4 text-sm">
+								Update your password to keep your account secure.
+							</p>
+
+							<form class="space-y-4" onsubmit={handleChangePassword}>
+								<!-- Current Password -->
+								<div class="form-control w-full">
+									<label class="label" for="current-password">
+										<span class="label-text text-base-content mb-1 font-medium">Current Password</span
+										>
+									</label>
+									<input
+										id="current-password"
+										type="password"
+										placeholder="Enter your current password"
+										class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!isCurrentPasswordValid
+											? 'input-error'
+											: 'focus:border-primary'}"
+										bind:value={currentPassword}
+										required
+									/>
+								</div>
+
+								<!-- New Password -->
+								<div class="form-control w-full">
+									<label class="label" for="new-password">
+										<span class="label-text text-base-content mb-1 font-medium">New Password</span>
+									</label>
+									<input
+										id="new-password"
+										type="password"
+										placeholder="Enter your new password"
+										class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!isNewPasswordValid
+											? 'input-error'
+											: 'focus:border-primary'}"
+										bind:value={newPassword}
+										oninput={(e) => {
+											const target = e.target as HTMLInputElement;
+											if (target) validateNewPassword(target.value);
+										}}
+										required
+										aria-describedby="new-password-error"
+									/>
+									{#if !isNewPasswordValid && newPassword}
+										<label class="label" for="new-password" id="new-password-error">
+											<span class="label-text-alt text-error"
+												>Password must be at least 8 characters long and contain only letters and
+												numbers</span
+											>
+										</label>
+									{/if}
+								</div>
+
+								<!-- Confirm New Password -->
+								<div class="form-control w-full">
+									<label class="label" for="confirm-password">
+										<span class="label-text text-base-content mb-1 font-medium"
+											>Confirm New Password</span
+										>
+									</label>
+									<input
+										id="confirm-password"
+										type="password"
+										placeholder="Confirm your new password"
+										class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!doPasswordsMatch
+											? 'input-error'
+											: 'focus:border-primary'}"
+										bind:value={confirmNewPassword}
+										oninput={(e) => {
+											const target = e.target as HTMLInputElement;
+											if (target) validateConfirmPassword(target.value);
+										}}
+										required
+									/>
+									{#if !doPasswordsMatch && confirmNewPassword}
+										<label class="label" for="confirm-password">
+											<span class="label-text-alt text-error">Passwords do not match</span>
+										</label>
+									{/if}
+								</div>
+
+								<!-- Submit Button -->
+								<div class="form-control mt-6">
+									<button
+										type="submit"
+										class="btn btn-primary"
+										disabled={loading ||
+											!isNewPasswordValid ||
+											!doPasswordsMatch ||
+											!currentPassword ||
+											!newPassword ||
+											!confirmNewPassword}
+									>
+										{#if passwordLoading}
+											<span class="loading loading-spinner loading-sm"></span>
+											<!-- Changing Password... -->
+										{:else}
+											Change Password
+										{/if}
+									</button>
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<div class="divider mx-auto w-1/2"></div>
+
+					<!-- Danger Zone -->
+					<div class="card bg-base-100 border-base-300 border">
+						<div class="card-body bg-error/5 rounded-box">
+							<h3 class="card-title text-error">Danger Zone</h3>
+
+							{#if !showDeleteConfirm}
+								<p class="text-base-content/70 text-sm">
+									Once you delete your account, there is no going back. Please be certain.
+								</p>
+								<div class="card-actions mt-4 justify-end">
+									<button
+										class="btn btn-error btn-outline"
+										onclick={handleDelete}
+										disabled={deleteLoading}
+									>
+										{#if deleteLoading}
+											<span class="loading loading-spinner loading-sm"></span>
+											Deleting...
+										{:else}
+											Delete Account
+										{/if}
+									</button>
+								</div>
+							{:else}
+								<div class="alert alert-warning shadow-lg" transition:fade>
+									<div class="flex items-start gap-4">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											class="h-6 w-6 shrink-0"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+											/>
+										</svg>
+										<div class="flex-1">
+											<h3 class="font-bold">Are you absolutely sure?</h3>
+											<p class="text-sm">
+												This action cannot be undone. This will permanently delete your account and
+												remove your data from our servers.
+											</p>
+											<div class="mt-4 flex flex-col gap-2 sm:flex-row">
+												<button
+													class="btn btn-error btn-sm w-full text-xs sm:w-auto"
+													onclick={confirmDelete}
+													disabled={deleteLoading}
+												>
+													{#if deleteLoading}
+														<span class="loading loading-spinner loading-xs"></span>
+														Deleting...
+													{:else}
+														Yes, Delete My Account
+													{/if}
+												</button>
+												<button
+													class="btn btn-ghost btn-sm w-full sm:w-auto"
+													onclick={cancelDelete}
+													disabled={deleteLoading}
+												>
+													Cancel
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}

@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-    <title>Login - Loopr</title>
+    <title>Log In - Loopr</title>
 </svelte:head>
 
 {#if showVerificationAlert}

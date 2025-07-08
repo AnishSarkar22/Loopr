@@ -16,6 +16,7 @@
     let lastRefreshTimestamp = $state(0);
     let isAuthenticated = $state(false);
     let userUrls = $state<PingURL[]>([]);
+    let loading = $state(true);
 
     // Helper function to show toast notifications
     function showToastNotification(
@@ -53,6 +54,8 @@
             console.error('Error loading user data', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             addLog('Failed to load user data: ' + errorMessage, 'error');
+        } finally {
+            loading = false;
         }
     });
 
@@ -166,38 +169,75 @@
     </div>
 {/if}
 
-<div class="space-y-6">
-    <!-- URL Summary -->
-    <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
-            <h2 class="card-title">URL Overview</h2>
-            <div class="mt-4 flex gap-2 md:gap-4">
-                <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
-                    <div class="text-xs text-base-content/70 mb-1">Total URLs</div>
-                    <div class="text-xl font-bold text-primary">{userUrls.length}</div>
-                </div>
-                <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
-                    <div class="text-xs text-base-content/70 mb-1">Active Monitoring</div>
-                    <div class="text-xl font-bold text-success">{userUrls.filter((url) => url.isEnabled).length}</div>
-                </div>
-                <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
-                    <div class="text-xs text-base-content/70 mb-1">Total Logs</div>
-                    <div class="text-xl font-bold text-info">{logs.length}</div>
+{#if loading}
+    <!-- Skeleton for Statistics Page -->
+    <div class="space-y-6">
+        <!-- URL Overview Skeleton -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="skeleton h-6 w-32 mb-4"></div>
+                <div class="mt-4 flex gap-2 md:gap-4">
+                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                        <div class="skeleton h-3 w-16 mb-2 mx-auto"></div>
+                        <div class="skeleton h-6 w-12 mx-auto"></div>
+                    </div>
+                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                        <div class="skeleton h-3 w-20 mb-2 mx-auto"></div>
+                        <div class="skeleton h-6 w-12 mx-auto"></div>
+                    </div>
+                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                        <div class="skeleton h-3 w-16 mb-2 mx-auto"></div>
+                        <div class="skeleton h-6 w-12 mx-auto"></div>
+                    </div>
                 </div>
             </div>
         </div>
+        <div class="divider w-1/2 mx-auto"></div>
+        <!-- Activity Logs Skeleton -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <div class="skeleton h-5 w-32 mb-4"></div>
+                {#each Array(6) as _, i}
+                    <div class="skeleton h-6 w-full mb-2 rounded"></div>
+                {/each}
+            </div>
+        </div>
     </div>
+{:else}
+    <!-- Real Content -->
+    <div class="space-y-6">
+        <!-- URL Summary -->
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title">URL Overview</h2>
+                <div class="mt-4 flex gap-2 md:gap-4">
+                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                        <div class="text-xs text-base-content/70 mb-1">Total URLs</div>
+                        <div class="text-xl font-bold text-primary">{userUrls.length}</div>
+                    </div>
+                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                        <div class="text-xs text-base-content/70 mb-1">Active Monitoring</div>
+                        <div class="text-xl font-bold text-success">{userUrls.filter((url) => url.isEnabled).length}</div>
+                    </div>
+                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                        <div class="text-xs text-base-content/70 mb-1">Total Logs</div>
+                        <div class="text-xl font-bold text-info">{logs.length}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="divider w-1/2 mx-auto"></div>
-    
-    <!-- Activity Logs -->
-    <ActivityLogs 
-        {logs}
-        title="Activity Logs"
-        showRefresh={true}
-        {refreshing}
-        onRefresh={refreshLogs}
-        {lastRefreshTime}
-        showHostname={true}
-    />
-</div>
+        <div class="divider w-1/2 mx-auto"></div>
+        
+        <!-- Activity Logs -->
+        <ActivityLogs 
+            {logs}
+            title="Activity Logs"
+            showRefresh={true}
+            {refreshing}
+            onRefresh={refreshLogs}
+            {lastRefreshTime}
+            showHostname={true}
+        />
+    </div>
+{/if}

@@ -11,6 +11,7 @@
 	let userId = $state<string | null>(null);
 	let loading = $state(true);
 	let saving = $state(false);
+	let showDeleteModal = $state(false);
 
 	// Form fields
 	let urlInput = $state('');
@@ -140,19 +141,16 @@
 
 	async function handleDelete() {
 		if (!url) return;
-
-		if (confirm('Are you sure you want to delete this URL? This action cannot be undone.')) {
-			try {
-				await urlService.deleteURL(url.id!);
-				showAlert('URL deleted successfully', 'success');
-
-				setTimeout(() => {
-					goto('/dashboard');
-				}, 1500);
-			} catch (error) {
-				showAlert('Failed to delete URL', 'error');
-			}
+		try {
+			await urlService.deleteURL(url.id!);
+			showAlert('URL deleted successfully', 'success');
+			setTimeout(() => {
+				goto('/dashboard');
+			}, 1500);
+		} catch (error) {
+			showAlert('Failed to delete URL', 'error');
 		}
+		showDeleteModal = false;
 	}
 
 	function showAlert(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
@@ -299,15 +297,15 @@
 							class="select select-bordered"
 							class:select-error={errors.pingInterval}
 						>
-							<option value={5}>Every 5 minutes</option>
-							<option value={10}>Every 10 minutes</option>
-							<option value={15}>Every 15 minutes (Recommended)</option>
-							<option value={30}>Every 30 minutes</option>
-							<option value={60}>Every hour</option>
-							<option value={180}>Every 3 hours</option>
-							<option value={360}>Every 6 hours</option>
-							<option value={720}>Every 12 hours</option>
-							<option value={1440}>Every 24 hours</option>
+							<option value={5}>⚡ Every 5 minutes</option>
+							<option value={10}>🔄 Every 10 minutes</option>
+							<option value={15}>✨ Every 15 minutes</option>
+							<option value={30}>⏰ Every 30 minutes</option>
+							<option value={60}>🕐 Every hour</option>
+							<option value={180}>🕒 Every 3 hours</option>
+							<option value={360}>🕕 Every 6 hours</option>
+							<option value={720}>🕘 Every 12 hours</option>
+							<option value={1440}>📅 Every 24 hours</option>
 						</select>
 						{#if errors.pingInterval}
 							<div class="label">
@@ -320,7 +318,11 @@
 					<div class="form-control">
 						<div class="flex items-center justify-between">
 							<span class="label-text font-medium">Enable Monitoring</span>
-							<input type="checkbox" class="toggle toggle-primary checked:bg-gray-50 checked:text-black" bind:checked={isEnabled} />
+							<input
+								type="checkbox"
+								class="toggle toggle-primary checked:bg-gray-50 checked:text-black"
+								bind:checked={isEnabled}
+							/>
 						</div>
 						<div class="label">
 							<span class="label-text-alt">
@@ -331,7 +333,11 @@
 
 					<!-- Action Buttons -->
 					<div class="card-actions justify-between pt-4">
-						<button type="button" class="btn btn-error btn-outline" onclick={handleDelete}>
+						<button
+							type="button"
+							class="btn btn-error btn-outline"
+							onclick={() => (showDeleteModal = true)}
+						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								class="h-4 w-4"
@@ -385,5 +391,24 @@
 		>
 			<span>{toastMessage}</span>
 		</div>
+	</div>
+{/if}
+
+{#if showDeleteModal}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<h3 class="text-error text-lg font-bold">Delete URL</h3>
+			<p class="py-4">Are you sure you want to delete this URL? This action cannot be undone.</p>
+			<div class="modal-action">
+				<button class="btn btn-error" onclick={handleDelete}>Yes, Delete</button>
+				<button class="btn" onclick={() => (showDeleteModal = false)}>Cancel</button>
+			</div>
+		</div>
+		<button
+			type="button"
+			class="modal-backdrop"
+			aria-label="Close modal"
+			onclick={() => (showDeleteModal = false)}
+		></button>
 	</div>
 {/if}

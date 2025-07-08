@@ -38,7 +38,7 @@
 					Star on GitHub
 				</a>
 			</li>
-			<li class="navbar-btn border-base-content/5 rounded-xl border md:mx-2"><a href="/login">Login</a></li>
+			<li class="navbar-btn border-base-content/5 rounded-xl border md:mx-2"><a href="/login">Log In</a></li>
 		</ul>
 		<div class="dropdown dropdown-end sm:hidden">
 			<!-- svelte-ignore a11y_label_has_associated_control -->
@@ -63,7 +63,7 @@
 				tabindex="0"
 				class="menu menu-lg dropdown-content bg-base-100 rounded-box border-base-content/5 z-1 mt-3 w-52 border p-2 shadow-2xl"
 			>
-				<li><a href="/login">Login</a></li>
+				<li><a href="/login">Log In</a></li>
 				<li class="md:mx-4">
 					<a
 						href="https://github.com/AnishSarkar22/Loopr"

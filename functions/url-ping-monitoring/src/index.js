@@ -190,11 +190,13 @@ async function processBatch(databases, urlDocuments, messaging, users) {
 				if (!urlDoc) continue;
 
 				// EMAIL NOTIFICATIONS (using appwrite messaging)
-				
+
 				// Check if this is a new failure and user wants notifications
 				// if (!result.success && urlDoc.lastPingStatus === 'success') {
 				if (!result.success) {
-					console.log(`Triggering email notification for user ${urlDoc.userId} and URL ${urlDoc.url}`);
+					console.log(
+						`Triggering email notification for user ${urlDoc.userId} and URL ${urlDoc.url}`
+					);
 					// This is a new failure, send notification
 					await sendFailureNotification(databases, messaging, users, urlDoc, result);
 				}
@@ -372,60 +374,60 @@ async function updateUrlsInBatches(databases, urlUpdates, batchSize = 50) {
 
 // Add this new helper function
 async function upsertShardDocument(databases, shardId, data) {
-    try {
-        return await databases.createDocument(
-            process.env.DATABASE_ID,
-            process.env.RESULTS_COLLECTION_ID,
-            shardId,
-            data
-        );
-    } catch (error) {
-        if (error.message.includes('already exists')) {
-            // Document exists, update instead
-            const existing = await databases.getDocument(
-                process.env.DATABASE_ID,
-                process.env.RESULTS_COLLECTION_ID,
-                shardId
-            );
-            
-            const mergedResults = mergeResults(
-                JSON.parse(existing.results || '[]'),
-                JSON.parse(data.results)
-            );
-            
-            return await databases.updateDocument(
-                process.env.DATABASE_ID,
-                process.env.RESULTS_COLLECTION_ID,
-                shardId,
-                { results: JSON.stringify(mergedResults) }
-            );
-        }
-        throw error;
-    }
+	try {
+		return await databases.createDocument(
+			process.env.DATABASE_ID,
+			process.env.RESULTS_COLLECTION_ID,
+			shardId,
+			data
+		);
+	} catch (error) {
+		if (error.message.includes('already exists')) {
+			// Document exists, update instead
+			const existing = await databases.getDocument(
+				process.env.DATABASE_ID,
+				process.env.RESULTS_COLLECTION_ID,
+				shardId
+			);
+
+			const mergedResults = mergeResults(
+				JSON.parse(existing.results || '[]'),
+				JSON.parse(data.results)
+			);
+
+			return await databases.updateDocument(
+				process.env.DATABASE_ID,
+				process.env.RESULTS_COLLECTION_ID,
+				shardId,
+				{ results: JSON.stringify(mergedResults) }
+			);
+		}
+		throw error;
+	}
 }
 
 // Add this helper function for merging results
 function mergeResults(existingResults, newResults) {
-    const resultMap = new Map();
-    
-    // Add existing results to map
-    existingResults.forEach(result => {
-        resultMap.set(result.urlId, result);
-    });
-    
-    // Merge new results
-    newResults.forEach(newResult => {
-        if (resultMap.has(newResult.urlId)) {
-            const existing = resultMap.get(newResult.urlId);
-            existing.timestamps = [...existing.timestamps, ...newResult.timestamps];
-            existing.statuses = [...existing.statuses, ...newResult.statuses];
-            existing.responseTimes = [...existing.responseTimes, ...newResult.responseTimes];
-        } else {
-            resultMap.set(newResult.urlId, { ...newResult });
-        }
-    });
-    
-    return Array.from(resultMap.values());
+	const resultMap = new Map();
+
+	// Add existing results to map
+	existingResults.forEach((result) => {
+		resultMap.set(result.urlId, result);
+	});
+
+	// Merge new results
+	newResults.forEach((newResult) => {
+		if (resultMap.has(newResult.urlId)) {
+			const existing = resultMap.get(newResult.urlId);
+			existing.timestamps = [...existing.timestamps, ...newResult.timestamps];
+			existing.statuses = [...existing.statuses, ...newResult.statuses];
+			existing.responseTimes = [...existing.responseTimes, ...newResult.responseTimes];
+		} else {
+			resultMap.set(newResult.urlId, { ...newResult });
+		}
+	});
+
+	return Array.from(resultMap.values());
 }
 
 // Enhanced storeResultsByUser function with response times
@@ -568,13 +570,13 @@ async function storeResultsByUser(databases, resultsByUser) {
 
 				// Use upsert pattern to handle race conditions
 				batches.push(
-                    upsertShardDocument(databases, shardId, {
-                        userId,
-                        date: today,
-                        shardId,
-                        results: JSON.stringify(newResults)
-                    })
-                );
+					upsertShardDocument(databases, shardId, {
+						userId,
+						date: today,
+						shardId,
+						results: JSON.stringify(newResults)
+					})
+				);
 			}
 		} catch (error) {
 			console.error(`Error processing results for user ${userId}:`, error);
@@ -594,35 +596,48 @@ async function storeResultsByUser(databases, resultsByUser) {
 
 // Send failure notifications (EMAIL NOTIFICATIONS)
 async function sendFailureNotification(databases, messaging, users, urlDoc, result) {
-    try {        
-        let userEmail;
-        try {
-            const user = await users.get(urlDoc.userId);
-            userEmail = user.email;
-            
-            if (!userEmail) {
-                console.log(`No email found for user ${urlDoc.userId}`);
-                return;
-            }
-        } catch (userError) {
-            console.error(`Failed to get user ${urlDoc.userId}:`, userError);
-            return;
-        }
+	try {
+		let userEmail;
+		try {
+			const user = await users.get(urlDoc.userId);
+			userEmail = user.email;
 
-        const subject = `🚨 URL Down Alert: ${urlDoc.name || urlDoc.url}`;
-        const htmlContent = `
+			if (!userEmail) {
+				console.log(`No email found for user ${urlDoc.userId}`);
+				return;
+			}
+		} catch (userError) {
+			console.error(`Failed to get user ${urlDoc.userId}:`, userError);
+			return;
+		}
+
+		const subject = `🚨 URL Down Alert: ${urlDoc.name || urlDoc.url}`;
+		const htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h3 style="color: #dc2626;">Oops! We Detected a Problem with Your URL</h3>
   				<p>The URL <b>${urlDoc.url}</b> is currently <span style="color: #dc2626;">down</span>.</p>
+				
+				<div style="height: 24px;"></div>
 
-				<div style="border-top:2px solid #e5e7eb; margin:32px 0; width:100%;"></div>
-                
                 <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
                     <p><strong>URL:</strong> ${urlDoc.url}</p>
                     <p><strong>Name:</strong> ${urlDoc.name || 'Unnamed URL'}</p>
                     <p><strong>Status Code:</strong> ${result.status || 'No response'}</p>
                     <p><strong>Error:</strong> ${result.error || 'Unknown error'}</p>
-                    <p><strong>Time:</strong> ${new Date(result.timestamp).toLocaleString()}</p>
+                    <p><strong>Time:</strong> ${
+											result.timestamp
+												? new Date(result.timestamp).toLocaleString('en-US', {
+														year: 'numeric',
+														month: 'short',
+														day: '2-digit',
+														hour: '2-digit',
+														minute: '2-digit',
+														second: '2-digit',
+														hour12: false,
+														timeZone: 'UTC'
+													}) + ' UTC'
+												: 'Unknown'
+										}</p>
                 </div>
                 
                 <p><a href="${process.env.APP_URL}/dashboard" 
@@ -632,24 +647,24 @@ async function sendFailureNotification(databases, messaging, users, urlDoc, resu
             </div>
         `;
 
-        await messaging.createEmail(
-            ID.unique(),           // messageId
-            subject,               // subject
-            htmlContent,           // content (HTML)
-            [],                    // topics
-            [urlDoc.userId],       // users
-            [],                    // targets
-            [],                    // cc
-            [],                    // bcc
-            [],                    // attachments
-            false,                 // draft
-            true,                  // html (boolean - indicates content is HTML)
-            new Date(Date.now() + 2000).toISOString() // scheduledAt
-        );
+		await messaging.createEmail(
+			ID.unique(), // messageId
+			subject, // subject
+			htmlContent, // content (HTML)
+			[], // topics
+			[urlDoc.userId], // users
+			[], // targets
+			[], // cc
+			[], // bcc
+			[], // attachments
+			false, // draft
+			true, // html (boolean - indicates content is HTML)
+			new Date(Date.now() + 2000).toISOString() // scheduledAt
+		);
 
-        console.log(`Notification sent to ${userEmail} for URL ${urlDoc.url}`);
-    } catch (error) {
-        console.error('Failed to send notification:', error);
-        // Don't throw - continue processing other URLs
-    }
+		console.log(`Notification sent to ${userEmail} for URL ${urlDoc.url}`);
+	} catch (error) {
+		console.error('Failed to send notification:', error);
+		// Don't throw - continue processing other URLs
+	}
 }

@@ -77,7 +77,7 @@
                 </button>
 
                 <div class="text-center">
-                    <a href="/login" class="link link-hover text-sm"> Back to Login </a>
+                    <a href="/login" class="link link-hover text-sm"> Back to Log In </a>
                 </div>
             </div>
         </div>

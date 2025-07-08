@@ -134,14 +134,46 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 				<p class="text-base-content/70 py-6">
 					Please log in to manage your monitored URLs and access your dashboard.
 				</p>
-				<a href="/login" class="btn btn-primary btn-wide">Sign In</a>
+				<a href="/login" class="btn btn-primary btn-wide">Log In</a>
 			</div>
 		</div>
 	</div>
-{:else if loading}
-	<div class="flex min-h-96 flex-col items-center justify-center">
-		<span class="loading loading-spinner loading-lg text-primary"></span>
-		<p class="text-base-content/70 mt-4">Loading your URLs...</p>
+	{:else if loading}
+	<!-- Skeleton for Dashboard Layout -->
+	<div class="space-y-8 w-full max-w-5xl mx-auto">
+		<!-- Stats Bar Skeleton -->
+		<div class="hidden lg:block">
+			<div class="stats stats-horizontal bg-base-100 w-full shadow-lg">
+				{#each Array(4) as _, i}
+					<div class="stat place-items-center py-4">
+						<div class="stat-title text-sm">
+							<div class="skeleton h-4 w-20 mb-2"></div>
+						</div>
+						<div class="stat-value">
+							<div class="skeleton h-8 w-16"></div>
+						</div>
+						<div class="stat-desc text-sm">
+							<div class="skeleton h-3 w-24 mt-2"></div>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+		<!-- Controls Skeleton -->
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 w-full">
+				<div class="skeleton h-10 w-32"></div>
+				<div class="skeleton h-10 w-32"></div>
+				<div class="skeleton h-10 w-32"></div>
+			</div>
+			<div class="skeleton h-10 w-40"></div>
+		</div>
+		<!-- URL List Skeleton -->
+		<div class="space-y-4 w-full max-w-2xl mx-auto">
+			{#each Array(3) as _, i}
+				<div class="skeleton h-24 w-full rounded-lg"></div>
+			{/each}
+		</div>
 	</div>
 {:else}
 	<!-- Header Section -->
