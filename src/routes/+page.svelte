@@ -1,3 +1,10 @@
+<!--
+  Homepage template adapted from:
+  https://github.com/CriticalMoments/CMSaasStarter
+  Copyright (c) CriticalMoments
+  Licensed under the MIT License
+-->
+
 <script lang="ts">
 	const ldJson = {
 		'@context': 'https://schema.org',
@@ -12,7 +19,7 @@
 			name: 'Free to host',
 			description:
 				'Instructions included for Cloudflare + Appwrite. Free to start, and cost effective to scale.',
-				// TODO: add github link here
+			// TODO: add github link here
 			link: '',
 			linkText: 'Docs',
 			newPage: true,
@@ -27,7 +34,8 @@
 		},
 		{
 			name: 'Real-Time Alerts',
-			description: 'Get instant notifications via email or integrations when your services go down.',
+			description:
+				'Get instant notifications via email or integrations when your services go down.',
 			svgContent: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" {...$$props}>
 	<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.53 14.394c-.213 1.353.738 2.292 1.902 2.76c4.463 1.795 10.673 1.795 15.136 0c1.164-.468 2.115-1.407 1.902-2.76c-.13-.832-.777-1.524-1.256-2.2c-.627-.897-.689-1.874-.69-2.915C19.525 5.26 16.157 2 12 2S4.475 5.26 4.475 9.28c0 1.04-.062 2.018-.69 2.914c-.478.676-1.124 1.368-1.255 2.2M9 21c.796.622 1.848 1 3 1s2.204-.378 3-1" color="currentColor" />
@@ -36,10 +44,8 @@
 		},
 		//     {
 		//       name: "Email",
-		// TODO: add link here
-		//       link: "",
 		//       linkText: "Docs",
-		//       description: "Send emails to users, including template support.",
+		//       description: "Automated emails for onboarding, password resets, and URL downtime.",
 		//       svgContent: `<path d="M22 10C22.0185 10.7271 22 11.0542 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 		// <path d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 		// <circle cx="19" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>`,
@@ -50,8 +56,7 @@
 			linkText: 'Docs',
 			// TODO: add a github link here
 			link: '',
-			description:
-				'Modern SvelteKit stack ensures quick responses and high Lighthouse scores.',
+			description: 'Modern SvelteKit stack ensures quick responses and high Lighthouse scores.',
 			svgContent: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" {...$$props}>
 	<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M15.268 18.229c-1.98 2.678-2.969 4.017-3.892 3.734s-.923-1.925-.923-5.21v-.31c0-1.185 0-1.777-.379-2.148l-.02-.02c-.387-.363-1.003-.363-2.236-.363c-2.22 0-3.329 0-3.703-.673l-.019-.034c-.354-.683.289-1.552 1.574-3.29L8.732 5.77c1.979-2.678 2.969-4.017 3.892-3.734s.923 1.925.923 5.21v.31c0 1.185 0 1.777.379 2.148l.02.02c.387.363 1.003.363 2.236.363c2.22 0 3.329 0 3.704.673l.018.034c.354.683-.289 1.553-1.574 3.29" />
 </svg>`
@@ -90,7 +95,8 @@
 				'Built in linting, type checking, formatting, and test framework. Run locally in your editor, and on Github CI.',
 			newPage: true,
 			linkText: 'Docs',
-			link: 'https://github.com/CriticalMoments/CMSaasStarter?tab=readme-ov-file#developer-tools',
+			// TODO: add link here
+			link: '',
 			svgContent: `<path d="M7 9C7 9.55228 6.55228 10 6 10C5.44772 10 5 9.55228 5 9C5 8.44772 5.44772 8 6 8C6.55228 8 7 8.44772 7 9Z" fill="currentColor"/>
 <path d="M7 12C7 12.5523 6.55228 13 6 13C5.44772 13 5 12.5523 5 12C5 11.4477 5.44772 11 6 11C6.55228 11 7 11.4477 7 12Z" fill="currentColor"/>
 <path d="M10 12C10 12.5523 9.55228 13 9 13C8.44772 13 8 12.5523 8 12C8 11.4477 8.44772 11 9 11C9.55228 11 10 11.4477 10 12Z" fill="currentColor"/>
@@ -114,8 +120,7 @@
 		},
 		{
 			name: 'Open Source',
-			description:
-				'GNU AGPL v3 licensed: free to use, modify, and share.',
+			description: 'GNU AGPL v3 licensed: free to use, modify, and share.',
 			linkText: 'License',
 			newPage: true,
 			link: 'https://github.com/AnishSarkar22/Loopr/blob/main/LICENSE',
@@ -140,12 +145,12 @@
 	<div class="hero-content py-12 text-center">
 		<div class="max-w-xl">
 			<div
-				class="from-primary to-accent mb-3 bg-linear-to-r bg-clip-text pb-1 text-xl font-bold text-transparent mt-30 md:mt-5 md:mb-7 md:text-3xl"
+				class="from-primary to-accent mt-30 mb-3 bg-linear-to-r bg-clip-text pb-1 text-xl font-bold text-transparent md:mt-5 md:mb-7 md:text-3xl"
 			>
 				Loopr
 			</div>
 
-			<div class="px-2 text-4xl font-bold mt:10 md:text-5xl" style="line-height: 1.3;">
+			<div class="mt:10 px-2 text-4xl font-bold md:text-5xl" style="line-height: 1.3;">
 				The
 				<span class="decoration-secondary underline decoration-4 md:decoration-[6px]"
 					>open source</span
@@ -189,7 +194,7 @@
 	<div class="px-7 pt-20 pb-8">
 		<div class="mx-auto max-w-lg text-center">
 			<div
-				class="animate-gradient-x bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-4xl font-extrabold text-transparent drop-shadow-lg md:text-5xl md:mt-40 mt-50"
+				class="animate-gradient-x mt-50 bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-4xl font-extrabold text-transparent drop-shadow-lg md:mt-40 md:text-5xl"
 			>
 				Explore the Features
 			</div>
@@ -234,11 +239,13 @@
 <div class="hero mt-12 min-h-[60vh]">
 	<div class="hero-content px-4 pt-4 pb-16 text-center">
 		<div class="max-w-lg">
-			<div class="flex flex-col items-center mt-4 mb-6 md:mb-20">
-				<div class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent md:text-5xl">
+			<div class="mt-4 mb-6 flex flex-col items-center md:mb-20">
+				<div
+					class="from-primary to-accent bg-gradient-to-r bg-clip-text text-3xl font-bold text-transparent md:text-5xl"
+				>
 					See it in Action
 				</div>
-				<div class="h-1 w-16 bg-gradient-to-r from-primary to-accent rounded mt-2"></div>
+				<div class="from-primary to-accent mt-2 h-1 w-16 rounded bg-gradient-to-r"></div>
 			</div>
 			<div class="mt-20 flex flex-col place-content-center content-center gap-6 lg:flex-row">
 				<!-- for desktop view -->
@@ -257,7 +264,7 @@
 				<!-- For mobile view -->
 				<div class="md:hidden">
 					<a href="https://loopr-pi.vercel.app/" target="_blank" class="link">
-						<div class="card overflow-hidden bg-base-300 border-1 border-gray-900 shadow-xl">
+						<div class="card bg-base-300 overflow-hidden border-1 border-gray-900 shadow-xl">
 							<img
 								alt="Screenshot of Loopr Dashboard"
 								class="aspect-2044/1242"

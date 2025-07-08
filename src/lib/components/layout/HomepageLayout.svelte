@@ -61,13 +61,13 @@
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<ul
 				tabindex="0"
-				class="menu menu-lg dropdown-content bg-base-100 rounded-box border-base-content/5 z-1 mt-3 w-52 border p-2 shadow-2xl"
+				class=" menu menu-lg dropdown-content bg-base-100 rounded-box border-base-content/5 z-1 mt-3 w-52 border p-2 shadow-2xl"
 			>
 				<li><a href="/login">Log In</a></li>
 				<li class="md:mx-4">
 					<a
 						href="https://github.com/AnishSarkar22/Loopr"
-						class="border-base-300/100 flex items-center gap-2 rounded-xl border transition hover:text-white"
+						class="navbar-btn border-base-300/100 flex items-center gap-2 rounded-xl border transition hover:text-white"
 						target="_blank"
 						rel="noopener"
 						aria-label="Star Loopr on GitHub"
