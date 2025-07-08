@@ -6,7 +6,7 @@
 	import type { PingURL, Log } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { goto } from '$app/navigation';
-	import ActivityLogs from '../shared/ActivityLogs.svelte';
+	import ActivityLogs from '$lib/components/shared/ActivityLogs.svelte';
 	import { formatTimestamp } from '$lib/utils/format';
  
 	let url = $state<PingURL | null>(null);

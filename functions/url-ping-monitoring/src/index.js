@@ -17,7 +17,7 @@ You should have received a copy of the GNU Affero General Public License
 along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Client, Databases, Query } from 'node-appwrite';
+import { Client, Databases, Query, Messaging, ID, Users } from 'node-appwrite';
 
 export default async function ({ res }) {
 	console.log('=== PING MONITORING FUNCTION STARTED ===');
@@ -28,6 +28,8 @@ export default async function ({ res }) {
 		.setKey(process.env.APPWRITE_API_KEY);
 
 	const databases = new Databases(client);
+	const messaging = new Messaging(client);
+	const users = new Users(client);
 	const nodeId = process.env.NODE_ID || `node-${Math.floor(Math.random() * 5) + 1}`;
 	const now = new Date().toISOString();
 
@@ -135,7 +137,7 @@ export default async function ({ res }) {
 			}
 
 			// Process this batch efficiently
-			await processBatch(databases, urlsDue.documents);
+			await processBatch(databases, urlsDue.documents, messaging, users);
 
 			totalProcessed += urlsDue.documents.length;
 			offset += urlsDue.documents.length;
@@ -164,7 +166,7 @@ export default async function ({ res }) {
 	}
 }
 
-async function processBatch(databases, urlDocuments) {
+async function processBatch(databases, urlDocuments, messaging, users) {
 	// Process URLs in smaller parallel chunks to avoid memory issues
 	const PARALLEL_CHUNK_SIZE = parseInt(process.env.PARALLEL_CHUNK_SIZE) || 25;
 
@@ -186,6 +188,16 @@ async function processBatch(databases, urlDocuments) {
 			for (const result of pingResults) {
 				const urlDoc = chunk.find((doc) => doc.$id === result.urlId);
 				if (!urlDoc) continue;
+
+				// EMAIL NOTIFICATIONS (using appwrite messaging)
+				
+				// Check if this is a new failure and user wants notifications
+				// if (!result.success && urlDoc.lastPingStatus === 'success') {
+				if (!result.success) {
+					console.log(`Triggering email notification for user ${urlDoc.userId} and URL ${urlDoc.url}`);
+					// This is a new failure, send notification
+					await sendFailureNotification(databases, messaging, users, urlDoc, result);
+				}
 
 				// Group by user with pingInterval info
 				const userId = urlDoc.userId;
@@ -578,4 +590,66 @@ async function storeResultsByUser(databases, resultsByUser) {
 		console.error('Some batch operations failed:', error);
 		// Don't throw - allow function to complete partially
 	}
+}
+
+// Send failure notifications (EMAIL NOTIFICATIONS)
+async function sendFailureNotification(databases, messaging, users, urlDoc, result) {
+    try {        
+        let userEmail;
+        try {
+            const user = await users.get(urlDoc.userId);
+            userEmail = user.email;
+            
+            if (!userEmail) {
+                console.log(`No email found for user ${urlDoc.userId}`);
+                return;
+            }
+        } catch (userError) {
+            console.error(`Failed to get user ${urlDoc.userId}:`, userError);
+            return;
+        }
+
+        const subject = `🚨 URL Down Alert: ${urlDoc.name || urlDoc.url}`;
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h3 style="color: #dc2626;">Oops! We Detected a Problem with Your URL</h3>
+  				<p>The URL <b>${urlDoc.url}</b> is currently <span style="color: #dc2626;">down</span>.</p>
+
+				<div style="border-top:2px solid #e5e7eb; margin:32px 0; width:100%;"></div>
+                
+                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                    <p><strong>URL:</strong> ${urlDoc.url}</p>
+                    <p><strong>Name:</strong> ${urlDoc.name || 'Unnamed URL'}</p>
+                    <p><strong>Status Code:</strong> ${result.status || 'No response'}</p>
+                    <p><strong>Error:</strong> ${result.error || 'Unknown error'}</p>
+                    <p><strong>Time:</strong> ${new Date(result.timestamp).toLocaleString()}</p>
+                </div>
+                
+                <p><a href="${process.env.APP_URL}/dashboard" 
+                     style="background: #4f46e5; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;">
+                    View Dashboard
+                </a></p>
+            </div>
+        `;
+
+        await messaging.createEmail(
+            ID.unique(),           // messageId
+            subject,               // subject
+            htmlContent,           // content (HTML)
+            [],                    // topics
+            [urlDoc.userId],       // users
+            [],                    // targets
+            [],                    // cc
+            [],                    // bcc
+            [],                    // attachments
+            false,                 // draft
+            true,                  // html (boolean - indicates content is HTML)
+            new Date(Date.now() + 2000).toISOString() // scheduledAt
+        );
+
+        console.log(`Notification sent to ${userEmail} for URL ${urlDoc.url}`);
+    } catch (error) {
+        console.error('Failed to send notification:', error);
+        // Don't throw - continue processing other URLs
+    }
 }

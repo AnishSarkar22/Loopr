@@ -1,10 +1,13 @@
 <script lang="ts">
-    import { account, ID, AppwriteException } from '../../appwrite';
+    import { account, ID, AppwriteException } from '$lib/appwrite';
     import { PUBLIC_APP_URL } from '$env/static/public';
 
     let email = $state('');
     let password = $state('');
     let confirmPassword = $state('');
+    let name = $state('');
+    let isNameValid = $state(true);
+    let nameTouched = $state(false);
     let loading = $state(false);
     let isPasswordValid = $state(true);
     let isEmailValid = $state(true);
@@ -26,6 +29,22 @@
             showToast = false;
         }, 3000);
     }
+
+    function validateName(value: string) {
+        // Require at least 2 characters, only letters and spaces
+        const nameRegex = /^[a-zA-Z ]{2,}$/;
+        isNameValid = value === '' || nameRegex.test(value);
+    }
+
+    function handleNameInput(e: Event) {
+        const target = e.currentTarget as HTMLInputElement;
+        name = target.value;
+        nameTouched = true;
+        validateName(name);
+    }
+
+    // Computed value for showing name validation error
+    const showNameError = $derived(nameTouched && name !== '' && !isNameValid);
 
     function validateEmail(value: string) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,23 +95,25 @@
         e.preventDefault();
         
         // Mark all fields as touched on submit
+        nameTouched = true;
         emailTouched = true;
         passwordTouched = true;
         confirmPasswordTouched = true;
         
         // Validate all fields
+        validateName(name);
         validateEmail(email);
         validatePassword(password);
         validateConfirmPassword(confirmPassword);
 
-        if (!isEmailValid || !isPasswordValid || !doPasswordsMatch || !email || !password || !confirmPassword) {
+        if (!isNameValid || !isEmailValid || !isPasswordValid || !doPasswordsMatch || !name || !email || !password || !confirmPassword) {
             return;
         }
         
         loading = true;
         try {
             // Create user account using Appwrite
-            await account.create(ID.unique(), email, password);
+            await account.create(ID.unique(), email, password, name);
 
             try {
                 // Create email session
@@ -139,6 +160,26 @@
         <div class="card bg-base-200 w-full shadow-lg md:w-[400px]">
             <form class="card-body mt-6 px-10 py-6" onsubmit={handleSubmit}>
                 <div class="space-y-4">
+                    <div>
+                        <label class="input validator w-full" class:input-error={showNameError}>
+                            <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </g>
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Full Name"
+                                required
+                                bind:value={name}
+                                oninput={handleNameInput}
+                            />
+                        </label>
+                        <div class="validator-hint text-error text-sm mt-1" class:hidden={!showNameError}>
+                            Enter your name (letters and spaces, at least 2 characters)
+                        </div>
+                    </div>
+
                     <div>
                         <label class="input validator w-full" class:input-error={showEmailError}>
                             <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -231,7 +272,7 @@
                     <button
                         class="btn btn-primary w-full"
                         type="submit"
-                        disabled={loading || !isEmailValid || !isPasswordValid || !doPasswordsMatch || !email || !password || !confirmPassword}
+                        disabled={loading || !isNameValid || !isEmailValid || !isPasswordValid || !doPasswordsMatch || !name || !email || !password || !confirmPassword}
                     >
                         {#if loading}
                             <span class="loading loading-spinner"></span>

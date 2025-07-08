@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { account, AppwriteException } from '../appwrite';
+	import { onMount } from 'svelte';
+	import { account, AppwriteException } from '$lib/appwrite';
 	import { goto } from '$app/navigation';
 
+	let currentName = $state('');
+	let newName = $state('');
+	let successMessage = $state('');
+	let errorMessage = $state('');
+	let nameLoading = $state(false);
+   	let passwordLoading = $state(false);
 	let currentPassword = $state('');
 	let newPassword = $state('');
 	let confirmNewPassword = $state('');
@@ -19,6 +26,34 @@
 	let deleteLoading = $state(false);
 	const DELETE_TIMEOUT = 5000;
 
+	// Change name functions
+	onMount(async () => {
+		try {
+			const user = await account.get();
+			currentName = user.name ?? '';
+			newName = currentName;
+		} catch (e) {
+			errorMessage = 'Failed to load profile.';
+		}
+	});
+
+	async function handleNameChange(e: Event) {
+		e.preventDefault();
+		nameLoading = true;
+		successMessage = '';
+		errorMessage = '';
+		try {
+			await account.updateName(newName);
+			currentName = newName;
+			successMessage = 'Name updated successfully!';
+		} catch (e) {
+			errorMessage = 'Failed to update name. Please try again.';
+		} finally {
+			loading = false;
+		}
+	}
+
+	// Delete account functions
 	function handleDelete() {
 		showDeleteConfirm = true;
 		if (deleteTimeout) clearTimeout(deleteTimeout);
@@ -80,6 +115,7 @@
 		if (deleteTimeout) clearTimeout(deleteTimeout);
 	}
 
+	// password change functions
 	function validateNewPassword(value: string) {
 		const passwordRegex = /^[a-zA-Z0-9]{8,}$/;
 		isNewPasswordValid = passwordRegex.test(value);
@@ -104,7 +140,7 @@
 	async function handleChangePassword(e: Event) {
 		e.preventDefault();
 		if (!isNewPasswordValid || !doPasswordsMatch) return;
-		loading = true;
+		passwordLoading = true;
 		try {
 			await account.updatePassword(newPassword, currentPassword);
 			showAlert('Password changed successfully!');
@@ -139,6 +175,69 @@
 				<div class="flex items-center justify-center">
 					<h1 class="text-primary -mt-18 py-8 text-3xl font-bold">Your Profile</h1>
 				</div>
+
+				<!-- Change Name Section -->
+				<div class="card bg-base-100 border-base-300 border">
+					<div class="card-body">
+						<h3 class="card-title text-base-content">Change Name</h3>
+						<p class="text-base-content/70 mb-4 text-sm">
+							Update your display name for your account.
+						</p>
+						<form class="space-y-4" onsubmit={handleNameChange}>
+							<!-- Current Name -->
+							<div class="form-control w-full">
+								<label class="label" for="current-name">
+									<span class="label-text text-base-content mb-1 font-medium">Current Name</span>
+								</label>
+								<input
+									id="current-name"
+									type="text"
+									class="input input-bordered bg-base-100 text-base-content w-full"
+									value={currentName}
+									readonly
+								/>
+							</div>
+							<!-- New Name -->
+							<div class="form-control w-full">
+								<label class="label" for="new-name">
+									<span class="label-text text-base-content mb-1 font-medium">New Name</span>
+								</label>
+								<input
+									id="new-name"
+									type="text"
+									class="input input-bordered bg-base-100 text-base-content w-full"
+									bind:value={newName}
+									required
+									minlength="2"
+									placeholder="Enter your new name"
+								/>
+							</div>
+							<!-- Submit Button -->
+							<div class="form-control mt-6">
+								<button
+									type="submit"
+									class="btn btn-primary"
+									disabled={nameLoading || newName === currentName}
+								>
+									{#if loading}
+										<span class="loading loading-spinner loading-sm"></span>
+										<!-- Updating... -->
+									{:else}
+										Update Name
+									{/if}
+								</button>
+							</div>
+							{#if successMessage}
+								<div class="alert alert-success mt-4">{successMessage}</div>
+							{/if}
+							{#if errorMessage}
+								<div class="alert alert-error mt-4">{errorMessage}</div>
+							{/if}
+						</form>
+					</div>
+				</div>
+
+				<div class="divider mx-auto w-1/2"></div>
 
 				<!-- Password Change Section -->
 				<div class="card bg-base-100 border-base-300 border">
@@ -237,9 +336,9 @@
 										!newPassword ||
 										!confirmNewPassword}
 								>
-									{#if loading}
+									{#if passwordLoading}
 										<span class="loading loading-spinner loading-sm"></span>
-										Changing Password...
+										<!-- Changing Password... -->
 									{:else}
 										Change Password
 									{/if}

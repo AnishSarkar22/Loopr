@@ -8,6 +8,20 @@ import {
 } from '$env/static/private';
 import type { RequestHandler } from './$types';
 
+function getErrorDetails(error: unknown) {
+    if (typeof error === 'object' && error !== null) {
+        const err = error as { message?: string; code?: number };
+        return {
+            message: err.message ?? 'Unknown error',
+            code: err.code ?? 500
+        };
+    }
+    return {
+        message: 'Unknown error',
+        code: 500
+    };
+}
+
 export const DELETE: RequestHandler = async ({ request, cookies }) => {
     try {
         // Get the authorization header or session cookie

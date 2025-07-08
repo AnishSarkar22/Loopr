@@ -1,36 +1,36 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { account } from '../../appwrite';
+	import { account } from '$lib/appwrite';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
 	let isAuthenticated = $state(false);
+	let userName = $state('');
 	let userInitials = $state('');
 	let showToast = $state(false);
 	let toastMessage = $state('');
 	let isError = $state(false);
 
-	onMount(async () => {
-		try {
-			const user = await account.get();
-			isAuthenticated = true;
+	function getInitials(name: string): string {
+        if (!name) return '';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0][0].toUpperCase();
+        // Take first letter of first two words only
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
 
-			// Get initials from email with null checking
-			if (user && user.email) {
-				userInitials =
-					user.email
-						.split('@')[0]
-						.match(/(\b\S)?/g)
-						?.join('') // Optional chaining for match result
-						.toUpperCase() || ''; // Fallback if match returns null
-			} else {
-				userInitials = 'U'; // Default fallback if no email
-			}
-		} catch {
-			isAuthenticated = false;
-			userInitials = '';
-		}
-	});
+	onMount(async () => {
+    try {
+        const user = await account.get();
+        userName = user.name ?? '';
+        userInitials = getInitials(userName);
+        isAuthenticated = true;
+    } catch (error) {
+        userName = '';
+        userInitials = '';
+        isAuthenticated = false;
+    }
+});
 
 	function showAlert(message: string, error = false) {
 		toastMessage = message;
