@@ -662,6 +662,21 @@ async function sendFailureNotification(databases, messaging, users, urlDoc, resu
 			new Date(Date.now() + 2000).toISOString() // scheduledAt
 		);
 
+		await databases.createDocument(
+			process.env.DATABASE_ID,
+			process.env.NOTIFICATIONS_COLLECTION_ID,
+			ID.unique(),
+			{
+			userId: urlDoc.userId,
+			type: 'url_down',
+			message: `The URL ${urlDoc.url} is down. Error: ${result.error || 'Unknown error'}`,
+			urlId: urlDoc.$id,
+			url: urlDoc.url,
+			timestamp: new Date().toISOString(),
+			read: false
+			}
+		);
+
 		console.log(`Notification sent to ${userEmail} for URL ${urlDoc.url}`);
 	} catch (error) {
 		console.error('Failed to send notification:', error);

@@ -2,8 +2,8 @@ import { databases, ID } from '$lib/appwrite';
 import type { Log, PingURL, PingURLDatabase } from '$lib/types';
 import { Query } from 'appwrite';
 
-const DATABASE_ID = import.meta.env.VITE_DATABASE_ID;
-const COLLECTION_ID = import.meta.env.VITE_COLLECTION_ID;
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const COLLECTION_ID = import.meta.env.VITE_APPWRITE_COLLECTION_ID;
 
 // Helper function to format ping interval for display
 export function formatPingInterval(minutes: number): string {
@@ -110,6 +110,7 @@ export const urlService = {
 
 		const response = await databases.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), data);
 		return dbToApp(response);
+		// return dbToApp(response as unknown as PingURLDatabase);
 	},
 
 	async getURLs(userId: string, limit: number = 100): Promise<PingURL[]> {

@@ -3,6 +3,7 @@
 	import { account } from '$lib/appwrite';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import Notifications from '$lib/components/shared/Notifications.svelte';
 
 	let isAuthenticated = $state(false);
 	let userName = $state('');
@@ -74,6 +75,8 @@
 	</div>
 
 	<div class="navbar-end">
+		<!-- Notifications icon/component goes here -->
+		<Notifications />
 		<a
 			href="https://github.com/AnishSarkar22/Loopr"
 			target="_blank"
