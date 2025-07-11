@@ -10,7 +10,9 @@
 
 <div class="navbar bg-base-100 container mx-auto">
 	<div class="flex-1">
-		<a class="btn btn-ghost text-xl normal-case" href="/">Loopr</a>
+		<a class="btn btn-ghost p-2" href="/" aria-label="Loopr Home">
+			<img src="/images/loopr.svg" alt="Loopr Logo" class="h-30 w-30" />
+		</a>
 	</div>
 	<div class="flex-none">
 		<ul class="menu menu-horizontal hidden px-1 text-lg sm:flex">
@@ -38,7 +40,9 @@
 					Star on GitHub
 				</a>
 			</li>
-			<li class="navbar-btn border-base-content/5 rounded-xl border md:mx-2"><a href="/login">Log In</a></li>
+			<li class="navbar-btn border-base-content/5 rounded-xl border md:mx-2">
+				<a href="/login">Log In</a>
+			</li>
 		</ul>
 		<div class="dropdown dropdown-end sm:hidden">
 			<!-- svelte-ignore a11y_label_has_associated_control -->
