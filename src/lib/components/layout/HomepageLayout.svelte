@@ -165,7 +165,7 @@
 				class="font-semibold hover:underline"
 				href="https://github.com/AnishSarkar22/Loopr"
 				target="_blank"
-				rel="noopener">Github</a
+				rel="noopener">Source Code</a
 			>
 		</nav>
 		<aside class="text-center text-sm opacity-80">
