@@ -2,8 +2,7 @@
 	import { onMount } from 'svelte';
 	import { databases, ID, AppwriteException } from '$lib/appwrite';
 	import { Query } from 'appwrite';
-	import { PUBLIC_APP_URL } from '$env/static/public';
-	import { user, isAuthenticated } from '$lib/stores/auth'; // <-- import your stores
+	import { user, isAuthenticated } from '$lib/stores/auth';
 
 	let notifications = $state<any[]>([]);
 	let loading = $state(true);

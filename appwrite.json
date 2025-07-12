@@ -1,7 +1,6 @@
 {
     "projectName": "Loopr",
     "projectId": "loopr-project",
-    "endpoint": "https://fra.cloud.appwrite.io/v1",
     "functions": [
         {
             "$id": "pingFunction",
