@@ -22,13 +22,11 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 	import { onMount } from 'svelte';
 	import type { PingURL } from '$lib/types';
 	import { urlService } from '$lib/services/urlService';
-	import { account } from '$lib/appwrite';
 	import URLList from './monitoring/views/URLList.svelte';
 	import AddURLForm from './monitoring/AddURLForm.svelte';
+	import { isAuthenticated, user } from '$lib/stores/auth';
 
 	let urls = $state<PingURL[]>([]);
-	let isAuthenticated = $state(false);
-	let userId = $state<string | null>(null);
 	let loading = $state(true);
 	let showAddForm = $state(false);
 	let showToast = $state(false);
@@ -50,36 +48,48 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 		}, duration);
 	}
 
-	onMount(async () => {
-		try {
-			const session = await account.get();
-			userId = session.$id;
-			isAuthenticated = true;
+	// onMount(async () => {
+	// 	try {
+	// 		const session = await account.get();
+	// 		userId = session.$id;
+	// 		isAuthenticated.set(true);
 
-			// Fix any URLs with missing nextPingTime first
-			await urlService.fixMissingNextPingTimes(userId);
+	// 		// Fix any URLs with missing nextPingTime first
+	// 		await urlService.fixMissingNextPingTimes(userId);
 
-			// now load the URLs
-			await loadURLs();
-		} catch (error) {
-			console.error('Error loading user data', error);
-			isAuthenticated = false;
-		} finally {
-			loading = false;
+	// 		// now load the URLs
+	// 		await loadURLs();
+	// 	} catch (error) {
+	// 		console.error('Error loading user data', error);
+	// 		isAuthenticated.set(false);
+	// 	} finally {
+	// 		loading = false;
+	// 	}
+	// });
+
+	$effect(() => {
+		if ($isAuthenticated && $user?.id && loading) {
+			(async () => {
+				try {
+					await urlService.fixMissingNextPingTimes($user.id);
+					await loadURLs();
+				} finally {
+					loading = false;
+				}
+			})();
 		}
 	});
 
-	async function loadURLs() {
-		if (!userId) return;
-
-		try {
-			const userUrls = await urlService.getURLs(userId);
-			urls = userUrls || [];
-		} catch (error) {
-			console.error('Error loading URLs:', error);
-			showToastNotification('Failed to load URLs', 'error');
-		}
-	}
+    async function loadURLs() {
+        if (!$user?.id) return;
+        try {
+            const userUrls = await urlService.getURLs($user.id);
+            urls = userUrls || [];
+        } catch (error) {
+            console.error('Error loading URLs:', error);
+            showToastNotification('Failed to load URLs', 'error');
+        }
+    }
 
 	async function handleURLAdded(newUrl: PingURL) {
 		urls = [...urls, newUrl];
@@ -106,7 +116,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 	}
 </script>
 
-{#if !isAuthenticated}
+{#if !$isAuthenticated}
 	<div class="hero bg-base-200 rounded-box min-h-96">
 		<div class="hero-content text-center">
 			<div class="max-w-md">
@@ -365,7 +375,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 	</div>
 
 	<!-- Add URL Form Modal -->
-	{#if showAddForm}
+	{#if showAddForm && $user}
 		<div class="modal modal-open" transition:fade>
 			<div class="modal-box max-w-2xl">
 				<div class="mb-6 flex items-center justify-between">
@@ -374,7 +384,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 						>✕</button
 					>
 				</div>
-				<AddURLForm {userId} onSuccess={handleURLAdded} onCancel={() => (showAddForm = false)} />
+				<AddURLForm userId={$user.id} onSuccess={handleURLAdded} onCancel={() => (showAddForm = false)} />
 			</div>
 			<div
 				class="modal-backdrop"

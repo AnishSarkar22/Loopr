@@ -2,9 +2,9 @@
     import { fade } from 'svelte/transition';
     import type { Log, PingURL } from '$lib/types';
     import { urlService } from '$lib/services/urlService';
-    import { account } from '$lib/appwrite';
     import { onMount } from 'svelte';
     import ActivityLogs from './shared/ActivityLogs.svelte';
+    import { isAuthenticated, user } from '$lib/stores/auth';
 
     let logs = $state<Log[]>([]);
     let showToast = $state(false);
@@ -14,7 +14,6 @@
     let lastRefreshTime = $state('');
     let refreshing = $state(false);
     let lastRefreshTimestamp = $state(0);
-    let isAuthenticated = $state(false);
     let userUrls = $state<PingURL[]>([]);
     let loading = $state(true);
 
@@ -43,19 +42,18 @@
     }
 
     onMount(async () => {
-        try {
-            const session = await account.get();
-            userId = session.$id;
-            isAuthenticated = true;
-
-            // Load logs from all user URLs
-            await loadAllUserLogs();
-        } catch (error) {
-            console.error('Error loading user data', error);
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-            addLog('Failed to load user data: ' + errorMessage, 'error');
-        } finally {
-            loading = false;
+        if ($isAuthenticated && $user?.id) {
+            loading = true;
+            try {
+                userId = $user.id;
+                await loadAllUserLogs();
+            } catch (error) {
+                console.error('Error loading user data', error);
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+                addLog('Failed to load user data: ' + errorMessage, 'error');
+            } finally {
+                loading = false;
+            }
         }
     });
 

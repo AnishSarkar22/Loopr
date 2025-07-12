@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { account, AppwriteException } from '$lib/appwrite';
 	import { goto } from '$app/navigation';
+	import { isAuthenticated, user } from '$lib/stores/auth';
 
 	let email = $state('');
 	let password = $state('');
@@ -80,9 +81,18 @@
 			await account.createEmailPasswordSession(email, password);
 
 			// Get the user to check verification status
-			const user = await account.get();
+			const userData = await account.get();
 
-			if (!user.emailVerification) {
+			// Set the auth store here
+			user.set({
+				id: userData.$id,
+				name: userData.name,
+				email: userData.email
+			});
+			isAuthenticated.set(true);
+
+
+			if (!userData.emailVerification) {
 				// If email is not verified, redirect to verification page
 				window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
 				return;

@@ -62,7 +62,9 @@
 	class="navbar bg-base-100/80 supports-[backdrop-filter]:bg-base-100/50 fixed top-0 z-50 backdrop-blur-md"
 >
 	<div class="navbar-start">
-		<a href="/dashboard" class="btn btn-ghost text-primary text-xl">Loopr</a>
+		<a class="btn btn-ghost p-2" href="/dashboard" aria-label="Loopr Home">
+			<img src="/images/loopr.svg" alt="Loopr Logo" class="h-30 w-30" />
+		</a>
 	</div>
 
 	<div class="navbar-center hidden lg:flex">
@@ -75,8 +77,7 @@
 	</div>
 
 	<div class="navbar-end">
-		<!-- Notifications icon/component goes here -->
-		<Notifications />
+
 		<a
 			href="https://github.com/AnishSarkar22/Loopr"
 			target="_blank"
@@ -92,6 +93,8 @@
 				/>
 			</svg>
 		</a>
+
+		<Notifications />
 
 		{#if loading}
 		<div class="skeleton w-10 h-10 rounded-full"></div>

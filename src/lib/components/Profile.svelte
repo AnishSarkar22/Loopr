@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { account, AppwriteException } from '$lib/appwrite';
 	import { goto } from '$app/navigation';
+	import { isAuthenticated, user } from '$lib/stores/auth';
 
 	let currentName = $state('');
 	let newName = $state('');
@@ -28,17 +29,16 @@
 	const DELETE_TIMEOUT = 5000;
 
 	// Change name functions
-	onMount(async () => {
-		try {
-			const user = await account.get();
-			currentName = user.name ?? '';
-			newName = currentName;
-		} catch (e) {
-			errorMessage = 'Failed to load profile.';
-		} finally {
-			loading = false;
-		}
-	});
+	onMount(() => {
+        if ($user?.name) {
+            currentName = $user.name;
+            newName = $user.name;
+            loading = false;
+        } else {
+            errorMessage = 'Failed to load profile.';
+            loading = false;
+        }
+    });
 
 	async function handleNameChange(e: Event) {
 		e.preventDefault();

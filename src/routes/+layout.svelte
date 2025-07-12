@@ -1,9 +1,27 @@
 <script lang="ts">
 	import Header from '$lib/components/layout/Header.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
+	import { onMount } from 'svelte';
+    import { account } from '$lib/appwrite';
 	import HomepageLayout from '$lib/components/layout/HomepageLayout.svelte';
 	import '../app.css';
 	import { page } from '$app/stores';
+	import { user, isAuthenticated } from '$lib/stores/auth';
+
+	onMount(async () => {
+        try {
+            const session = await account.get();
+            user.set({
+                id: session.$id,
+                name: session.name,
+                email: session.email
+            });
+            isAuthenticated.set(true);
+        } catch {
+            user.set(null);
+            isAuthenticated.set(false);
+        }
+    });
 
 	let { children } = $props();
 
