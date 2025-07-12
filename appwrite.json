@@ -1,6 +1,7 @@
 {
     "projectName": "Loopr",
-    "projectId": "put-your-project-id",
+    "projectId": "loopr-project",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
     "functions": [
         {
             "$id": "pingFunction",
@@ -13,7 +14,7 @@
             "events": [],
             "scopes": [
                 "databases.read",
-                "databases.write", 
+                "databases.write",
                 "documents.read",
                 "documents.write"
             ],
@@ -36,7 +37,7 @@
             "events": [],
             "scopes": [
                 "databases.read",
-                "databases.write", 
+                "databases.write",
                 "documents.read",
                 "documents.write"
             ],
@@ -59,7 +60,7 @@
             "events": [],
             "scopes": [
                 "databases.read",
-                "databases.write", 
+                "databases.write",
                 "documents.read",
                 "documents.write"
             ],
@@ -70,6 +71,510 @@
             "entrypoint": "src/index.js",
             "commands": "npm install",
             "path": "functions/database-cleanup"
+        }
+    ],
+    "databases": [
+        {
+            "$id": "loopr-main-database",
+            "name": "Loopr",
+            "enabled": true
+        }
+    ],
+    "collections": [
+        {
+            "$id": "ping-urls-collection",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "loopr-main-database",
+            "name": "ping_urls",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "url",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 2048,
+                    "default": null
+                },
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 36,
+                    "default": null
+                },
+                {
+                    "key": "isEnabled",
+                    "type": "boolean",
+                    "required": true,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "lastPingStatus",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 10,
+                    "default": null
+                },
+                {
+                    "key": "lastPingStatusCode",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "successCount",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": null
+                },
+                {
+                    "key": "logs",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 65536,
+                    "default": null
+                },
+                {
+                    "key": "nodeId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": null
+                },
+                {
+                    "key": "shardKey",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 100,
+                    "default": null
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 500,
+                    "default": null
+                },
+                {
+                    "key": "lastResponseTime",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "totalPings",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "lastError",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 500,
+                    "default": null
+                },
+                {
+                    "key": "nextPingTime",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "pingInterval",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 15
+                },
+                {
+                    "key": "lastPingTime",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "userId_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "enabled_nextping_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "isEnabled",
+                        "nextPingTime"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "nodeId_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "nodeId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "compound_node_enabled_nextping",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "nodeId",
+                        "isEnabled",
+                        "nextPingTime"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "ping-results-collection",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "loopr-main-database",
+            "name": "ping_results",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null
+                },
+                {
+                    "key": "date",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 10,
+                    "default": null
+                },
+                {
+                    "key": "shardId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 266,
+                    "default": null
+                },
+                {
+                    "key": "counter",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "results",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1048576,
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "userId_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "date_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "date"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "shardId_unique",
+                    "type": "unique",
+                    "status": "available",
+                    "attributes": [
+                        "shardId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "userId_date_compound",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "userId",
+                        "date"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "worker-nodes-collection",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "loopr-main-database",
+            "name": "worker_nodes",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 50,
+                    "default": null
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 20,
+                    "default": null
+                },
+                {
+                    "key": "lastHeartbeat",
+                    "type": "datetime",
+                    "required": true,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "urlCount",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": -9223372036854775808,
+                    "max": 9223372036854775807,
+                    "default": 0
+                },
+                {
+                    "key": "region",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": "default"
+                },
+                {
+                    "key": "nodeType",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 20,
+                    "default": "dynamic"
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "status_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "status"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "lastHeartbeat_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "lastHeartbeat"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "compound_status_heartbeat",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "status",
+                        "lastHeartbeat"
+                    ],
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "region_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "region"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "notifications-collection",
+            "$permissions": [
+                "create(\"any\")",
+                "read(\"any\")",
+                "update(\"any\")",
+                "delete(\"any\")"
+            ],
+            "databaseId": "loopr-main-database",
+            "name": "notifications",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 50,
+                    "default": null
+                },
+                {
+                    "key": "message",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 1024,
+                    "default": null
+                },
+                {
+                    "key": "urlId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null
+                },
+                {
+                    "key": "url",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 1024,
+                    "default": null
+                },
+                {
+                    "key": "timestamp",
+                    "type": "datetime",
+                    "required": true,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "read",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": false
+                }
+            ],
+            "indexes": []
         }
     ]
 }
