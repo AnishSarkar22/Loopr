@@ -615,7 +615,7 @@ async function sendFailureNotification(databases, messaging, users, urlDoc, resu
 		const htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h3 style="color: #dc2626;">Oops! We Detected a Problem with Your URL</h3>
-  				<p>The URL <b>${urlDoc.url}</b> is currently <span style="color: #dc2626;">down</span>.</p>
+  				<p>One of your URL(s) is currently <span style="color: #dc2626;">down</span>.</p>
 				
 				<div style="height: 24px;"></div>
 

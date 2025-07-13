@@ -148,6 +148,7 @@
 							</svg>
 							<input
 								type="email"
+								name="email"
 								placeholder="john@example.com"
 								required
 								bind:value={email}
@@ -177,6 +178,7 @@
 							</svg>
 							<input
 								type="password"
+								name="password"
 								required
 								placeholder="Password"
 								minlength="8"
