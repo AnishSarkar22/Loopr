@@ -1,39 +1,42 @@
-# **Loopr - Intelligent URL Monitoring & Uptime Service**
+<p align="center"><img src="/static/favicon.svg" width="150"></p>
+<h1 align="center"><b>Loopr</b></h1>
+<h4 align="center"><i>Intelligent URL Monitoring & Uptime Service</i></h4>
+<br>
 
 **Loopr** is a comprehensive, cloud-native URL monitoring application designed to track website uptime, performance, and availability in real-time. Built with modern web technologies and optimized for scalability, Loopr provides automated monitoring, intelligent alerting, and detailed analytics for web services.
 
 ---
 
-## **Overview**
+# **Overview**
 
 Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite backend** infrastructure, featuring intelligent **cron job scheduling** and **distributed monitoring capabilities**. The application is engineered to handle high-frequency monitoring tasks while maintaining optimal resource utilization and cost efficiency.
 
 ---
 
-## **Key Features**
+# **Key Features**
 
-### 🔍 Real-Time Monitoring
+## 🔍 Real-Time Monitoring
 
 * Continuous URL health checking with configurable ping intervals
 * Multi-node distributed monitoring architecture
 * Response time tracking and performance analytics
 * Automated failure detection and recovery monitoring
 
-### 🚨 Intelligent Alerting System
+## 🚨 Intelligent Alerting System
 
 * Email notifications for service failures
 * Real-time dashboard updates
 * Customizable notification preferences
 * Historical incident tracking
 
-### 📊 Advanced Analytics
+## 📊 Advanced Analytics
 
 * Comprehensive uptime statistics
 * Response time trends and performance metrics
 * Success/failure rate analysis
 * Historical data visualization
 
-### 👥 User Management
+## 👥 User Management
 
 * Secure authentication and profile management
 * Multi-user support with isolated monitoring spaces
@@ -42,9 +45,9 @@ Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite b
 
 ---
 
-## **Architecture & Optimization**
+# **Architecture & Optimization**
 
-### 🧠 Distributed Worker System
+## 🧠 Distributed Worker System
 
 Loopr employs a **multi-node architecture** that distributes monitoring tasks across worker nodes. This ensures:
 
@@ -52,20 +55,20 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * No single points of failure
 * Optimized resource usage
 
-### ⚖️ Intelligent Load Balancing
+## ⚖️ Intelligent Load Balancing
 
 * Dynamic load balancing algorithms
 * Automatic redistribution of tasks based on node performance and availability
 * Continuous operation even during node failures
 
-### 🗃️ Database Optimization
+## 🗃️ Database Optimization
 
 * Efficient data sharding for scalability
 * Automated cleanup for historical data
 * Optimized query patterns
 * Batch processing for high throughput
 
-### 🚀 Performance Enhancements
+## 🚀 Performance Enhancements
 
 * Parallel processing of tasks
 * Configurable batch sizes
@@ -74,25 +77,25 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 
 ---
 
-## **Cron Job Optimization Strategy**
+# **Cron Job Optimization Strategy**
 
-### 📦 Dynamic Batch Processing
+## 📦 Dynamic Batch Processing
 
 * URL checks are processed in **dynamically sized batches**
 * Batch size adapts to system resources and time availability
 
-### ⏱️ Time-Aware Execution
+## ⏱️ Time-Aware Execution
 
 * Smart scheduling to utilize full execution window
 * Processing buffers to avoid timeouts
 
-### 🧩 Resource Management
+## 🧩 Resource Management
 
 * Customizable processing parameters for different environments
 * Adaptive sizing based on system performance
 * Optimized memory and database interaction
 
-### 🛡️ Fault Tolerance
+## 🛡️ Fault Tolerance
 
 * Graceful handling of partial task failures
 * Auto-retry on failed operations
@@ -101,25 +104,25 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 
 ---
 
-## **Deployment Architecture**
+# **Deployment Architecture**
 
-### ☁️ Cloud-Native Design
+## ☁️ Cloud-Native Design
 
 * Fully containerized architecture
 * Compatible with dev to production-scale hosting
 
-### 📈 Scalable Infrastructure
+## 📈 Scalable Infrastructure
 
 * Horizontal scaling via worker node expansion
 
-### ⚙️ Environment Configuration
+## ⚙️ Environment Configuration
 
 * Full control using environment variables
 * Ready-to-use deployment templates for multiple environments
 
 ---
 
-## **Security Features**
+# **Security Features**
 
 * Secure API key management
 * Encrypted data communication
@@ -128,22 +131,22 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 
 ---
 
-## **Technology Stack**
+# **Technology Stack**
 
-### 🎨 Frontend
+## 🎨 Frontend
 
 * **SvelteKit** for reactive UI
 * **TailwindCSS** with **DaisyUI** for responsive design
 * Real-time dashboard updates
 
-### 🔧 Backend
+## 🔧 Backend
 
 * **Appwrite** as Backend-as-a-Service
 * **Node.js** for serverless functions
 * **MariaDB** for data persistence
 * **Redis** for caching and session storage
 
-### 🛠️ Infrastructure
+## 🛠️ Infrastructure
 
 * **Docker** containerization
 * Configurable worker node deployment
@@ -152,35 +155,35 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 
 ---
 
-## **Use Cases**
+# **Use Cases**
 
-### 🔍 Web Service Monitoring
+## 🔍 Web Service Monitoring
 
 Monitor websites, APIs, and services with custom intervals and full analytics.
 
-### 📈 Performance Tracking
+## 📈 Performance Tracking
 
 Track uptime, latency, and availability trends.
 
-### 🚨 Incident Management
+## 🚨 Incident Management
 
 Get real-time alerts and review incident histories.
 
-### 📋 Compliance Reporting
+## 📋 Compliance Reporting
 
 Generate SLA uptime reports and conduct audits.
 
 ---
 
-## Self-Hosting Loopr
+# Self-Hosting Loopr
 
 Follow these steps to deploy Loopr on your own infrastructure using Docker.
 
-### Prerequisites
+## Prerequisites
 - Docker and Docker Compose installed on your system
 - Domain name (optional, for production deployment)
 
-### Quick Start
+## Quick Start
 
 **Step 1:** Clone the Repository
 ```
@@ -267,9 +270,9 @@ Use the `.env.dist` file as a reference and fill in all required global variable
 
 Navigate to `http://loopr.your-domain` to access the Loopr dashboard and begin monitoring your URLs.
 
-### Production Deployment 
+## Production Deployment 
 
-#### SSL/TLS Configuration
+### SSL/TLS Configuration
 
 For production deployments, configure SSL certificates:
 
@@ -277,7 +280,7 @@ For production deployments, configure SSL certificates:
 - Ensure your domain DNS points to your server
 - Traefik will automatically handle Let's Encrypt certificate generation
 
-#### Resource Optimization
+### Resource Optimization
 
 Adjust the following environment variables based on your server capacity:
 
@@ -286,7 +289,7 @@ Adjust the following environment variables based on your server capacity:
 - `PARALLEL_CHUNK_SIZE` - Concurrent monitoring operations
 - `MAX_LOGS_PER_URL` - Log retention per monitored URL
 
-#### Scaling Considerations
+### Scaling Considerations
 
 For high-volume monitoring:
 
@@ -298,6 +301,6 @@ For high-volume monitoring:
 
 ---
 
-## LICENSE
+# LICENSE
 
-Loopr is released under the **GNU Affero General Public License v3.0**, promoting open-source contributions while enforcing copyleft protections.
+Loopr is released under the **GNU Affero General Public License v3.0**, promoting open-source contributions while enforcing copyleft protections. See [here](https://github.com/AnishSarkar22/Loopr?tab=AGPL-3.0-1-ov-file).
