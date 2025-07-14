@@ -3,7 +3,8 @@
 	import { onMount } from 'svelte';
 	import { account } from '$lib/appwrite';
 
-	let firstName: string = '';
+	let firstName: string = $state('');
+	let loading = $state(true);
 
 	onMount(async () => {
 		try {
@@ -11,10 +12,11 @@
 			// Split the name by space and take the first part
 			firstName = user.name?.split(' ')[0] ?? '';
 		} catch (error) {
-			// Handle error (e.g., user not logged in)
-			firstName = '';
-		}
-	});
+            firstName = '';
+        } finally {
+            loading = false;
+        }
+    });
 </script>
 
 <svelte:head>
@@ -22,16 +24,18 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-6xl px-4 py-8">
-	<header class="mb-12 text-center">
-		<h1 class="text-primary py-8 text-3xl font-bold">
-			{#if firstName}
-				Welcome back, {firstName} 👋
-			{:else}
-				Welcome back 👋
-			{/if}
-		</h1>
-		<!-- <p class="text-base-content/70">All your services at a glance</p> -->
-	</header>
+    <header class="mb-12 text-center">
+        <h1 class="text-primary py-8 text-3xl font-bold">
+            {#if loading}
+                <span class="skeleton w-48 h-10 inline-block"></span>
+            {:else if firstName}
+                Welcome back, {firstName} 👋
+            {:else}
+                Welcome back 👋
+            {/if}
+        </h1>
+        <!-- <p class="text-base-content/70">All your services at a glance</p> -->
+    </header>
 
-	<Dashboard />
+    <Dashboard />
 </div>

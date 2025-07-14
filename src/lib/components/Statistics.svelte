@@ -229,7 +229,7 @@
         
         <!-- Activity Logs -->
         <ActivityLogs 
-            {logs}
+            logs={[...logs].reverse()}
             title="Activity Logs"
             showRefresh={true}
             {refreshing}
