@@ -57,7 +57,7 @@ function calculateNextPingTime(pingInterval: number): string {
 	// Return ISO string - Appwrite will handle DateTime conversion
 	const isoString = nextPing.toISOString();
 
-	console.log(`Calculating nextPingTime: interval=${intervalMinutes}min, result=${isoString}`);
+	// console.log(`Calculating nextPingTime: interval=${intervalMinutes}min, result=${isoString}`);
 	return isoString;
 }
 
@@ -139,9 +139,10 @@ export const urlService = {
 			nextPingTime: isEnabled ? calculateNextPingTime(currentUrl.pingInterval || 15) : null
 		};
 		if (isEnabled && !currentUrl.nodeId) {
-			console.log(
-				`Enabling URL ${id} without nodeId - will be assigned by node registration function`
-			);
+			// console.log(
+			// 	`Enabling URL ${id} without nodeId - will be assigned by node registration function`
+			// );
+
 			// Keep nodeId as null - the node registration function will assign it
 		}
 		return await this.updateURL(id, updateData);
@@ -233,7 +234,7 @@ export const urlService = {
 				);
 			})
 		);
-		console.log('Updating URL with data:', cleanedData);
+		// console.log('Updating URL with data:', cleanedData);
 
 		const response = await databases.updateDocument(DATABASE_ID, COLLECTION_ID, id, cleanedData);
 		return dbToApp(response);
@@ -315,7 +316,7 @@ export const urlService = {
 
 	async fixMissingNextPingTimes(userId: string): Promise<void> {
 		try {
-			console.log('Fixing missing nextPingTimes for user:', userId);
+			// console.log('Fixing missing nextPingTimes for user:', userId);
 
 			const urls = await this.getURLs(userId);
 			const now = new Date();
@@ -327,18 +328,18 @@ export const urlService = {
 					!url.nextPingTime || url.nextPingTime === 'n/a' || new Date(url.nextPingTime) <= now; // Past or invalid time
 
 				if (needsFix) {
-					console.log(`URL ${url.id} needs fix. Current nextPingTime:`, url.nextPingTime);
+					// console.log(`URL ${url.id} needs fix. Current nextPingTime:`, url.nextPingTime);
 				}
 
 				return needsFix;
 			});
 
 			if (urlsToFix.length > 0) {
-				console.log(`Fixing ${urlsToFix.length} URLs with missing/invalid nextPingTime`);
+				// console.log(`Fixing ${urlsToFix.length} URLs with missing/invalid nextPingTime`);
 
 				const updates = urlsToFix.map(async (url) => {
 					const newNextPingTime = calculateNextPingTime(url.pingInterval || 15);
-					console.log(`Fixing URL ${url.id}: ${url.nextPingTime} -> ${newNextPingTime}`);
+					// console.log(`Fixing URL ${url.id}: ${url.nextPingTime} -> ${newNextPingTime}`);
 
 					return this.updateURL(url.id!, {
 						nextPingTime: newNextPingTime
@@ -346,7 +347,7 @@ export const urlService = {
 				});
 
 				await Promise.all(updates);
-				console.log('Successfully fixed all URLs');
+				// console.log('Successfully fixed all URLs');
 			}
 		} catch (error) {
 			console.error('Failed to fix missing nextPingTimes:', error);

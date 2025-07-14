@@ -71,11 +71,11 @@
         if (!userId) return;
         
         try {
-            console.log('Loading user URLs...');
+            // console.log('Loading user URLs...');
             const urls = await urlService.getURLs(userId);
             userUrls = urls;
             
-            console.log(`Found ${urls.length} URLs for user`);
+            // console.log(`Found ${urls.length} URLs for user`);
             
             // More efficient log aggregation with better error handling
             const allLogs = urls

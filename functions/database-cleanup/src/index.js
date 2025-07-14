@@ -57,7 +57,7 @@ export default async function ({ res }) {
 							)
 						)
 					);
-					console.log(`Deleted batch of ${batch.length} old result documents`);
+					// console.log(`Deleted batch of ${batch.length} old result documents`);
 				} catch (error) {
 					console.error(`Error deleting batch starting at ${i}:`, error);
 					// Continue with next batch instead of failing
@@ -156,7 +156,7 @@ async function reassignUrls(databases, offlineNodes) {
 
 			try {
 				await Promise.all(updates);
-				console.log(`Reassigned batch of ${batch.length} URLs from offline node`);
+				// console.log(`Reassigned batch of ${batch.length} URLs from offline node`);
 			} catch (error) {
 				console.error(`Error reassigning batch:`, error);
 				// Continue with next batch

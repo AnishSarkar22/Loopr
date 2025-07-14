@@ -37,68 +37,6 @@ export default async function ({ res }) {
 	console.log(`Node ID: ${nodeId}`);
 	console.log(`Current time: ${now}`);
 
-	// remove thissssss
-	// Test database connection first
-	// try {
-	// 	console.log('Testing database connection...');
-	// 	const totalUrls = await databases.listDocuments(
-	// 		process.env.DATABASE_ID,
-	// 		process.env.URLS_COLLECTION_ID,
-	// 		[Query.limit(1)]
-	// 	);
-	// 	console.log(`Total URLs in database: ${totalUrls.total}`);
-
-	// 	// Check how many URLs are assigned to this node
-	// 	const nodeUrls = await databases.listDocuments(
-	// 		process.env.DATABASE_ID,
-	// 		process.env.URLS_COLLECTION_ID,
-	// 		[Query.equal('nodeId', nodeId)]
-	// 	);
-	// 	console.log(`URLs assigned to ${nodeId}: ${nodeUrls.total}`);
-
-	// 	// Check how many URLs are enabled
-	// 	const enabledUrls = await databases.listDocuments(
-	// 		process.env.DATABASE_ID,
-	// 		process.env.URLS_COLLECTION_ID,
-	// 		[Query.equal('isEnabled', true)]
-	// 	);
-	// 	console.log(`Total enabled URLs: ${enabledUrls.total}`);
-
-	// 	// Check how many URLs are due for ping
-	// 	const dueUrls = await databases.listDocuments(
-	// 		process.env.DATABASE_ID,
-	// 		process.env.URLS_COLLECTION_ID,
-	// 		[
-	// 			Query.equal('nodeId', nodeId),
-	// 			Query.equal('isEnabled', true),
-	// 			Query.lessThanEqual('nextPingTime', now)
-	// 		]
-	// 	);
-	// 	console.log(`URLs due for ping on ${nodeId}: ${dueUrls.total}`);
-	// 	// Log some sample URLs for debugging
-	// 	if (dueUrls.documents.length > 0) {
-	// 		console.log(
-	// 			'Sample due URLs:',
-	// 			dueUrls.documents.slice(0, 3).map((url) => ({
-	// 				id: url.$id,
-	// 				url: url.url,
-	// 				nextPingTime: url.nextPingTime,
-	// 				isEnabled: url.isEnabled,
-	// 				nodeId: url.nodeId
-	// 			}))
-	// 		);
-	// 	}
-	// } catch (error) {
-	// 	console.error('Database connection test failed:', error);
-	// 	return res.json(
-	// 		{
-	// 			success: false,
-	// 			error: 'Database connection failed: ' + error.message
-	// 		},
-	// 		500
-	// 	);
-	// }
-
 	// Dynamic processing based on available time
 	const FUNCTION_TIMEOUT = parseInt(process.env.FUNCTION_TIMEOUT) || 300; // 5 minutes
 	const PROCESSING_BUFFER = parseInt(process.env.PROCESSING_BUFFER) || 30; // 30 seconds buffer
