@@ -401,7 +401,7 @@
 									>
 										{#if deleteLoading}
 											<span class="loading loading-spinner loading-sm"></span>
-											Deleting...
+											<!-- Deleting... -->
 										{:else}
 											Delete Account
 										{/if}
@@ -438,7 +438,7 @@
 												>
 													{#if deleteLoading}
 														<span class="loading loading-spinner loading-xs"></span>
-														Deleting...
+														<!-- Deleting... -->
 													{:else}
 														Yes, Delete My Account
 													{/if}

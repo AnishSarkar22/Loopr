@@ -40,7 +40,7 @@
                 "documents.read",
                 "documents.write"
             ],
-            "schedule": "*/5 * * * *",
+            "schedule": "*/4 * * * *",
             "timeout": 300,
             "enabled": true,
             "logging": true,
