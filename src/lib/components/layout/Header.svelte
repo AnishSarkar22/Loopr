@@ -63,7 +63,7 @@
 >
 	<div class="navbar-start">
 		<a class="btn btn-ghost p-2" href="/dashboard" aria-label="Loopr Home">
-			<img src="/images/loopr.svg" alt="Loopr Logo" class="h-30 w-30" />
+			<img src="/images/loopr.svg" alt="Loopr Logo"/>
 		</a>
 	</div>
 

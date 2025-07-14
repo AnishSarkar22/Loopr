@@ -4,7 +4,8 @@
   "description": "URL Ping Monitoring Function",
   "main": "src/index.js",
   "dependencies": {
-    "node-appwrite": "^14.1.0"
+    "node-appwrite": "^14.1.0",
+    "node-fetch": "^2.7.0"
   },
   "type": "module"
 }

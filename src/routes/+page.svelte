@@ -152,14 +152,14 @@
 
 			<div class="mt:10 px-2 text-4xl font-bold md:text-5xl" style="line-height: 1.3;">
 				The
-				<span class="decoration-secondary underline decoration-4 md:decoration-[6px]"
+				<!-- <span class="decoration-secondary underline decoration-4 md:decoration-[6px]"
 					>open source</span
-				>,
+				>, -->
 				<span class="decoration-secondary underline decoration-4 md:decoration-[6px]"
 					>lightning-fast</span
 				>, and
 				<span class="decoration-secondary underline decoration-4 md:decoration-[6px]"
-					>easy-to-deploy</span
+					>self-hostable</span
 				>
 				<span>monitoring platform</span>
 			</div>

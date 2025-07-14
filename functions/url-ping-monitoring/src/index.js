@@ -18,6 +18,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Client, Databases, Query, Messaging, ID, Users } from 'node-appwrite';
+import fetch from 'node-fetch';
 
 export default async function ({ res }) {
 	console.log('=== PING MONITORING FUNCTION STARTED ===');
@@ -303,41 +304,46 @@ function calculateNextPingTime(pingInterval) {
 
 // Helper function to ping a URL
 async function pingUrl(url, urlId) {
-	const startTime = Date.now();
+    const startTime = Date.now();
 
-	try {
-		const response = await fetch(url, {
-			method: 'GET',
-			headers: {
-				'User-Agent': 'Loopr-Monitor/1.0'
-			},
-			signal: AbortSignal.timeout(30000) // 30 second timeout
-		});
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-		const responseTime = Date.now() - startTime;
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Loopr-Monitor/1.0'
+            },
+            signal: controller.signal
+        });
+        clearTimeout(timeout);
 
-		return {
-			urlId,
-			url,
-			status: response.status,
-			success: response.ok,
-			responseTime,
-			timestamp: new Date().toISOString(),
-			error: null
-		};
-	} catch (error) {
-		const responseTime = Date.now() - startTime;
+        const responseTime = Date.now() - startTime;
 
-		return {
-			urlId,
-			url,
-			status: 0,
-			success: false,
-			responseTime,
-			timestamp: new Date().toISOString(),
-			error: error.message
-		};
-	}
+        return {
+            urlId,
+            url,
+            status: response.status,
+            success: response.ok,
+            responseTime,
+            timestamp: new Date().toISOString(),
+            error: null
+        };
+    } catch (error) {
+        clearTimeout(timeout);
+        const responseTime = Date.now() - startTime;
+        console.error('Ping error:', error);
+        return {
+            urlId,
+            url,
+            status: 0,
+            success: false,
+            responseTime,
+            timestamp: new Date().toISOString(),
+            error: error.message
+        };
+    }
 }
 
 async function updateUrlsInBatches(databases, urlUpdates, batchSize = 50) {
