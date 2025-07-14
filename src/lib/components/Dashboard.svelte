@@ -34,6 +34,12 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 	let toastType = $state<'success' | 'error' | 'warning' | 'info'>('info');
 	let viewMode = $state<'cards' | 'table'>('table');
 
+	onMount(() => {
+		if (window.innerWidth < 768) {
+			viewMode = 'cards';
+		}
+	});
+
 	function showToastNotification(
 		message: string,
 		type: 'success' | 'error' | 'warning' | 'info' = 'info',
@@ -80,16 +86,16 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 		}
 	});
 
-    async function loadURLs() {
-        if (!$user?.id) return;
-        try {
-            const userUrls = await urlService.getURLs($user.id);
-            urls = userUrls || [];
-        } catch (error) {
-            console.error('Error loading URLs:', error);
-            showToastNotification('Failed to load URLs', 'error');
-        }
-    }
+	async function loadURLs() {
+		if (!$user?.id) return;
+		try {
+			const userUrls = await urlService.getURLs($user.id);
+			urls = userUrls || [];
+		} catch (error) {
+			console.error('Error loading URLs:', error);
+			showToastNotification('Failed to load URLs', 'error');
+		}
+	}
 
 	async function handleURLAdded(newUrl: PingURL) {
 		urls = [...urls, newUrl];
@@ -115,6 +121,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 		showToastNotification('Refreshing all URLs...', 'info');
 	}
 </script>
+
 <!-- 
 {#if !$isAuthenticated}
 	<div class="hero bg-base-200 rounded-box min-h-96">
@@ -150,20 +157,20 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 	</div> -->
 {#if loading}
 	<!-- Skeleton for Dashboard Layout -->
-	<div class="space-y-8 w-full max-w-5xl mx-auto">
+	<div class="mx-auto w-full max-w-5xl space-y-8">
 		<!-- Stats Bar Skeleton -->
 		<div class="hidden lg:block">
 			<div class="stats stats-horizontal bg-base-100 w-full shadow-lg">
 				{#each Array(4) as _, i}
 					<div class="stat place-items-center py-4">
 						<div class="stat-title text-sm">
-							<div class="skeleton h-4 w-20 mb-2"></div>
+							<div class="skeleton mb-2 h-4 w-20"></div>
 						</div>
 						<div class="stat-value">
 							<div class="skeleton h-8 w-16"></div>
 						</div>
 						<div class="stat-desc text-sm">
-							<div class="skeleton h-3 w-24 mt-2"></div>
+							<div class="skeleton mt-2 h-3 w-24"></div>
 						</div>
 					</div>
 				{/each}
@@ -171,7 +178,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 		</div>
 		<!-- Controls Skeleton -->
 		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2 w-full">
+			<div class="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
 				<div class="skeleton h-10 w-32"></div>
 				<div class="skeleton h-10 w-32"></div>
 				<div class="skeleton h-10 w-32"></div>
@@ -179,7 +186,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 			<div class="skeleton h-10 w-40"></div>
 		</div>
 		<!-- URL List Skeleton -->
-		<div class="space-y-4 w-full max-w-2xl mx-auto">
+		<div class="mx-auto w-full max-w-2xl space-y-4">
 			{#each Array(3) as _, i}
 				<div class="skeleton h-24 w-full rounded-lg"></div>
 			{/each}
@@ -193,7 +200,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 			<!-- Mobile: Collapsible Stats -->
 			<div class="lg:hidden">
 				<div
-					class="collapse-arrow bg-base-100 border-base-300 collapse rounded-xl border shadow-lg "
+					class="collapse-arrow bg-base-100 border-base-300 collapse rounded-xl border shadow-lg"
 				>
 					<input type="checkbox" class="peer" />
 					<div
@@ -384,7 +391,11 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 						>✕</button
 					>
 				</div>
-				<AddURLForm userId={$user.id} onSuccess={handleURLAdded} onCancel={() => (showAddForm = false)} />
+				<AddURLForm
+					userId={$user.id}
+					onSuccess={handleURLAdded}
+					onCancel={() => (showAddForm = false)}
+				/>
 			</div>
 			<div
 				class="modal-backdrop"
