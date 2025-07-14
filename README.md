@@ -5,13 +5,13 @@
 
 **Loopr** is a comprehensive, cloud-native URL monitoring application designed to track website uptime, performance, and availability in real-time. Built with modern web technologies and optimized for scalability, Loopr provides automated monitoring, intelligent alerting, and detailed analytics for web services.
 
----
+
 
 # **Overview**
 
 Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite backend** infrastructure, featuring intelligent **cron job scheduling** and **distributed monitoring capabilities**. The application is engineered to handle high-frequency monitoring tasks while maintaining optimal resource utilization and cost efficiency.
 
----
+
 
 # **Key Features**
 
@@ -43,7 +43,7 @@ Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite b
 * Personalized dashboards and settings
 * Account management and security features
 
----
+
 
 # **Architecture & Optimization**
 
@@ -75,7 +75,7 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * Intelligent timeout handling
 * Memory-efficient data operations
 
----
+
 
 # **Cron Job Optimization Strategy**
 
@@ -102,7 +102,7 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * Resilient data consistency
 * Recovery from process interruptions
 
----
+
 
 # **Deployment Architecture**
 
@@ -120,7 +120,7 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * Full control using environment variables
 * Ready-to-use deployment templates for multiple environments
 
----
+
 
 # **Security Features**
 
@@ -129,7 +129,7 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * Strong user authentication & authorization
 * Privacy-respecting data policies
 
----
+
 
 # **Technology Stack**
 
@@ -153,7 +153,7 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * Automated database maintenance
 * Distributed monitoring system
 
----
+
 
 # **Use Cases**
 
@@ -173,7 +173,7 @@ Get real-time alerts and review incident histories.
 
 Generate SLA uptime reports and conduct audits.
 
----
+
 
 # Self-Hosting Loopr
 
