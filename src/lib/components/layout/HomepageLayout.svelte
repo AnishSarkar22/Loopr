@@ -11,7 +11,7 @@
 <div class="navbar bg-base-100 container mx-auto">
 	<div class="flex-1">
 		<a class="btn btn-ghost p-2" href="/" aria-label="Loopr Home">
-			<img src="/images/loopr.svg" alt="Loopr Logo"/>
+			<img src="/images/loopr.svg" alt="Loopr Logo" class="h-30 w-30" />
 		</a>
 	</div>
 	<div class="flex-none">
