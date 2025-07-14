@@ -71,7 +71,7 @@
 
         <div class="bg-base-100 border-base-300 h-96 overflow-y-auto rounded-lg border-2 border-dashed">
             {#if logs.length > 0}
-                {#each logs as log}
+                {#each [...logs].reverse() as log}
                     <div class="border-base-300 border-b px-4 py-2 last:border-0">
                         <span class="text-sm opacity-70">[{getFormattedTimestamp(log)}]</span>
                         <span

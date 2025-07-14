@@ -161,7 +161,7 @@
 						</button>
 					{/if}
 				</div>
-				<div class="divider my-0"></div>
+				<div class="divider my-0 mx-auto w-1/2"></div>
 				{#if loading}
 					<div class="flex justify-center py-8">
 						<span class="loading loading-spinner loading-sm"></span>

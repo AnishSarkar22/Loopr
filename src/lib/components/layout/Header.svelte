@@ -78,7 +78,7 @@
 
 	<div class="navbar-end">
 
-		<a
+		<!-- <a
 			href="https://github.com/AnishSarkar22/Loopr"
 			target="_blank"
 			rel="noopener noreferrer"
@@ -92,7 +92,7 @@
 					clip-rule="evenodd"
 				/>
 			</svg>
-		</a>
+		</a> -->
 
 		<Notifications />
 

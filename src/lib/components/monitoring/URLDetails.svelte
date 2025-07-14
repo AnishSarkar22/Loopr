@@ -8,7 +8,7 @@
 	import { goto } from '$app/navigation';
 	import ActivityLogs from '$lib/components/shared/ActivityLogs.svelte';
 	import { formatTimestamp } from '$lib/utils/format';
- 
+
 	let url = $state<PingURL | null>(null);
 	let userId = $state<string | null>(null);
 	let loading = $state(true);
@@ -25,15 +25,15 @@
 
 	// Parse logs from URL object
 	let urlLogs = $derived(() => {
-        if (!url?.logs) return [];
-        try {
-            const logs = Array.isArray(url.logs) ? url.logs : JSON.parse(url.logs || '[]');
-            return Array.isArray(logs) ? logs : [];
-        } catch (error) {
-            console.error('Failed to parse logs:', error);
-            return [];
-        }
-    });
+		if (!url?.logs) return [];
+		try {
+			const logs = Array.isArray(url.logs) ? url.logs : JSON.parse(url.logs || '[]');
+			return Array.isArray(logs) ? logs : [];
+		} catch (error) {
+			console.error('Failed to parse logs:', error);
+			return [];
+		}
+	});
 
 	onMount(async () => {
 		try {
@@ -153,8 +153,95 @@
 	</div>
 
 	{#if loading}
-		<div class="flex items-center justify-center py-12">
-			<span class="loading loading-spinner loading-lg"></span>
+		<div class="space-y-6">
+			<!-- Header Skeleton -->
+			<div class="card bg-base-100 mb-6 animate-pulse shadow-lg">
+				<div class="card-body">
+					<div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+						<div>
+							<div class="mb-2 flex items-center gap-3">
+								<div class="bg-base-200 skeleton h-4 w-4 rounded-full"></div>
+								<div class="bg-base-200 skeleton h-7 w-32 rounded"></div>
+								<div class="bg-base-200 skeleton h-6 w-16 rounded-full"></div>
+							</div>
+							<div class="bg-base-200 skeleton mb-2 h-4 w-40 rounded"></div>
+							<div class="bg-base-200 skeleton h-4 w-60 rounded"></div>
+						</div>
+						<div class="flex gap-2">
+							<div class="bg-base-200 skeleton h-8 w-24 rounded"></div>
+							<div class="bg-base-200 skeleton h-8 w-32 rounded"></div>
+							<div class="bg-base-200 skeleton h-8 w-20 rounded"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Stats Skeleton (Desktop) -->
+			<div class="hidden grid-cols-4 gap-4 lg:grid">
+				<div class="stat bg-base-100 animate-pulse shadow-lg">
+					<div class="bg-base-200 skeleton mb-2 h-4 w-24 rounded"></div>
+					<div class="bg-base-200 skeleton h-8 w-16 rounded"></div>
+				</div>
+				<div class="stat bg-base-100 animate-pulse shadow-lg">
+					<div class="bg-base-200 skeleton mb-2 h-4 w-24 rounded"></div>
+					<div class="bg-base-200 skeleton h-8 w-16 rounded"></div>
+					<div class="bg-base-200 skeleton mt-2 h-4 w-12 rounded"></div>
+				</div>
+				<div class="stat bg-base-100 animate-pulse shadow-lg">
+					<div class="bg-base-200 skeleton mb-2 h-4 w-24 rounded"></div>
+					<div class="bg-base-200 skeleton h-8 w-16 rounded"></div>
+					<div class="bg-base-200 skeleton mt-2 h-4 w-12 rounded"></div>
+				</div>
+				<div class="stat bg-base-100 animate-pulse shadow-lg">
+					<div class="bg-base-200 skeleton mb-2 h-4 w-24 rounded"></div>
+					<div class="bg-base-200 skeleton h-8 w-16 rounded"></div>
+					<div class="bg-base-200 skeleton mt-2 h-4 w-12 rounded"></div>
+				</div>
+			</div>
+			<!-- Stats Skeleton (Mobile) -->
+			<div class="lg:hidden">
+				<div
+					class="collapse-arrow bg-base-100 border-base-300 collapse animate-pulse rounded-xl border shadow-lg"
+				>
+					<div
+						class="collapse-title border-base-content/5 flex items-center justify-between border-b text-sm font-medium"
+					>
+						<div class="bg-base-200 skeleton h-4 w-32 rounded"></div>
+					</div>
+					<div class="collapse-content bg-base-50/50">
+						<div class="grid grid-cols-2 gap-3 pt-3 pb-1">
+							{#each Array(4) as _, i}
+								<div class="bg-base-200/80 border-base-300/30 rounded-lg border p-3 text-center">
+									<div class="bg-base-200 skeleton mb-2 h-4 w-20 rounded"></div>
+									<div class="bg-base-200 skeleton mx-auto h-6 w-12 rounded"></div>
+									<div class="bg-base-200 skeleton mx-auto mt-2 h-3 w-16 rounded"></div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Auto Refresh Toggle Skeleton -->
+			<div class="card bg-base-100 mb-6 animate-pulse shadow-lg">
+				<div class="card-body py-4">
+					<div class="flex items-center justify-between">
+						<div class="bg-base-200 skeleton h-4 w-40 rounded"></div>
+						<div class="bg-base-200 skeleton h-6 w-12 rounded-full"></div>
+					</div>
+				</div>
+			</div>
+			<!-- Activity Logs Skeleton -->
+			<div class="card bg-base-100 animate-pulse shadow-lg">
+				<div class="card-body">
+					<div class="bg-base-200 skeleton mb-4 h-5 w-40 rounded"></div>
+					{#each Array(5) as _, i}
+						<div class="mb-2 flex items-center gap-4">
+							<div class="bg-base-200 skeleton h-4 w-4 rounded-full"></div>
+							<div class="bg-base-200 skeleton h-4 w-32 rounded"></div>
+							<div class="bg-base-200 skeleton h-4 w-24 rounded"></div>
+						</div>
+					{/each}
+				</div>
+			</div>
 		</div>
 	{:else if url}
 		<!-- URL Header -->

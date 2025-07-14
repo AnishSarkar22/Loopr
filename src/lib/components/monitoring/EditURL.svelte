@@ -193,9 +193,55 @@
 	</div>
 
 	{#if loading}
-		<div class="flex items-center justify-center py-12">
-			<span class="loading loading-spinner loading-lg"></span>
-		</div>
+		 <!-- DaisyUI Skeleton Loader -->
+        <div class="card bg-base-100 shadow-lg animate-pulse">
+            <div class="card-body">
+                <!-- Header Skeleton -->
+                <div class="mb-6 flex items-center justify-between">
+                    <div>
+                        <div class="h-7 w-32 bg-base-200 rounded mb-2 skeleton"></div>
+                        <div class="h-4 w-40 bg-base-200 rounded skeleton"></div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="h-6 w-16 bg-base-200 rounded-full skeleton"></div>
+                        <div class="h-4 w-20 bg-base-200 rounded skeleton"></div>
+                    </div>
+                </div>
+                <!-- Form Skeleton -->
+                <div class="space-y-6">
+                    <div class="form-control">
+                        <div class="h-4 w-24 bg-base-200 rounded mb-2 skeleton"></div>
+                        <div class="h-10 w-full bg-base-200 rounded skeleton"></div>
+                    </div>
+                    <div class="form-control">
+                        <div class="h-4 w-32 bg-base-200 rounded mb-2 skeleton"></div>
+                        <div class="h-10 w-full bg-base-200 rounded skeleton"></div>
+                    </div>
+                    <div class="form-control">
+                        <div class="h-4 w-40 bg-base-200 rounded mb-2 skeleton"></div>
+                        <div class="h-20 w-full bg-base-200 rounded skeleton"></div>
+                    </div>
+                    <div class="form-control">
+                        <div class="h-4 w-28 bg-base-200 rounded mb-2 skeleton"></div>
+                        <div class="h-10 w-full bg-base-200 rounded skeleton"></div>
+                    </div>
+                    <div class="form-control">
+                        <div class="flex items-center justify-between">
+                            <div class="h-4 w-32 bg-base-200 rounded skeleton"></div>
+                            <div class="h-6 w-12 bg-base-200 rounded-full skeleton"></div>
+                        </div>
+                        <div class="h-3 w-40 bg-base-200 rounded mt-2 skeleton"></div>
+                    </div>
+                    <div class="card-actions justify-between pt-4">
+                        <div class="h-10 w-32 bg-base-200 rounded skeleton"></div>
+                        <div class="flex gap-2">
+                            <div class="h-10 w-20 bg-base-200 rounded skeleton"></div>
+                            <div class="h-10 w-28 bg-base-200 rounded skeleton"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 	{:else if url}
 		<div class="card bg-base-100 shadow-lg">
 			<div class="card-body">

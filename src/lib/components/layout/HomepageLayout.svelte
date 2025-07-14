@@ -1,11 +1,23 @@
 <script lang="ts">
 	import '../../../app.css';
+	import { onMount } from 'svelte';
+	let { children }: Props = $props();
+
+	let githubStars = $state<number | null>(null);
+
+    onMount(async () => {
+        try {
+            const res = await fetch('https://api.github.com/repos/AnishSarkar22/Loopr');
+            const data = await res.json();
+            githubStars = data.stargazers_count;
+        } catch (e) {
+            githubStars = null;
+        }
+    });
 
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
-
-	let { children }: Props = $props();
 </script>
 
 <div class="navbar bg-base-100 container mx-auto">
@@ -19,15 +31,15 @@
 			<li class="md:mx-4">
 				<a
 					href="https://github.com/AnishSarkar22/Loopr"
-					class=" navbar-btn border-base-300/100 flex items-center gap-2 rounded-xl border transition hover:text-white"
+					class="navbar-btn border-base-content/5 flex items-center gap-2 rounded-xl border transition hover:text-white min-h-[2.5rem] px-6 py-2 text-base"
 					target="_blank"
 					rel="noopener"
 					aria-label="Star Loopr on GitHub"
 				>
 					<!-- GitHub Icon SVG -->
 					<svg
-						width="18"
-						height="18"
+						width="20"
+						height="20"
 						fill="currentColor"
 						class="inline"
 						viewBox="0 0 24 24"
@@ -37,7 +49,9 @@
 							d="M12 .5C5.73.5.5 5.74.5 12.02c0 5.1 3.29 9.42 7.86 10.96.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.75.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .98-.31 3.2 1.18a11.1 11.1 0 0 1 2.92-.39c.99 0 1.99.13 2.92.39 2.22-1.49 3.2-1.18 3.2-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.27 5.7.42.36.79 1.09.79 2.2 0 1.59-.01 2.87-.01 3.26 0 .31.21.68.8.56C20.71 21.44 24 17.12 24 12.02 24 5.74 18.27.5 12 .5z"
 						/>
 					</svg>
-					Star on GitHub
+					{#if githubStars !== null}
+						<span class="badge badge-sm badge-ghost ml-1 align-middle">{githubStars}</span>
+					{/if}
 				</a>
 			</li>
 			<li class="navbar-btn border-base-content/5 rounded-xl border md:mx-2">
