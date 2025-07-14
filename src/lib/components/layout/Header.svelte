@@ -59,7 +59,8 @@
 </script>
 
 <div
-	class="navbar bg-base-100/80 supports-[backdrop-filter]:bg-base-100/50 fixed top-0 z-50 backdrop-blur-md"
+	class="navbar bg-base-100/80 supports-[backdrop-filter]:bg-base-100/20 fixed top-0 z-50 backdrop-blur-md"
+	
 >
 	<div class="navbar-start">
 		<a class="btn btn-ghost p-2" href="/dashboard" aria-label="Loopr Home">
