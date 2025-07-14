@@ -115,7 +115,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 		showToastNotification('Refreshing all URLs...', 'info');
 	}
 </script>
-
+<!-- 
 {#if !$isAuthenticated}
 	<div class="hero bg-base-200 rounded-box min-h-96">
 		<div class="hero-content text-center">
@@ -147,8 +147,8 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 				<a href="/login" class="btn btn-primary btn-wide">Log In</a>
 			</div>
 		</div>
-	</div>
-	{:else if loading}
+	</div> -->
+{#if loading}
 	<!-- Skeleton for Dashboard Layout -->
 	<div class="space-y-8 w-full max-w-5xl mx-auto">
 		<!-- Stats Bar Skeleton -->

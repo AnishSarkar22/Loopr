@@ -25,9 +25,9 @@
 	<header class="mb-12 text-center">
 		<h1 class="text-primary py-8 text-3xl font-bold">
 			{#if firstName}
-				Welcome Back, {firstName} 👋
+				Welcome back, {firstName} 👋
 			{:else}
-				Welcome Back 👋
+				Welcome back 👋
 			{/if}
 		</h1>
 		<!-- <p class="text-base-content/70">All your services at a glance</p> -->
