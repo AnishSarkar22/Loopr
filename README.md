@@ -197,10 +197,10 @@ cp .env.example .env
 
 Edit the `.env` file with your specific configuration:
 
-- Set your domain name in `_APP_DOMAIN`
+- Set your domain name in `_APP_DOMAIN` if in production
 - Configure database credentials
-- Set up SMTP settings for email notifications
-- Generate secure API key within appwrite dashboard after self hosting
+- Set up SMTP settings for email notifications (Must do)
+- Generate secure API key within appwrite dashboard after self hosting (Must do)
 
 **Step 3:** Launch the Application
 
@@ -225,13 +225,15 @@ Access the Appwrite console at `http://your-domain/console` to:
 - Set up the project name and project ID as `loopr-project`
 - Configure authentication settings
 
-**Step 5:** Enter the Loopr App Container
+**Step 5:** Create an API key in the settings and put it in `APPWRITE_API_KEY` in `.env` file and again run `docker-compose up -d`
+
+**Step 6:** Enter the Loopr App Container
 
 ```
 docker exec -it loopr-app sh
 ```
 
-**Step 6:** Log in to Appwrite CLI
+**Step 7:** Log in to Appwrite CLI
 
 - For localhost deployments, use:
 ```
@@ -243,21 +245,25 @@ appwrite login --endpoint http://appwrite/v1
 appwrite login appwrite login --endpoint https://<your-appwrite-domain.com>/v1
 ```
 
-**Step 7:** Authenticate
+**Step 8:** Authenticate
 
 ```
 appwrite login
 ```
 Follow the CLI prompts to complete authentication.
 
-**Step 8:** Deploy Appwrite Functions
+**Step 9:** Deploy Appwrite Functions
 
 Push all Appwrite functions and configurations:
 ```
 appwrite push all --all --force
 ```
 
-**Step 9:** Access Loopr
+**Step 10:** Configure Global Variables in Appwrite
+
+Use the `.env.dist` file as a reference and fill in all required global variables in your Appwrite project's settings. Make sure each environment variable needed by Loopr is set correctly in Appwrite.
+
+**Step 11:** Access Loopr
 
 Navigate to `http://loopr.your-domain` to access the Loopr dashboard and begin monitoring your URLs.
 
