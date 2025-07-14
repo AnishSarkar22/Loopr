@@ -19,6 +19,6 @@ export const load: LayoutLoad = async () => {
     } catch {
         user.set(null);
         isAuthenticated.set(false);
-        throw redirect(302, '/dashboard');
+        throw redirect(302, '/login');
     }
 };
