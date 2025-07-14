@@ -11,7 +11,7 @@
 	let showToast = $state(false);
 	let toastMessage = $state('');
 	let isError = $state(false);
-	
+
 	// Track if fields have been interacted with
 	let emailTouched = $state(false);
 	let passwordTouched = $state(false);
@@ -55,11 +55,11 @@
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
-		
+
 		// Mark all fields as touched on submit
 		emailTouched = true;
 		passwordTouched = true;
-		
+
 		// Validate all fields
 		validateEmail(email);
 		validatePassword(password);
@@ -67,7 +67,7 @@
 		if (!isEmailValid || !isPasswordValid || !email || !password) {
 			return;
 		}
-		
+
 		loading = true;
 
 		try {
@@ -90,7 +90,6 @@
 				email: userData.email
 			});
 			isAuthenticated.set(true);
-
 
 			if (!userData.emailVerification) {
 				// If email is not verified, redirect to verification page
@@ -134,7 +133,11 @@
 				<div class="space-y-4">
 					<div>
 						<label class="input validator w-full" class:input-error={showEmailError}>
-							<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+							<svg
+								class="h-[1em] opacity-50"
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+							>
 								<g
 									stroke-linejoin="round"
 									stroke-linecap="round"
@@ -155,14 +158,20 @@
 								oninput={handleEmailInput}
 							/>
 						</label>
-						<div class="validator-hint text-error text-sm mt-1" class:hidden={!showEmailError}>
-							Enter valid email address
-						</div>
+						{#if showEmailError}
+							<label class="label" for="email" id="email-error">
+								<span class="label-text-alt text-error"> Enter a valid email address </span>
+							</label>
+						{/if}
 					</div>
 
 					<div>
 						<label class="input validator" class:input-error={showPasswordError}>
-							<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+							<svg
+								class="h-[1em] opacity-50"
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+							>
 								<g
 									stroke-linejoin="round"
 									stroke-linecap="round"
@@ -186,9 +195,11 @@
 								oninput={handlePasswordInput}
 							/>
 						</label>
-						<div class="validator-hint text-error text-sm mt-1" class:hidden={!showPasswordError}>
-							Please enter a valid password
-						</div>
+						{#if showPasswordError}
+							<label class="label" for="password" id="password-error">
+								<span class="label-text-alt text-error"> Please enter a valid password </span>
+							</label>
+						{/if}
 					</div>
 				</div>
 

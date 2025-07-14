@@ -30,15 +30,15 @@
 
 	// Change name functions
 	onMount(() => {
-        if ($user?.name) {
-            currentName = $user.name;
-            newName = $user.name;
-            loading = false;
-        } else {
-            errorMessage = 'Failed to load profile.';
-            loading = false;
-        }
-    });
+		if ($user?.name) {
+			currentName = $user.name;
+			newName = $user.name;
+			loading = false;
+		} else {
+			errorMessage = 'Failed to load profile.';
+			loading = false;
+		}
+	});
 
 	async function handleNameChange(e: Event) {
 		e.preventDefault();
@@ -46,7 +46,7 @@
 		try {
 			await account.updateName(newName);
 			currentName = newName;
-			
+
 			showAlert('Name updated successfully!', false);
 		} catch (e) {
 			showAlert('Failed to update name. Please try again.', true);
@@ -168,29 +168,29 @@
 			<div class="card-body">
 				<div class="flex flex-col gap-6">
 					<div class="flex items-center justify-center">
-						<div class="skeleton h-10 w-40 mb-4"></div>
+						<div class="skeleton mb-4 h-10 w-40"></div>
 					</div>
 					<div class="card bg-base-100 border-base-300 border">
 						<div class="card-body">
-							<div class="skeleton h-6 w-32 mb-2"></div>
-							<div class="skeleton h-10 w-full mb-2"></div>
-							<div class="skeleton h-6 w-32 mb-2"></div>
-							<div class="skeleton h-10 w-full mb-2"></div>
+							<div class="skeleton mb-2 h-6 w-32"></div>
+							<div class="skeleton mb-2 h-10 w-full"></div>
+							<div class="skeleton mb-2 h-6 w-32"></div>
+							<div class="skeleton mb-2 h-10 w-full"></div>
 							<div class="skeleton h-10 w-32"></div>
 						</div>
 					</div>
 					<div class="divider mx-auto w-1/2"></div>
 					<div class="card bg-base-100 border-base-300 border">
 						<div class="card-body">
-							<div class="skeleton h-6 w-32 mb-2"></div>
-							<div class="skeleton h-10 w-full mb-2"></div>
+							<div class="skeleton mb-2 h-6 w-32"></div>
+							<div class="skeleton mb-2 h-10 w-full"></div>
 							<div class="skeleton h-10 w-32"></div>
 						</div>
 					</div>
 					<div class="divider mx-auto w-1/2"></div>
 					<div class="card bg-base-100 border-base-300 border">
 						<div class="card-body bg-error/5 rounded-box">
-							<div class="skeleton h-6 w-32 mb-2"></div>
+							<div class="skeleton mb-2 h-6 w-32"></div>
 							<div class="skeleton h-10 w-full"></div>
 						</div>
 					</div>
@@ -285,7 +285,8 @@
 								<!-- Current Password -->
 								<div class="form-control w-full">
 									<label class="label" for="current-password">
-										<span class="label-text text-base-content mb-1 font-medium">Current Password</span
+										<span class="label-text text-base-content mb-1 font-medium"
+											>Current Password</span
 										>
 									</label>
 									<input
@@ -323,8 +324,7 @@
 									{#if !isNewPasswordValid && newPassword}
 										<label class="label" for="new-password" id="new-password-error">
 											<span class="label-text-alt text-error"
-												>Password must be at least 8 characters long and contain only letters and
-												numbers</span
+												>Password must be at least 8 characters long</span
 											>
 										</label>
 									{/if}
