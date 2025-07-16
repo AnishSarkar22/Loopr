@@ -243,7 +243,7 @@
                         <div class="text-xl font-bold text-warning">{userWebhooks.length}</div>
                     </div>
                     <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
-                        <div class="text-xs text-base-content/70 mb-1">Active Monitoring</div>
+                        <div class="text-xs text-base-content/70 mb-1">Active URLs Monitoring</div>
                         <div class="text-xl font-bold text-success">{userUrls.filter((url) => url.isEnabled).length}</div>
                     </div>
                     <!-- <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
