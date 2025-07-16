@@ -81,16 +81,19 @@ export interface ScheduledWebhook {
     url: string;
     name?: string;
     description?: string;
-    method: string;
+    method?: string;
     payload?: string;
     headers?: string;
     scheduledTime: string;
     status: 'pending' | 'completed' | 'failed' | 'cancelled';
-    retries: number;
-    maxRetries: number;
+    retries?: number;
+    maxRetries?: number;
     lastAttempt?: string;
     lastError?: string;
     responseStatus?: number;
     responseTime?: number;
-    priority: number;
+    priority?: number;
+    logs?: string;
+    $createdAt?: string;
+    $updatedAt?: string;
 }

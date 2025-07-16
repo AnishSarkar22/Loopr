@@ -4,6 +4,7 @@
 	import { urlService } from '$lib/services/urlService';
 	import URLCard from './URLCard.svelte';
 	import Portal from '$lib/components/monitoring/views/Portal.svelte';
+	import { formatTimestamp } from '$lib/utils/format';
 
 	interface Props {
 		urls: PingURL[];
@@ -20,7 +21,7 @@
 
 	// Pagination state
 	let currentPage = $state(1);
-	let itemsPerPage = 3;
+	let itemsPerPage = 4;
 	
 	//Dropdown state management
     let activeDropdown = $state<string | null>(null);
@@ -46,59 +47,6 @@
 		currentPage = page;
 	}
 
-	function formatLastPing(date: string) {
-		return new Date(date).toLocaleString();
-	}
-
-	function formatNextPing(date: string) {
-		return new Date(date).toLocaleString();
-	}
-
-	function formatTimestamp(timestamp: string): string {
-		if (!timestamp) return 'Never';
-
-		const date = new Date(timestamp);
-		const today = new Date();
-
-		let datePart = '';
-		if (date.toDateString() === today.toDateString()) {
-			datePart = 'Today';
-		} else {
-			datePart = `${date.getMonth() + 1}/${date.getDate()}`;
-		}
-
-		const hours = date.getHours().toString().padStart(2, '0');
-		const minutes = date.getMinutes().toString().padStart(2, '0');
-		const timePart = `${hours}:${minutes}`;
-
-		return `${datePart} ${timePart}`;
-	}
-
-	function formatLogTimestamp(timestamp: string): string {
-		if (!timestamp) return '';
-
-		try {
-			const date = new Date(timestamp);
-			const today = new Date();
-
-			let datePart = '';
-			if (date.toDateString() === today.toDateString()) {
-				datePart = 'Today';
-			} else {
-				datePart = `${date.getMonth() + 1}/${date.getDate()}`;
-			}
-
-			const hours = date.getHours().toString().padStart(2, '0');
-			const minutes = date.getMinutes().toString().padStart(2, '0');
-			const seconds = date.getSeconds().toString().padStart(2, '0');
-			const timePart = `${hours}:${minutes}:${seconds}`;
-
-			return `${datePart} ${timePart}`;
-		} catch (error) {
-			return timestamp; // fallback to original if parsing fails
-		}
-	}
-
 	function getStatusBadge(url: PingURL) {
 		if (!url.isEnabled) return 'badge-warning';
 		if (url.lastPingStatus === 'success') return 'badge-success';
@@ -111,17 +59,6 @@
 		if (url.lastPingStatus === 'success') return 'Active';
 		if (url.lastPingStatus === 'error') return 'Failed';
 		return 'Pending';
-	}
-
-	function getStatusColor(status: string) {
-		switch (status) {
-			case 'success':
-				return 'text-success';
-			case 'error':
-				return 'text-error';
-			default:
-				return 'text-base-content';
-		}
 	}
 
 	async function toggleStatus(url: PingURL) {
@@ -271,21 +208,14 @@
                                 <td class="text-center">
                                     <span class="text-sm">{url.pingInterval || 15} mins</span>
                                 </td>
-                                <td class="text-center">
-                                    <div class="flex flex-col items-center">
-                                        <span class="text-base-content/60 text-xs">
-                                            {url.lastPingTime ? formatLastPing(url.lastPingTime) : 'Never'}
-                                        </span>
-                                        <!-- {#if url.lastPingStatusCode}
-											<span class="text-xs text-center {getStatusColor(url.lastPingStatus || '')}">
-												{url.lastPingStatusCode}
-											</span>
-										{/if} -->
-                                    </div>
+								<td class="text-center">
+                                    <span class="text-base-content/60 text-xs">
+                                        {url.lastPingTime ? formatTimestamp(url.lastPingTime) : 'Never'}
+                                    </span>
                                 </td>
                                 <td class="text-center">
                                     <span class="text-base-content/60 text-xs">
-                                        {url.nextPingTime ? formatNextPing(url.nextPingTime) : 'N/A'}
+                                        {url.nextPingTime ? formatTimestamp(url.nextPingTime) : 'N/A'}
                                     </span>
                                 </td>
 								<td class="relative">
@@ -297,7 +227,7 @@
 									>
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
-											class="h-4 w-4"
+											class="h-4 w-4 mt-1"
 											fill="none"
 											viewBox="0 0 24 24"
 											stroke="currentColor"

@@ -5,6 +5,8 @@
     import { onMount } from 'svelte';
     import ActivityLogs from './shared/ActivityLogs.svelte';
     import { isAuthenticated, user } from '$lib/stores/auth';
+    import { webhookService } from '$lib/services/webhookService';
+    import type { ScheduledWebhook } from '$lib/types';
 
     let logs = $state<Log[]>([]);
     let showToast = $state(false);
@@ -16,6 +18,7 @@
     let lastRefreshTimestamp = $state(0);
     let userUrls = $state<PingURL[]>([]);
     let loading = $state(true);
+    let userWebhooks = $state<ScheduledWebhook[]>([]);
 
     // Helper function to show toast notifications
     function showToastNotification(
@@ -41,7 +44,7 @@
         }
     }
 
-    onMount(async () => {
+        onMount(async () => {
         if ($isAuthenticated && $user?.id) {
             loading = true;
             try {
@@ -56,36 +59,27 @@
             }
         }
     });
-
-    function addLog(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
-        const newLog: Log = {
-            timestamp: new Date().toISOString(),
-            message,
-            type
-        };
-        logs = [newLog, ...logs].slice(0, 100); // Keep only the last 100 logs
-    }
-
+    
     // Load logs from all user URLs
     async function loadAllUserLogs() {
         if (!userId) return;
-        
         try {
-            // console.log('Loading user URLs...');
+            // URLs
             const urls = await urlService.getURLs(userId);
             userUrls = urls;
-            
-            // console.log(`Found ${urls.length} URLs for user`);
-            
-            // More efficient log aggregation with better error handling
-            const allLogs = urls
+    
+            // Webhooks
+            const webhookResult = await webhookService.getWebhooks(userId);
+            userWebhooks = webhookResult.webhooks;
+    
+            // Aggregate logs from URLs
+            const urlLogs = urls
                 .filter(url => url.logs)
                 .flatMap(url => {
                     try {
                         const logs = Array.isArray(url.logs) 
                             ? url.logs 
                             : JSON.parse(url.logs || '[]');
-                        
                         return Array.isArray(logs) 
                             ? logs.map(log => ({
                                 ...log,
@@ -96,23 +90,54 @@
                         console.error(`Failed to parse logs for URL ${url.url}:`, error);
                         return [];
                     }
-                })
+                });
+    
+            // Aggregate logs from Webhooks
+            const webhookLogs = userWebhooks
+                .filter(wh => wh.logs)
+                .flatMap(wh => {
+                    try {
+                        const logs = Array.isArray(wh.logs)
+                            ? wh.logs
+                            : JSON.parse(wh.logs || '[]');
+                        return Array.isArray(logs)
+                            ? logs.map(log => ({
+                                ...log,
+                                message: `[Webhook: ${wh.name || wh.url}] ${log.message}`
+                            }))
+                            : [];
+                    } catch (error) {
+                        console.error(`Failed to parse logs for Webhook ${wh.url}:`, error);
+                        return [];
+                    }
+                });
+    
+            // Combine and sort logs
+            const allLogs = [...urlLogs, ...webhookLogs]
                 .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                 .slice(0, 100);
-                
+    
             logs = allLogs;
-            
-            // Add appropriate user feedback
+    
+            // Feedback
             if (allLogs.length > 0) {
-                addLog(`Loaded ${allLogs.length} activity logs from ${urls.length} URLs`, 'success');
+                addLog(`Loaded ${allLogs.length} activity logs from ${urls.length} URLs and ${userWebhooks.length} webhooks`, 'success');
             } else {
-                addLog(`No activity logs found yet. Enable monitoring on your URLs to see logs.`, 'info');
+                addLog(`No activity logs found yet. Enable monitoring on your URLs or webhooks to see logs.`, 'info');
             }
-            
         } catch (error) {
             console.error('Failed to load logs:', error);
             addLog('Failed to load activity logs', 'error');
         }
+    }
+
+    function addLog(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
+        const newLog: Log = {
+            timestamp: new Date().toISOString(),
+            message,
+            type
+        };
+        logs = [newLog, ...logs].slice(0, 100); // Keep only the last 100 logs
     }
 
     // Function to refresh logs from all URLs
@@ -214,13 +239,17 @@
                         <div class="text-xl font-bold text-primary">{userUrls.length}</div>
                     </div>
                     <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                        <div class="text-xs text-base-content/70 mb-1">Total Webhooks</div>
+                        <div class="text-xl font-bold text-warning">{userWebhooks.length}</div>
+                    </div>
+                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
                         <div class="text-xs text-base-content/70 mb-1">Active Monitoring</div>
                         <div class="text-xl font-bold text-success">{userUrls.filter((url) => url.isEnabled).length}</div>
                     </div>
-                    <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
+                    <!-- <div class="flex-1 bg-base-200 rounded-lg p-3 text-center">
                         <div class="text-xs text-base-content/70 mb-1">Total Logs</div>
                         <div class="text-xl font-bold text-info">{logs.length}</div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>

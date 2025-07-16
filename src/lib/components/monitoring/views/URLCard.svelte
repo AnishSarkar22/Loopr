@@ -34,7 +34,7 @@
         currentPage = page;
     }
 
-    function formatTimestamp(timestamp: string): string {
+    function formatTimestampCard(timestamp: string): string {
         if (!timestamp) return 'Never';
 
         const date = new Date(timestamp);
@@ -230,7 +230,7 @@
                                 <span class="text-sm font-medium">Last ping</span>
                             </div>
                             <span class="text-base-content/60 text-sm">
-                                {formatTimestamp(url.lastPingTime || '')}
+                                {formatTimestampCard(url.lastPingTime || '')}
                             </span>
                         </div>
 
@@ -280,11 +280,11 @@
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div>
                                         <span class="text-base-content/50">Created:</span>
-                                        <div class="font-medium">{formatTimestamp(url.$createdAt || '')}</div>
+                                        <div class="font-medium">{formatTimestampCard(url.$createdAt || '')}</div>
                                     </div>
                                     <div>
                                         <span class="text-base-content/50">Updated:</span>
-                                        <div class="font-medium">{formatTimestamp(url.$updatedAt || '')}</div>
+                                        <div class="font-medium">{formatTimestampCard(url.$updatedAt || '')}</div>
                                     </div>
                                 </div>
 

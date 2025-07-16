@@ -17,21 +17,21 @@
 			"entrypoint": "src/index.js",
 			"commands": "npm install",
 			"path": "functions/url-ping-monitoring",
-            "variables": {
-                "APPWRITE_PROJECT_ID": "loopr-project",
-                "APP_URL": "http://localhost:3000",
-                "APPWRITE_ENDPOINT": "http://localhost/v1",
+			"variables": {
+				"APPWRITE_PROJECT_ID": "loopr-project",
+				"APP_URL": "http://localhost:3000",
+				"APPWRITE_ENDPOINT": "http://localhost/v1",
 				"DATABASE_ID": "loopr-main-database",
-                "URLS_COLLECTION_ID": "ping-urls-collection",
-                "RESULTS_COLLECTION_ID": "ping-results-collection",
-                "NOTIFICATIONS_COLLECTION_ID": "notifications-collection",
-                "NODE_ID": "node-1",
-                "BATCH_SIZE": "100",
-                "PARALLEL_CHUNK_SIZE": "25",
-                "FUNCTION_TIMEOUT": "300",
-                "PROCESSING_BUFFER": "30",
-                "UPDATE_BATCH_SIZE": "75",
-                "MAX_LOGS_PER_URL": "100"
+				"URLS_COLLECTION_ID": "ping-urls-collection",
+				"RESULTS_COLLECTION_ID": "ping-results-collection",
+				"NOTIFICATIONS_COLLECTION_ID": "notifications-collection",
+				"NODE_ID": "node-1",
+				"BATCH_SIZE": "100",
+				"PARALLEL_CHUNK_SIZE": "25",
+				"FUNCTION_TIMEOUT": "300",
+				"PROCESSING_BUFFER": "30",
+				"UPDATE_BATCH_SIZE": "75",
+				"MAX_LOGS_PER_URL": "100"
 			}
 		},
 		{
@@ -49,16 +49,16 @@
 			"entrypoint": "src/index.js",
 			"commands": "npm install",
 			"path": "functions/node-registration",
-            "variables": {
-                "APPWRITE_PROJECT_ID": "loopr-project",
-                "APPWRITE_ENDPOINT": "http://localhost/v1",
+			"variables": {
+				"APPWRITE_PROJECT_ID": "loopr-project",
+				"APPWRITE_ENDPOINT": "http://localhost/v1",
 				"DATABASE_ID": "loopr-main-database",
-                "URLS_COLLECTION_ID": "ping-urls-collection",
-                "WORKER_NODES_COLLECTION_ID": "worker-nodes-collection",
-                "NODE_ID": "node-1",
-                "WORKER_REGION": "us-east-1",
-                "LOAD_BALANCE_BATCH_SIZE": "5",
-                "MAX_REDISTRIBUTION_ATTEMPTS": "2"
+				"URLS_COLLECTION_ID": "ping-urls-collection",
+				"WORKER_NODES_COLLECTION_ID": "worker-nodes-collection",
+				"NODE_ID": "node-1",
+				"WORKER_REGION": "us-east-1",
+				"LOAD_BALANCE_BATCH_SIZE": "5",
+				"MAX_REDISTRIBUTION_ATTEMPTS": "2"
 			}
 		},
 		{
@@ -76,18 +76,18 @@
 			"entrypoint": "src/index.js",
 			"commands": "npm install",
 			"path": "functions/database-cleanup",
-            "variables": {
-                "APPWRITE_PROJECT_ID": "loopr-project",
-                "APPWRITE_ENDPOINT": "http://localhost/v1",
+			"variables": {
+				"APPWRITE_PROJECT_ID": "loopr-project",
+				"APPWRITE_ENDPOINT": "http://localhost/v1",
 				"DATABASE_ID": "loopr-main-database",
-                "URLS_COLLECTION_ID": "ping-urls-collection",
-                "RESULTS_COLLECTION_ID": "ping-results-collection",
-                "WORKER_NODES_COLLECTION_ID": "worker-nodes-collection",
-                "MAX_RETENTION_DAYS": "15",
-                "DELETION_BATCH_SIZE": "50",
-                "REASSIGNMENT_BATCH_SIZE": "50",
-                "QUERY_LIMIT": "500",
-                "ORPHANED_URL_QUERY_LIMIT": "1000"
+				"URLS_COLLECTION_ID": "ping-urls-collection",
+				"RESULTS_COLLECTION_ID": "ping-results-collection",
+				"WORKER_NODES_COLLECTION_ID": "worker-nodes-collection",
+				"MAX_RETENTION_DAYS": "15",
+				"DELETION_BATCH_SIZE": "50",
+				"REASSIGNMENT_BATCH_SIZE": "50",
+				"QUERY_LIMIT": "500",
+				"ORPHANED_URL_QUERY_LIMIT": "1000"
 			}
 		},
 		{
@@ -111,10 +111,10 @@
 				"WEBHOOK_BATCH_SIZE": "50",
 				"WEBHOOK_PARALLEL_CHUNK_SIZE": "20",
 				"WEBHOOK_UPDATE_BATCH_SIZE": "25",
-                "APPWRITE_ENDPOINT": "http://localhost/v1",
-                "APPWRITE_PROJECT_ID": "loopr-project",
-                "FUNCTION_TIMEOUT": "300",
-                "PROCESSING_BUFFER": "30"
+				"APPWRITE_ENDPOINT": "http://localhost/v1",
+				"APPWRITE_PROJECT_ID": "loopr-project",
+				"FUNCTION_TIMEOUT": "300",
+				"PROCESSING_BUFFER": "30"
 			}
 		},
 		{
@@ -135,8 +135,8 @@
 			"variables": {
 				"DATABASE_ID": "loopr-main-database",
 				"WEBHOOKS_COLLECTION_ID": "scheduled-webhooks-collection",
-                "APPWRITE_ENDPOINT": "http://localhost/v1",
-                "APPWRITE_PROJECT_ID": "loopr-project"
+				"APPWRITE_ENDPOINT": "http://localhost/v1",
+				"APPWRITE_PROJECT_ID": "loopr-project"
 			}
 		}
 	],
@@ -708,6 +708,14 @@
 					"min": -9223372036854775808,
 					"max": 9223372036854775807,
 					"default": 1
+				},
+				{
+					"key": "logs",
+					"type": "string",
+					"required": false,
+					"array": false,
+					"size": 65536,
+					"default": null
 				},
 				{
 					"key": "name",

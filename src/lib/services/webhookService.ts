@@ -4,7 +4,7 @@ import type { ScheduledWebhook } from '$lib/types';
 
 class WebhookService {
 	// private readonly FUNCTION_ID = 'webhookAPI'; // Use the webhookAPI function for CRUD operations
-    private readonly FUNCTION_ID = import.meta.env.VITE_APPWRITE_WEBHOOK_FUNCTION_ID;
+	private readonly FUNCTION_ID = import.meta.env.VITE_APPWRITE_WEBHOOK_FUNCTION_ID;
 
 	async createWebhook(data: {
 		userId: string;

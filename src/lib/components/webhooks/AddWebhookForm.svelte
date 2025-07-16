@@ -81,7 +81,7 @@
                 method,
                 payload: payload.trim() || undefined,
                 headers: headers.trim() || undefined,
-                scheduledTime,
+                scheduledTime: new Date(scheduledTime).toISOString(),
                 priority,
                 maxRetries
             });

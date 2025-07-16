@@ -181,74 +181,87 @@ async function processBatch(databases, webhookDocuments) {
 
 async function executeWebhook(webhookDoc) {
     const startTime = Date.now();
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    let status = 'failed';
+    let responseStatus = null;
+    let responseTime = null;
+    let lastError = null;
+    let logEntry = null;
 
     try {
-        let headers = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'Loopr-Webhook/1.0'
-        };
-
-        // Parse custom headers if provided
-        if (webhookDoc.headers) {
-            try {
-                const customHeaders = JSON.parse(webhookDoc.headers);
-                headers = { ...headers, ...customHeaders };
-            } catch (parseError) {
-                console.warn(`Invalid headers for webhook ${webhookDoc.$id}:`, parseError.message);
-            }
-        }
-
+        console.log(`Executing webhook: ${webhookDoc.url}`);
+        
         const requestOptions = {
             method: webhookDoc.method || 'POST',
-            headers: headers,
-            signal: controller.signal
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Loopr-Webhook-Scheduler/1.0',
+                ...(webhookDoc.headers ? JSON.parse(webhookDoc.headers) : {})
+            },
+            ...(webhookDoc.payload && (webhookDoc.method || 'POST') !== 'GET' 
+                ? { body: webhookDoc.payload } 
+                : {})
         };
-
-        // Add body for POST/PUT/PATCH requests
-        if (['POST', 'PUT', 'PATCH'].includes(requestOptions.method.toUpperCase())) {
-            if (webhookDoc.payload) {
-                // Try to parse as JSON, fallback to string
-                try {
-                    JSON.parse(webhookDoc.payload);
-                    requestOptions.body = webhookDoc.payload;
-                } catch {
-                    requestOptions.body = JSON.stringify({ data: webhookDoc.payload });
-                }
-            } else {
-                requestOptions.body = JSON.stringify({});
-            }
-        }
-
-        console.log(`Executing webhook: ${webhookDoc.method || 'POST'} ${webhookDoc.url}`);
 
         const response = await fetch(webhookDoc.url, requestOptions);
-        clearTimeout(timeout);
-
-        const responseTime = Date.now() - startTime;
-        const isSuccess = response.status >= 200 && response.status < 300;
-
-        return {
-            success: isSuccess,
-            status: response.status,
-            responseTime,
-            error: isSuccess ? null : `HTTP ${response.status}: ${response.statusText}`
-        };
-
+        responseStatus = response.status;
+        responseTime = Date.now() - startTime;
+        
+        if (response.ok) {
+            status = 'completed';
+            logEntry = {
+                timestamp: new Date().toISOString(),
+                message: `Webhook executed successfully (${responseStatus})`,
+                type: 'success',
+                responseTime,
+                statusCode: responseStatus
+            };
+        } else {
+            const errorText = await response.text();
+            lastError = `HTTP ${responseStatus}: ${errorText.substring(0, 500)}`;
+            logEntry = {
+                timestamp: new Date().toISOString(),
+                message: `Webhook failed with status ${responseStatus}`,
+                type: 'error',
+                responseTime,
+                statusCode: responseStatus,
+                error: lastError
+            };
+        }
     } catch (error) {
-        clearTimeout(timeout);
-        const responseTime = Date.now() - startTime;
-        
-        console.error(`Webhook execution failed for ${webhookDoc.url}:`, error.message);
-        
-        return {
-            success: false,
-            status: 0,
+        responseTime = Date.now() - startTime;
+        lastError = error.message;
+        logEntry = {
+            timestamp: new Date().toISOString(),
+            message: `Webhook execution failed: ${error.message}`,
+            type: 'error',
             responseTime,
             error: error.message
         };
+        console.error(`Webhook execution failed for ${webhookDoc.url}:`, error);
     }
+
+    // Add log entry to existing logs
+    let existingLogs = [];
+    try {
+        existingLogs = webhookDoc.logs ? JSON.parse(webhookDoc.logs) : [];
+        if (!Array.isArray(existingLogs)) existingLogs = [];
+    } catch {
+        existingLogs = [];
+    }
+
+    // Add new log and keep only last 100 entries
+    existingLogs.unshift(logEntry);
+    existingLogs = existingLogs.slice(0, 100);
+
+    return {
+        status,
+        responseStatus,
+        responseTime,
+        lastError,
+        lastAttempt: new Date().toISOString(),
+        retries: webhookDoc.retries + 1,
+        logs: JSON.stringify(existingLogs)
+    };
 }
 
 async function updateWebhooksInBatches(databases, updates, batchSize = 25) {
