@@ -1,5 +1,5 @@
 {
-  "name": "node-regisration",
+  "name": "node-registration",
   "version": "1.0.0",
   "description": "Node Registration Function",
   "main": "src/index.js",

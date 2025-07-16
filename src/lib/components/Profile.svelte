@@ -21,6 +21,9 @@
 	let isNewPasswordValid = $state(true);
 	let doPasswordsMatch = $state(true);
 	let isCurrentPasswordValid = $state(true);
+	let showNewPassword = $state(false);
+	let showConfirmNewPassword = $state(false);
+	let showCurrentPassword = $state(false);
 
 	let showDeleteConfirm = $state(false);
 	let deleteTimeout: number | null = null;
@@ -284,43 +287,156 @@
 							<form class="space-y-4" onsubmit={handleChangePassword}>
 								<!-- Current Password -->
 								<div class="form-control w-full">
-									<label class="label" for="current-password">
-										<span class="label-text text-base-content mb-1 font-medium"
-											>Current Password</span
-										>
-									</label>
-									<input
-										id="current-password"
-										type="password"
-										placeholder="Enter your current password"
-										class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!isCurrentPasswordValid
-											? 'input-error'
-											: 'focus:border-primary'}"
-										bind:value={currentPassword}
-										required
-									/>
-								</div>
+    <label class="label" for="current-password">
+        <span class="label-text text-base-content mb-1 font-medium">Current Password</span>
+    </label>
+    <label class="input validator flex w-full items-center" class:input-error={!isCurrentPasswordValid && currentPassword}>
+        <svg
+            class="h-[1em] opacity-50"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+        >
+            <g
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2.5"
+                fill="none"
+                stroke="currentColor"
+            >
+                <path
+                    d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+                ></path>
+                <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+            </g>
+        </svg>
+        <input
+            id="current-password"
+            type={showCurrentPassword ? 'text' : 'password'}
+            placeholder="Enter your current password"
+            class="grow text-sm"
+            bind:value={currentPassword}
+            required
+        />
+        <button
+            type="button"
+            tabindex="-1"
+            class="btn btn-ghost btn-xs p-1"
+            onclick={() => (showCurrentPassword = !showCurrentPassword)}
+            aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
+        >
+            {#if showCurrentPassword}
+                <!-- Eye open icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                        <path d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </g>
+                </svg>
+            {:else}
+                <!-- Eye off icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18l-.722-3.25M2 8a10.645 10.645 0 0 0 20 0m-2 7l-1.726-2.05M4 15l1.726-2.05M9 18l.722-3.25"/>
+                </svg>
+            {/if}
+        </button>
+    </label>
+    {#if !isCurrentPasswordValid && currentPassword}
+        <label class="label" for="current-password">
+            <span class="label-text-alt text-error">Please enter your current password</span>
+        </label>
+    {/if}
+</div>
 
 								<!-- New Password -->
 								<div class="form-control w-full">
 									<label class="label" for="new-password">
 										<span class="label-text text-base-content mb-1 font-medium">New Password</span>
 									</label>
-									<input
-										id="new-password"
-										type="password"
-										placeholder="Enter your new password"
-										class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!isNewPasswordValid
-											? 'input-error'
-											: 'focus:border-primary'}"
-										bind:value={newPassword}
-										oninput={(e) => {
-											const target = e.target as HTMLInputElement;
-											if (target) validateNewPassword(target.value);
-										}}
-										required
-										aria-describedby="new-password-error"
-									/>
+									<label
+										class="input validator flex w-full items-center"
+										class:input-error={!isNewPasswordValid && newPassword}
+									>
+										<svg
+											class="h-[1em] opacity-50"
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24"
+										>
+											<g
+												stroke-linejoin="round"
+												stroke-linecap="round"
+												stroke-width="2.5"
+												fill="none"
+												stroke="currentColor"
+											>
+												<path
+													d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+												></path>
+												<circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+											</g>
+										</svg>
+										<input
+											id="new-password"
+											type={showNewPassword ? 'text' : 'password'}
+											placeholder="Enter your new password"
+											class="grow text-sm"
+											bind:value={newPassword}
+											oninput={(e) => {
+												const target = e.target as HTMLInputElement;
+												if (target) validateNewPassword(target.value);
+											}}
+											required
+											aria-describedby="new-password-error"
+										/>
+										<button
+											type="button"
+											tabindex="-1"
+											class="btn btn-ghost btn-xs p-1"
+											onclick={() => (showNewPassword = !showNewPassword)}
+											aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+										>
+											{#if showNewPassword}
+												<!-- Eye open icon -->
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													class="h-4 w-4"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
+													<g
+														fill="none"
+														stroke="currentColor"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+													>
+														<path
+															d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"
+														/>
+														<circle cx="12" cy="12" r="3" />
+													</g>
+												</svg>
+											{:else}
+												<!-- Eye off icon -->
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													class="h-4 w-4"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
+													<path
+														fill="none"
+														stroke="currentColor"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="m15 18l-.722-3.25M2 8a10.645 10.645 0 0 0 20 0m-2 7l-1.726-2.05M4 15l1.726-2.05M9 18l.722-3.25"
+													/>
+												</svg>
+											{/if}
+										</button>
+									</label>
 									{#if !isNewPasswordValid && newPassword}
 										<label class="label" for="new-password" id="new-password-error">
 											<span class="label-text-alt text-error"
@@ -337,20 +453,90 @@
 											>Confirm New Password</span
 										>
 									</label>
-									<input
-										id="confirm-password"
-										type="password"
-										placeholder="Confirm your new password"
-										class="input input-bordered bg-base-100 text-base-content placeholder:text-base-content/50 w-full {!doPasswordsMatch
-											? 'input-error'
-											: 'focus:border-primary'}"
-										bind:value={confirmNewPassword}
-										oninput={(e) => {
-											const target = e.target as HTMLInputElement;
-											if (target) validateConfirmPassword(target.value);
-										}}
-										required
-									/>
+									<label
+										class="input validator flex w-full items-center"
+										class:input-error={!doPasswordsMatch && confirmNewPassword}
+									>
+										<svg
+											class="h-[1em] opacity-50"
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24"
+										>
+											<g
+												stroke-linejoin="round"
+												stroke-linecap="round"
+												stroke-width="2.5"
+												fill="none"
+												stroke="currentColor"
+											>
+												<path
+													d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
+												></path>
+												<circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+											</g>
+										</svg>
+										<input
+											id="confirm-password"
+											type={showConfirmNewPassword ? 'text' : 'password'}
+											placeholder="Confirm your new password"
+											class="grow text-sm"
+											bind:value={confirmNewPassword}
+											oninput={(e) => {
+												const target = e.target as HTMLInputElement;
+												if (target) validateConfirmPassword(target.value);
+											}}
+											required
+										/>
+										<button
+											type="button"
+											tabindex="-1"
+											class="btn btn-ghost btn-xs p-1"
+											onclick={() => (showConfirmNewPassword = !showConfirmNewPassword)}
+											aria-label={showConfirmNewPassword ? 'Hide password' : 'Show password'}
+										>
+											{#if showConfirmNewPassword}
+												<!-- Eye open icon -->
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													class="h-4 w-4"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
+													<g
+														fill="none"
+														stroke="currentColor"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+													>
+														<path
+															d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"
+														/>
+														<circle cx="12" cy="12" r="3" />
+													</g>
+												</svg>
+											{:else}
+												<!-- Eye off icon -->
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													class="h-4 w-4"
+													fill="none"
+													viewBox="0 0 24 24"
+													stroke="currentColor"
+												>
+													<path
+														fill="none"
+														stroke="currentColor"
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="m15 18l-.722-3.25M2 8a10.645 10.645 0 0 0 20 0m-2 7l-1.726-2.05M4 15l1.726-2.05M9 18l.722-3.25"
+													/>
+												</svg>
+											{/if}
+										</button>
+									</label>
 									{#if !doPasswordsMatch && confirmNewPassword}
 										<label class="label" for="confirm-password">
 											<span class="label-text-alt text-error">Passwords do not match</span>
@@ -462,3 +648,10 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	input:focus {
+		outline: none;
+		box-shadow: none;
+	}
+</style>

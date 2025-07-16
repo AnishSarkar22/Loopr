@@ -36,6 +36,7 @@
 
 	// Show footer for authenticated pages
 	let showFooter = $derived(
+		$page?.url?.pathname === '/webhooks' ||
 		$page?.url?.pathname === '/dashboard' ||
 		$page?.url?.pathname === '/statistics' ||
 		$page?.url?.pathname === '/profile' ||
@@ -44,6 +45,7 @@
 
 	// Show header for authenticated pages
     let showHeader = $derived(
+		$page?.url?.pathname === '/webhooks' ||
 		$page?.url?.pathname === '/dashboard' ||
         $page?.url?.pathname?.startsWith('/urls/') ||
 		$page?.url?.pathname === '/statistics' ||

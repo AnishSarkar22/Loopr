@@ -213,7 +213,7 @@ async function retryOperation(operation, maxRetries = 3, delay = 1000) {
 
 export default async function ({ res }) {
 	const client = new Client()
-		.setEndpoint('https://cloud.appwrite.io/v1')
+		.setEndpoint(process.env.APPWRITE_ENDPOINT)
 		.setProject(process.env.APPWRITE_PROJECT_ID)
 		.setKey(process.env.APPWRITE_API_KEY);
 

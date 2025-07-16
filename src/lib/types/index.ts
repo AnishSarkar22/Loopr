@@ -74,3 +74,23 @@ export type ResultShard = {
         statuses: number[];
     }[];
 }
+
+export interface ScheduledWebhook {
+    id?: string;
+    userId: string;
+    url: string;
+    name?: string;
+    description?: string;
+    method: string;
+    payload?: string;
+    headers?: string;
+    scheduledTime: string;
+    status: 'pending' | 'completed' | 'failed' | 'cancelled';
+    retries: number;
+    maxRetries: number;
+    lastAttempt?: string;
+    lastError?: string;
+    responseStatus?: number;
+    responseTime?: number;
+    priority: number;
+}

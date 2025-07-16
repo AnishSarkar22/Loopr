@@ -169,3 +169,10 @@
         </div>
     {/if}
 </div>
+
+<style>
+	input:focus {
+		outline: none;
+		box-shadow: none;
+	}
+</style>

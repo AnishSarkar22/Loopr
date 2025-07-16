@@ -172,31 +172,6 @@ export const urlService = {
 			}
 		}
 
-		// // validation for lastPingTime
-		// if (data.lastPingTime) {
-		// 	const lastPingDate = new Date(data.lastPingTime);
-		// 	if (!isNaN(lastPingDate.getTime())) {
-		// 		// Ensure we always use ISO string format for DateTime attributes
-		// 		dbData.lastPingTime = lastPingDate.toISOString();
-		// 	} else {
-		// 		console.error('Invalid lastPingTime provided:', data.lastPingTime);
-		// 		// Don't update if invalid
-		// 		delete dbData.lastPingTime;
-		// 	}
-		// }
-
-		// // validation for nextPingTime
-		// if (data.nextPingTime) {
-		// 	const nextPingDate = new Date(data.nextPingTime);
-		// 	if (!isNaN(nextPingDate.getTime())) {
-		// 		// Ensure we always use ISO string format for DateTime attributes
-		// 		dbData.nextPingTime = nextPingDate.toISOString();
-		// 	} else {
-		// 		console.error('Invalid nextPingTime provided:', data.nextPingTime);
-		// 		// Don't update if invalid
-		// 		delete dbData.nextPingTime;
-		// 	}
-		// }
 
 		// Only update specific fields to avoid overwriting server-side updates
 		const cleanedData = Object.fromEntries(

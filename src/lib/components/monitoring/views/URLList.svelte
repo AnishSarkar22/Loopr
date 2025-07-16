@@ -3,6 +3,7 @@
 	import type { PingURL } from '$lib/types';
 	import { urlService } from '$lib/services/urlService';
 	import URLCard from './URLCard.svelte';
+	import Portal from '$lib/components/monitoring/views/Portal.svelte';
 
 	interface Props {
 		urls: PingURL[];
@@ -20,6 +21,11 @@
 	// Pagination state
 	let currentPage = $state(1);
 	let itemsPerPage = 3;
+	
+	//Dropdown state management
+    let activeDropdown = $state<string | null>(null);
+    let dropdownButtons = $state<Record<string, HTMLElement>>({});
+    let dropdownPositions = $state<Record<string, { top: number; left: number }>>({});
 
 	// Computed values for pagination
 	let totalPages = $derived(Math.ceil(urls.length / itemsPerPage));
@@ -137,6 +143,50 @@
 	function toggleDetails(urlId: string) {
 		showDetails[urlId] = !showDetails[urlId];
 	}
+
+	// Dropdown functions
+    function toggleDropdown(urlId: string, event: MouseEvent) {
+    event.stopPropagation(); // Prevent event bubbling
+    
+    if (activeDropdown === urlId) {
+        activeDropdown = null;
+        return;
+    }
+
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    
+    dropdownPositions[urlId] = {
+        top: rect.bottom + 4, // Use viewport coordinates, not window.scrollY
+        left: rect.right - 208 // 208px is the dropdown width (w-52)
+    };
+    
+    activeDropdown = urlId;
+}
+
+    function closeDropdown() {
+        activeDropdown = null;
+    }
+
+    // Close dropdown when clicking outside
+    function handleClickOutside(event: MouseEvent) {
+    if (activeDropdown) {
+        const target = event.target as Element;
+        // Check if click is outside both the dropdown and the button
+        if (!target.closest('.dropdown-portal') && !target.closest('button[aria-label="URL actions menu"]')) {
+            closeDropdown();
+        }
+    }
+}
+	// Event listener for clicking outside
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			document.addEventListener('click', handleClickOutside);
+			return () => {
+				document.removeEventListener('click', handleClickOutside);
+			};
+		}
+	});
 </script>
 
 {#if urls.length === 0}
@@ -239,106 +289,27 @@
                                     </span>
                                 </td>
 								<td class="relative">
-									<div class="dropdown dropdown-end">
-										<button tabindex="0" class="btn btn-ghost btn-sm" aria-label="URL actions menu">
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												class="h-4 w-4"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke="currentColor"
-											>
-												<path
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													stroke-width="2"
-													d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-												/>
-											</svg>
-										</button>
-										<ul
-											class="dropdown-content menu bg-base-100 rounded-box border-base-content/5 absolute right-0 z-[9999] w-52 border p-2 shadow-2xl {index ===
-											0
-												? 'top-full mt-1'
-												: index === paginatedUrls.length - 1
-													? 'bottom-full mb-1'
-													: 'top-0 -translate-y-full transform'}"
+									<button 
+										class="btn btn-ghost btn-sm" 
+										aria-label="URL actions menu"
+										onclick={(e) => toggleDropdown(url.id || '', e)}
+										bind:this={dropdownButtons[url.id || '']}
+									>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											class="h-4 w-4"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
 										>
-											<li>
-												<button onclick={() => toggleStatus(url)} disabled={updating[url.id || '']}>
-													{#if updating[url.id || '']}
-														<span class="loading loading-spinner loading-xs"></span>
-													{:else if url.isEnabled}
-														<svg
-															class="h-4 w-4"
-															fill="none"
-															stroke="currentColor"
-															viewBox="0 0 24 24"
-														>
-															<path
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																stroke-width="2"
-																d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-															></path>
-														</svg>
-														Disable
-													{:else}
-														<svg
-															class="h-4 w-4"
-															fill="none"
-															stroke="currentColor"
-															viewBox="0 0 24 24"
-														>
-															<path
-																stroke-linecap="round"
-																stroke-linejoin="round"
-																stroke-width="2"
-																d="M14.828 14.828a4 4 0 01-5.656 0M9 10v.01M15 10v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-															></path>
-														</svg>
-														Enable
-													{/if}
-												</button>
-											</li>
-											<li>
-                                                <a href="/urls/{url.id}">
-                                                    <svg
-                                                        class="h-4 w-4"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                        ></path>
-                                                    </svg>
-                                                    View Details
-                                                </a>
-                                            </li>
-											<li>
-												<a href="/urls/{url.id}/edit">
-													<svg
-														class="h-4 w-4"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
-													>
-														<path
-															stroke-linecap="round"
-															stroke-linejoin="round"
-															stroke-width="2"
-															d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-														></path>
-													</svg>
-													Edit URL
-												</a>
-											</li>
-										</ul>
-									</div>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+											/>
+										</svg>
+									</button>
 								</td>
 							</tr>
 							<!-- Detailed View Row -->
@@ -394,6 +365,96 @@
 						{/each}
 					</tbody>
 				</table>
+				<!-- Portal Dropdown Menu -->
+                {#if activeDropdown && dropdownPositions[activeDropdown]}
+                    <Portal>
+                        {#snippet children()}
+                            {@const currentUrl = paginatedUrls.find(u => u.id === activeDropdown)}
+                            <div 
+                                class="dropdown-portal menu bg-base-100 rounded-box border-base-content/5 w-52 border p-2 shadow-2xl"
+								style="position: fixed; top: {dropdownPositions[activeDropdown!].top}px; left: {dropdownPositions[activeDropdown!].left}px; z-index: 9999;"
+                            >
+                                {#if currentUrl}
+                                    <ul>
+                                        <li>
+                                            <button onclick={() => { toggleStatus(currentUrl); closeDropdown(); }} disabled={updating[currentUrl.id || '']}>
+                                                {#if updating[currentUrl.id || '']}
+                                                    <span class="loading loading-spinner loading-xs"></span>
+                                                {:else if currentUrl.isEnabled}
+                                                    <svg
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        ></path>
+                                                    </svg>
+                                                    Disable
+                                                {:else}
+                                                    <svg
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10v.01M15 10v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                        ></path>
+                                                    </svg>
+                                                    Enable
+                                                {/if}
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <a href="/urls/{currentUrl.id}" onclick={closeDropdown}>
+                                                <svg
+                                                    class="h-4 w-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    ></path>
+                                                </svg>
+                                                View Details
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="/urls/{currentUrl.id}/edit" onclick={closeDropdown}>
+                                                <svg
+                                                    class="h-4 w-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                    ></path>
+                                                </svg>
+                                                Edit URL
+                                            </a>
+                                        </li>
+                                    </ul>
+                                {/if}
+                            </div>
+                        {/snippet}
+                    </Portal>
+                {/if}
 			</div>
 		</div>
 

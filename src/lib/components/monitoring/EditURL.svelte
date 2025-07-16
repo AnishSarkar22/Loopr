@@ -249,9 +249,6 @@
 				<div class="mb-6 flex items-center justify-between">
 					<div>
 						<h1 class="text-2xl font-bold">Edit URL</h1>
-						<p class="text-base-content/70">
-							{url.name || getUrlHostname(url.url)}
-						</p>
 					</div>
 					<div class="flex items-center gap-2">
 						<div
@@ -260,9 +257,6 @@
 							class:badge-ghost={!url.isEnabled}
 						>
 							{url.isEnabled ? 'Active' : 'Inactive'}
-						</div>
-						<div class="text-xs opacity-60">
-							Every {formatPingInterval(url.pingInterval || 15)}
 						</div>
 					</div>
 				</div>
@@ -458,3 +452,10 @@
 		></button>
 	</div>
 {/if}
+
+<style>
+	input:focus {
+		outline: none;
+		box-shadow: none;
+	}
+</style>

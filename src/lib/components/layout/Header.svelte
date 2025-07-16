@@ -14,27 +14,27 @@
 	let loading = $state(true);
 
 	function getInitials(name: string): string {
-        if (!name) return '';
-        const parts = name.trim().split(/\s+/);
-        if (parts.length === 1) return parts[0][0].toUpperCase();
-        // Take first letter of first two words only
-        return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
+		if (!name) return '';
+		const parts = name.trim().split(/\s+/);
+		if (parts.length === 1) return parts[0][0].toUpperCase();
+		// Take first letter of first two words only
+		return (parts[0][0] + parts[1][0]).toUpperCase();
+	}
 
 	onMount(async () => {
-    try {
-        const user = await account.get();
-        userName = user.name ?? '';
-        userInitials = getInitials(userName);
-        isAuthenticated = true;
-    } catch (error) {
-        userName = '';
-        userInitials = '';
-        isAuthenticated = false;
-    } finally {
-        loading = false;
-    }
-});
+		try {
+			const user = await account.get();
+			userName = user.name ?? '';
+			userInitials = getInitials(userName);
+			isAuthenticated = true;
+		} catch (error) {
+			userName = '';
+			userInitials = '';
+			isAuthenticated = false;
+		} finally {
+			loading = false;
+		}
+	});
 
 	function showAlert(message: string, error = false) {
 		toastMessage = message;
@@ -60,7 +60,6 @@
 
 <div
 	class="navbar bg-base-100/80 supports-[backdrop-filter]:bg-base-100/20 fixed top-0 z-50 backdrop-blur-md"
-	
 >
 	<div class="navbar-start">
 		<a class="btn btn-ghost p-2" href="/dashboard" aria-label="Loopr Home">
@@ -69,16 +68,18 @@
 	</div>
 
 	<div class="navbar-center hidden lg:flex">
-			<ul class="menu menu-horizontal px-1">
-				<li><a href="/dashboard" class:active={$page.url.pathname === '/dashboard'}>Dashboard</a></li>
-				<li>
-					<a href="/statistics" class:active={$page.url.pathname === '/statistics'}>Statistics</a>
-				</li>
-			</ul>
+		<ul class="menu menu-horizontal px-1">
+			<li><a href="/dashboard" class:active={$page.url.pathname === '/dashboard'}>Dashboard</a></li>
+			<li>
+				<a href="/webhooks" class:active={$page.url.pathname === '/webhooks'}>Webhooks</a>
+			</li>
+			<li>
+				<a href="/statistics" class:active={$page.url.pathname === '/statistics'}>Statistics</a>
+			</li>
+		</ul>
 	</div>
 
 	<div class="navbar-end">
-
 		<!-- <a
 			href="https://github.com/AnishSarkar22/Loopr"
 			target="_blank"
@@ -98,7 +99,7 @@
 		<Notifications />
 
 		{#if loading}
-		<div class="skeleton w-10 h-10 rounded-full"></div>
+			<div class="skeleton h-10 w-10 rounded-full"></div>
 		{:else if isAuthenticated}
 			<div class="dropdown dropdown-end">
 				<div tabindex="0" role="button" class="btn btn-ghost btn-circle">
@@ -115,19 +116,19 @@
 					<li>
 						<a href="/dashboard" class="flex items-center gap-2 pl-2 lg:hidden">
 							<svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM13 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM13 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
-                                />
-                            </svg>
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4zM13 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zM13 14a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
+								/>
+							</svg>
 							Dashboard
 						</a>
 					</li>

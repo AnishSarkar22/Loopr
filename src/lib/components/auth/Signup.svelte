@@ -15,6 +15,8 @@
 	let showToast = $state(false);
 	let toastMessage = $state('');
 	let isError = $state(false);
+	let showPassword = $state(false);
+	let showConfirmPassword = $state(false);
 
 	// Track if fields have been interacted with
 	let emailTouched = $state(false);
@@ -242,7 +244,10 @@
 					</div>
 
 					<div>
-						<label class="input validator" class:input-error={showPasswordError}>
+						<label
+							class="input validator flex w-full items-center"
+							class:input-error={showPasswordError}
+						>
 							<svg
 								class="h-[1em] opacity-50"
 								xmlns="http://www.w3.org/2000/svg"
@@ -262,14 +267,62 @@
 								</g>
 							</svg>
 							<input
-								type="password"
+								type={showPassword ? 'text' : 'password'}
 								name="password"
 								required
 								placeholder="Password"
 								minlength="8"
 								bind:value={password}
 								oninput={handlePasswordInput}
+								class="grow"
 							/>
+							<button
+								type="button"
+								tabindex="-1"
+								class="btn btn-ghost btn-xs p-1"
+								onclick={() => (showPassword = !showPassword)}
+								aria-label={showPassword ? 'Hide password' : 'Show password'}
+							>
+								{#if showPassword}
+									<!-- Eye open icon -->
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<g
+											fill="none"
+											stroke="currentColor"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+										>
+											<path
+												d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"
+											/>
+											<circle cx="12" cy="12" r="3" />
+										</g>
+									</svg>
+								{:else}
+									<!-- Eye off icon -->
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<path
+											fill="none"
+											stroke="currentColor"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="m15 18l-.722-3.25M2 8a10.645 10.645 0 0 0 20 0m-2 7l-1.726-2.05M4 15l1.726-2.05M9 18l.722-3.25"
+										/>
+									</svg>
+								{/if}
+							</button>
 						</label>
 						{#if showPasswordError}
 							<label class="label" for="password" id="password-error">
@@ -281,7 +334,10 @@
 					</div>
 
 					<div>
-						<label class="input validator" class:input-error={showConfirmPasswordError}>
+						<label
+							class="input validator flex w-full items-center"
+							class:input-error={showConfirmPasswordError}
+						>
 							<svg
 								class="h-[1em] opacity-50"
 								xmlns="http://www.w3.org/2000/svg"
@@ -301,17 +357,65 @@
 								</g>
 							</svg>
 							<input
-								type="password"
+								type={showConfirmPassword ? 'text' : 'password'}
 								name="confirmPassword"
 								required
 								placeholder="Confirm Password"
 								minlength="8"
 								bind:value={confirmPassword}
 								oninput={handleConfirmPasswordInput}
+								class="grow"
 							/>
+							<button
+								type="button"
+								tabindex="-1"
+								class="btn btn-ghost btn-xs p-1"
+								onclick={() => (showConfirmPassword = !showConfirmPassword)}
+								aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+							>
+								{#if showConfirmPassword}
+									<!-- Eye open icon -->
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<g
+											fill="none"
+											stroke="currentColor"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+										>
+											<path
+												d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"
+											/>
+											<circle cx="12" cy="12" r="3" />
+										</g>
+									</svg>
+								{:else}
+									<!-- Eye off icon -->
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-4 w-4"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<path
+											fill="none"
+											stroke="currentColor"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="m15 18l-.722-3.25M2 8a10.645 10.645 0 0 0 20 0m-2 7l-1.726-2.05M4 15l1.726-2.05M9 18l.722-3.25"
+										/>
+									</svg>
+								{/if}
+							</button>
 						</label>
 						{#if showConfirmPasswordError}
-							<label class="label" for="password" id="password-error">
+							<label class="label" for="confirmPassword" id="confirm-password-error">
 								<span class="label-text-alt text-error"> Passwords do not match </span>
 							</label>
 						{/if}
@@ -382,3 +486,10 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	input:focus {
+		outline: none;
+		box-shadow: none;
+	}
+</style>

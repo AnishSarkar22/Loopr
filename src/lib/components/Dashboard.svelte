@@ -20,12 +20,14 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
-	import type { PingURL } from '$lib/types';
+	import type { PingURL, ScheduledWebhook } from '$lib/types';
 	import { urlService } from '$lib/services/urlService';
 	import URLList from './monitoring/views/URLList.svelte';
 	import AddURLForm from './monitoring/AddURLForm.svelte';
 	import { isAuthenticated, user } from '$lib/stores/auth';
+	import AddWebhookForm from '$lib/components/webhooks/AddWebhookForm.svelte';
 
+	let showAddWebhook = $state(false);
 	let urls = $state<PingURL[]>([]);
 	let loading = $state(true);
 	let showAddForm = $state(false);
@@ -103,12 +105,16 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 		showToastNotification(`Successfully added ${newUrl.url}`, 'success');
 	}
 
-	async function handleURLUpdated(updatedUrl: PingURL) {
-		const index = urls.findIndex((url) => url.id === updatedUrl.id);
-		if (index !== -1) {
-			urls[index] = updatedUrl;
+	function handleURLUpdated(item: PingURL | ScheduledWebhook) {
+		// Only handle PingURL updates here
+		if ('isEnabled' in item && 'successCount' in item) {
+			const updatedUrl = item as PingURL;
+			const index = urls.findIndex((url) => url.id === updatedUrl.id);
+			if (index !== -1) {
+				urls[index] = updatedUrl;
+			}
+			showToastNotification('URL updated successfully', 'success');
 		}
-		showToastNotification('URL updated successfully', 'success');
 	}
 
 	async function handleURLDeleted(deletedUrlId: string) {
@@ -357,29 +363,80 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 				</div>
 			</div>
 
-			<!-- Add New URL Button -->
-			<button
-				class="btn btn-primary btn-sm w-full gap-2 sm:w-auto"
-				onclick={() => (showAddForm = true)}
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-4 w-4"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
+			<!-- Action Buttons Group -->
+			<div class="flex flex-col gap-2 sm:flex-row sm:gap-3">
+				
+				<!-- Add New URL Button -->
+				<button
+					class="btn btn-primary btn-sm w-full gap-2 sm:w-auto"
+					onclick={() => (showAddForm = true)}
 				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M12 4v16m8-8H4"
-					/>
-				</svg>
-				Add New URL
-			</button>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-4 w-4"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 4v16m8-8H4"
+						/>
+					</svg>
+					Add New URL
+				</button>
+
+				<!-- Schedule Webhook Button -->
+				<button
+					class="btn btn-accent btn-sm w-full gap-2 sm:w-auto"
+					onclick={() => (showAddWebhook = true)}
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-4 w-4"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					Schedule Webhook
+				</button>
+			</div>
 		</div>
 	</div>
+
+	{#if showAddWebhook && $user}
+		<div class="modal modal-open" transition:fade>
+			<div class="modal-box max-w-2xl">
+				<div class="mb-6 flex items-center justify-between">
+					<h3 class="text-xl font-bold">Schedule Webhook</h3>
+					<button class="btn btn-sm btn-circle btn-ghost" onclick={() => (showAddWebhook = false)}
+						>✕</button
+					>
+				</div>
+				<AddWebhookForm
+					userId={$user.id}
+					onSuccess={() => (showAddWebhook = false)}
+					onCancel={() => (showAddWebhook = false)}
+				/>
+			</div>
+			<div
+				class="modal-backdrop"
+				role="button"
+				tabindex="0"
+				onclick={() => (showAddWebhook = false)}
+				onkeydown={(e) => (e.key === 'Enter' || e.key === ' ' ? (showAddWebhook = false) : null)}
+			></div>
+		</div>
+	{/if}
 
 	<!-- Add URL Form Modal -->
 	{#if showAddForm && $user}

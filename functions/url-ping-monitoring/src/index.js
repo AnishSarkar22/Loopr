@@ -24,7 +24,7 @@ export default async function ({ res }) {
 	console.log('=== PING MONITORING FUNCTION STARTED ===');
 
 	const client = new Client()
-		.setEndpoint('https://cloud.appwrite.io/v1')
+		.setEndpoint(process.env.APPWRITE_ENDPOINT)
 		.setProject(process.env.APPWRITE_PROJECT_ID)
 		.setKey(process.env.APPWRITE_API_KEY);
 
