@@ -1,5 +1,5 @@
 <script lang="ts">
-    import URLDetails from '$lib/components/monitoring/URLDetails.svelte';
+    import URLDetails from '$lib/components/monitoring/urls/URLDetails.svelte';
 </script>
 
 <svelte:head>

@@ -133,7 +133,7 @@
 						</a>
 					</li>
 					<li>
-						<a href="/webhooks" class="flex items-center gap-2 pl-2">
+						<a href="/webhooks" class="flex items-center gap-2 pl-2 lg:hidden">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								class="h-5 w-5"

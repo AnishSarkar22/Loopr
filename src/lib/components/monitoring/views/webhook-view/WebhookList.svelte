@@ -248,11 +248,11 @@
                                     <div class="badge {getStatusBadge(webhook)} badge-sm">
                                         {getStatusText(webhook)}
                                     </div>
-                                    {#if webhook.responseStatus}
+                                    <!-- {#if webhook.responseStatus}
                                         <div class="text-base-content/60 mt-1 text-xs">
                                             {webhook.responseStatus}
                                         </div>
-                                    {/if}
+                                    {/if} -->
                                 </td>
                                 <td class="text-center">
                                     <div class="badge {getPriorityBadge(webhook.priority ?? 0)} badge-sm">

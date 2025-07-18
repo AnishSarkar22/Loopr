@@ -108,7 +108,7 @@
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
-		if (!url || !validateForm()) return;
+		if (!validateForm() || !url || loading) return;
 
 		saving = true;
 		try {

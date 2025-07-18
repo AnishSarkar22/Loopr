@@ -69,7 +69,7 @@
 
     async function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
-        if (!validateForm() || !userId) return;
+        if (!validateForm() || !userId || loading) return;
 
         loading = true;
         try {
@@ -129,7 +129,7 @@
     });
 </script>
 
-<div class="p-6 max-w-2xl mx-auto">
+<div class="p-4 sm:p-6 max-w-2xl mx-auto">
     <!-- Header -->
     <div class="mb-6">
         <h3 class="text-lg font-bold text-base-content mb-2">Schedule Webhook</h3>
@@ -229,7 +229,7 @@
         </div>
 
         <!-- Method and Scheduled Time Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- HTTP Method -->
             <div class="form-control w-full">
                 <label class="label" for="webhook-method-select">

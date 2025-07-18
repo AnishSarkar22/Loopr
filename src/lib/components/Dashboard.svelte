@@ -22,10 +22,10 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 	import { onMount } from 'svelte';
 	import type { PingURL, ScheduledWebhook } from '$lib/types';
 	import { urlService } from '$lib/services/urlService';
-	import URLList from './monitoring/views/URLList.svelte';
-	import AddURLForm from './monitoring/AddURLForm.svelte';
+	import URLList from './monitoring/views/url-view/URLList.svelte';
+	import AddURLForm from './monitoring/urls/AddURLForm.svelte';
 	import { isAuthenticated, user } from '$lib/stores/auth';
-	import AddWebhookForm from '$lib/components/webhooks/AddWebhookForm.svelte';
+	import AddWebhookForm from '$lib/components/monitoring/webhooks/AddWebhookForm.svelte';
 
 	let showAddWebhook = $state(false);
 	let urls = $state<PingURL[]>([]);
@@ -389,7 +389,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 				</button>
 
 				<!-- Schedule Webhook Button -->
-				<button
+				<!-- <button
 					class="btn btn-accent btn-sm w-full gap-2 sm:w-auto"
 					onclick={() => (showAddWebhook = true)}
 				>
@@ -408,12 +408,12 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 						/>
 					</svg>
 					Schedule Webhook
-				</button>
+				</button> -->
 			</div>
 		</div>
 	</div>
 
-	{#if showAddWebhook && $user}
+	<!-- {#if showAddWebhook && $user}
 		<div class="modal modal-open" transition:fade>
 			<div class="modal-box max-w-2xl">
 				<div class="mb-6 flex items-center justify-between">
@@ -436,7 +436,7 @@ along with Loopr.  If not, see <https://www.gnu.org/licenses/>.
 				onkeydown={(e) => (e.key === 'Enter' || e.key === ' ' ? (showAddWebhook = false) : null)}
 			></div>
 		</div>
-	{/if}
+	{/if} -->
 
 	<!-- Add URL Form Modal -->
 	{#if showAddForm && $user}

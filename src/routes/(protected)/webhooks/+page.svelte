@@ -1,5 +1,5 @@
 <script lang="ts">
-    import WebhookList from '$lib/components/webhooks/WebhookList.svelte';
+	import Webhook from '$lib/components/monitoring/views/webhook-view/Webhook.svelte';
 </script>
 
 <svelte:head>
@@ -12,5 +12,5 @@
         <p class="text-base-content/70">Manage and monitor your scheduled webhook deliveries</p>
     </header>
 
-    <WebhookList />
+    <Webhook />
 </div>

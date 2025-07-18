@@ -113,17 +113,14 @@ async function processBatch(databases, webhookDocuments) {
     let failures = 0;
     let retries = 0;
 
-    // Process webhooks in parallel chunks
     for (let i = 0; i < webhookDocuments.length; i += PARALLEL_CHUNK_SIZE) {
         const chunk = webhookDocuments.slice(i, i + PARALLEL_CHUNK_SIZE);
 
         try {
-            // Execute webhooks in parallel
             const webhookResults = await Promise.all(
                 chunk.map(doc => executeWebhook(doc))
             );
 
-            // Batch update all webhook documents
             const updates = [];
             for (let j = 0; j < webhookResults.length; j++) {
                 const result = webhookResults[j];
@@ -132,29 +129,43 @@ async function processBatch(databases, webhookDocuments) {
 
                 const updateData = {
                     lastAttempt: new Date().toISOString(),
-                    responseStatus: result.status,
+                    responseStatus: result.responseStatus,
                     responseTime: result.responseTime,
-                    lastError: result.error
+                    lastError: result.lastError,
+                    logs: result.logs
                 };
 
                 if (result.success) {
-                    updateData.status = 'sent';
+                    updateData.status = 'completed';
                     success++;
                 } else {
                     const newRetries = (doc.retries || 0) + 1;
                     const maxRetries = doc.maxRetries || 3;
+                    updateData.retries = newRetries;
 
                     if (newRetries >= maxRetries) {
                         updateData.status = 'failed';
-                        updateData.retries = newRetries;
                         failures++;
+
+                        // Create notification for failed webhook
+                        await databases.createDocument(
+                            process.env.DATABASE_ID,
+                            process.env.NOTIFICATIONS_COLLECTION_ID,
+                            ID.unique(),
+                            {
+                                userId: doc.userId,
+                                type: 'webhook_failed',
+                                message: `Webhook to ${doc.url} failed after ${newRetries} attempts. Error: ${result.lastError || 'Unknown error'}`,
+                                urlId: doc.$id,
+                                url: doc.url,
+                                timestamp: new Date().toISOString(),
+                                read: false
+                            }
+                        );
                     } else {
-                        // Schedule retry with exponential backoff
-                        const retryDelay = Math.min(300, 60 * Math.pow(2, newRetries)); // Max 5 minutes
+                        const retryDelay = Math.min(300, 60 * Math.pow(2, newRetries));
                         const retryTime = new Date(Date.now() + retryDelay * 1000);
-                        
                         updateData.status = 'pending';
-                        updateData.retries = newRetries;
                         updateData.scheduledTime = retryTime.toISOString();
                         retries++;
                     }
@@ -166,26 +177,24 @@ async function processBatch(databases, webhookDocuments) {
                 });
             }
 
-            // Execute updates in smaller batches
             const UPDATE_BATCH_SIZE = parseInt(process.env.WEBHOOK_UPDATE_BATCH_SIZE) || 25;
             await updateWebhooksInBatches(databases, updates, UPDATE_BATCH_SIZE);
 
         } catch (error) {
             console.error(`Error processing webhook chunk starting at index ${i}:`, error);
-            continue;
         }
     }
 
     return { processed, success, failures, retries };
 }
 
+
 async function executeWebhook(webhookDoc) {
     const startTime = Date.now();
-    let status = 'failed';
     let responseStatus = null;
     let responseTime = null;
     let lastError = null;
-    let logEntry = null;
+    let success = false;
 
     try {
         console.log(`Executing webhook: ${webhookDoc.url}`);
@@ -207,38 +216,28 @@ async function executeWebhook(webhookDoc) {
         responseTime = Date.now() - startTime;
         
         if (response.ok) {
-            status = 'completed';
-            logEntry = {
-                timestamp: new Date().toISOString(),
-                message: `Webhook executed successfully (${responseStatus})`,
-                type: 'success',
-                responseTime,
-                statusCode: responseStatus
-            };
+            success = true;
         } else {
             const errorText = await response.text();
             lastError = `HTTP ${responseStatus}: ${errorText.substring(0, 500)}`;
-            logEntry = {
-                timestamp: new Date().toISOString(),
-                message: `Webhook failed with status ${responseStatus}`,
-                type: 'error',
-                responseTime,
-                statusCode: responseStatus,
-                error: lastError
-            };
         }
     } catch (error) {
         responseTime = Date.now() - startTime;
         lastError = error.message;
-        logEntry = {
-            timestamp: new Date().toISOString(),
-            message: `Webhook execution failed: ${error.message}`,
-            type: 'error',
-            responseTime,
-            error: error.message
-        };
         console.error(`Webhook execution failed for ${webhookDoc.url}:`, error);
     }
+
+    // Prepare log entry
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        message: success 
+            ? `Webhook executed successfully (${responseStatus})` 
+            : `Webhook execution failed: ${lastError}`,
+        type: success ? 'success' : 'error',
+        responseTime,
+        statusCode: responseStatus,
+        ...(lastError && { error: lastError })
+    };
 
     // Add log entry to existing logs
     let existingLogs = [];
@@ -254,12 +253,10 @@ async function executeWebhook(webhookDoc) {
     existingLogs = existingLogs.slice(0, 100);
 
     return {
-        status,
+        success,
         responseStatus,
         responseTime,
         lastError,
-        lastAttempt: new Date().toISOString(),
-        retries: webhookDoc.retries + 1,
         logs: JSON.stringify(existingLogs)
     };
 }
@@ -270,18 +267,24 @@ async function updateWebhooksInBatches(databases, updates, batchSize = 25) {
         
         try {
             await Promise.all(
-                batch.map(update =>
-                    databases.updateDocument(
-                        process.env.DATABASE_ID,
-                        process.env.WEBHOOKS_COLLECTION_ID,
-                        update.id,
-                        update.data
-                    )
-                )
+                batch.map(async (update) => {
+                    try {
+                        await databases.updateDocument(
+                            process.env.DATABASE_ID,
+                            process.env.WEBHOOKS_COLLECTION_ID,
+                            update.id,
+                            update.data
+                        );
+                        console.log(`Successfully updated webhook ${update.id}`);
+                    } catch (error) {
+                        console.error(`Failed to update webhook ${update.id}:`, error);
+                        throw error; // Re-throw to be caught by outer try-catch
+                    }
+                })
             );
         } catch (error) {
             console.error(`Error updating webhook batch starting at ${i}:`, error);
-            // Continue with next batch instead of failing
+            // Continue with next batch instead of failing completely
         }
     }
 }

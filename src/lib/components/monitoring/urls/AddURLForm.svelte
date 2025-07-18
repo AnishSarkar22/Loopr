@@ -63,7 +63,7 @@
 
     async function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
-        if (!userId || !validateForm()) return;
+        if (!validateForm() || !userId || loading) return;
 
         loading = true;
         try {

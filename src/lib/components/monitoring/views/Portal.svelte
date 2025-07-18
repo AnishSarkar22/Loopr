@@ -1,4 +1,4 @@
-<!-- used in URLList component for dropdown -->
+<!-- used in URLList and WebhookList component for dropdown -->
 <!-- used for parts to appear above everything else and not be clipped by parent containers -->
 
 <script lang="ts">
