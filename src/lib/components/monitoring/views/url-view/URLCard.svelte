@@ -123,15 +123,15 @@
 
 						<!-- Quick Actions -->
 						<div
-							class="flex items-center gap-2 opacity-0 transition-all duration-300 group-hover:opacity-100"
+							class="flex items-center gap-2 opacity-100 transition-all duration-300 sm:opacity-0 sm:group-hover:opacity-100"
 						>
 							<button
-								class="btn btn-ghost btn-xs btn-circle tooltip tooltip-left"
+								class="btn btn-ghost btn-sm btn-circle tooltip tooltip-left"
 								data-tip="Copy URL"
 								onclick={() => copyToClipboard(url.url)}
 								aria-label="Copy URL"
 							>
-								<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -141,12 +141,12 @@
 								</svg>
 							</button>
 							<a
-								href="/urls/{url.id}/edit"
-								class="btn btn-ghost btn-xs btn-circle tooltip tooltip-left"
+								href={`/urls/${url.id}/edit`}
+								class="btn btn-ghost btn-sm btn-circle tooltip tooltip-left"
 								data-tip="Edit"
 								aria-label="Edit URL"
 							>
-								<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"

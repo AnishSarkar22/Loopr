@@ -235,7 +235,7 @@
 
 							<!-- Quick Actions -->
 							<div
-								class="flex items-center gap-2 opacity-0 transition-all duration-300 group-hover:opacity-100"
+								class="flex items-center gap-2 opacity-100 transition-all duration-300 sm:opacity-0 sm:group-hover:opacity-100"
 							>
 								<button
 									class="btn btn-ghost btn-xs btn-circle tooltip tooltip-left"
@@ -253,7 +253,7 @@
 									</svg>
 								</button>
 								<a
-									href="/webhooks/{webhook.id}/edit"
+									href={`/webhooks/${webhook.id}/edit`}
 									class="btn btn-ghost btn-xs btn-circle tooltip tooltip-left"
 									data-tip="Edit"
 									aria-label="Edit Webhook"
@@ -361,11 +361,13 @@
 										{:else}
 											<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path
+													fill="none"
+													stroke="currentColor"
 													stroke-linecap="round"
 													stroke-linejoin="round"
-													stroke-width="2"
-													d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-												></path>
+													stroke-width="1.5"
+													d="m15.75 15l-6-6m0 6l6-6m7 3c0-5.523-4.477-10-10-10s-10 4.477-10 10s4.477 10 10 10s10-4.477 10-10"
+												/>
 											</svg>
 											Cancel
 										{/if}
