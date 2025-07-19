@@ -202,7 +202,6 @@
 				<p class="text-base-content/70 py-4">
 					Schedule your first webhook to automate your workflows and integrations.
 				</p>
-				<a href="/dashboard" class="btn btn-primary"> Go to Dashboard </a>
 			</div>
 		</div>
 	</div>

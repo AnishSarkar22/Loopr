@@ -1,15 +1,14 @@
 <p align="center"><img src="/static/favicon.svg" width="150"></p>
 <h1 align="center"><b>Loopr</b></h1>
-<h4 align="center"><i>Intelligent URL Monitoring & Uptime Service</i></h4>
+<h4 align="center"><i>Intelligent URL Monitoring, Webhook Scheduling & Uptime Service</i></h4>
 <br>
 
-**Loopr** is a comprehensive, cloud-native URL monitoring application designed to track website uptime, performance, and availability in real-time. Built with modern web technologies and optimized for scalability, Loopr provides automated monitoring, intelligent alerting, and detailed analytics for web services.
-
+**Loopr** is a comprehensive, cloud-native URL monitoring application designed to track website uptime, performance, availability, and automate webhook scheduling in real-time. Built with modern web technologies and optimized for scalability, Loopr provides automated monitoring, intelligent alerting, webhook delivery, and detailed analytics for web services.
 
 
 # **Overview**
 
-Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite backend** infrastructure, featuring intelligent **cron job scheduling** and **distributed monitoring capabilities**. The application is engineered to handle high-frequency monitoring tasks while maintaining optimal resource utilization and cost efficiency.
+Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite backend** infrastructure, featuring intelligent **cron job scheduling**, **webhook scheduling and delivery**, and **distributed monitoring capabilities**. The application is engineered to handle high-frequency monitoring tasks while maintaining optimal resource utilization and cost efficiency.
 
 
 
@@ -28,6 +27,7 @@ Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite b
 * Real-time dashboard updates
 * Customizable notification preferences
 * Historical incident tracking
+* Webhook scheduling and automated webhook delivery for integrations
 
 ## 📊 Advanced Analytics
 
@@ -74,6 +74,7 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * Configurable batch sizes
 * Intelligent timeout handling
 * Memory-efficient data operations
+* Webhook scheduling and execution handled by dedicated serverless functions
 
 
 
@@ -145,6 +146,7 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * **Node.js** for serverless functions
 * **MariaDB** for data persistence
 * **Redis** for caching and session storage
+* Webhook scheduling and delivery via Appwrite serverless functions
 
 ## 🛠️ Infrastructure
 
@@ -168,6 +170,10 @@ Track uptime, latency, and availability trends.
 ## 🚨 Incident Management
 
 Get real-time alerts and review incident histories.
+
+## 🔗 Automated Webhook Integrations
+
+Schedule and deliver webhooks to external services for seamless automation and integration with third-party tools.
 
 ## 📋 Compliance Reporting
 
