@@ -246,11 +246,11 @@
                     class="select select-bordered w-full focus:select-primary"
                     disabled={loading}
                 >
-                    <option value="POST">📝 POST</option>
-                    <option value="GET">👁️ GET</option>
-                    <option value="PUT">✏️ PUT</option>
-                    <option value="PATCH">🔧 PATCH</option>
-                    <option value="DELETE">🗑️ DELETE</option>
+                    <option value="POST">POST</option>
+                    <option value="GET">GET</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
                 </select>
             </div>
 
@@ -428,9 +428,8 @@
             >
                 {#if loading}
                     <span class="loading loading-spinner loading-sm"></span>
-                    <!-- Scheduling... -->
                 {:else}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 bold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Schedule Webhook
