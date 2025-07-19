@@ -269,12 +269,16 @@
 							<a href="/urls/{url.id}" class="btn btn-ghost btn-sm">
 								View Details
 								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
+									<g
+										fill="none"
+										stroke="currentColor"
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M9 5l7 7-7 7"
-									></path>
+									>
+										<circle cx="12" cy="12" r="10" />
+										<path d="M12 16v-4m0-4h.01" />
+									</g>
 								</svg>
 							</a>
 						</div>

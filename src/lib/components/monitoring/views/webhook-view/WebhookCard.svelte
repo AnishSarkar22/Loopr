@@ -14,6 +14,16 @@
 	// Pagination state
 	let currentPage = $state(1);
 	let itemsPerPage = 3;
+    let showStatusToast = $state(false);
+    let statusToastMessage = $state('');
+
+	function handleNonPendingClick(webhook: ScheduledWebhook) {
+		statusToastMessage = `This webhook is ${webhook.status} and cannot be edited. Only pending webhooks can be modified.`;
+		showStatusToast = true;
+		setTimeout(() => {
+			showStatusToast = false;
+		}, 3000);
+	}
 
 	// Computed values for pagination
 	let totalPages = $derived(Math.ceil(webhooks.length / itemsPerPage));
@@ -173,7 +183,6 @@
 				<p class="text-base-content/70 py-4">
 					Schedule your first webhook to automate your workflows and integrations.
 				</p>
-				<a href="/dashboard" class="btn btn-primary"> Go to Dashboard </a>
 			</div>
 		</div>
 	</div>
@@ -372,11 +381,13 @@
 										{:else}
 											<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path
+													fill="none"
+													stroke="currentColor"
 													stroke-linecap="round"
 													stroke-linejoin="round"
 													stroke-width="2"
-													d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-												></path>
+													d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+												/>
 											</svg>
 											Delete
 										{/if}
@@ -389,12 +400,16 @@
 								>
 									View Details
 									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M9 5l7 7-7 7"
-										></path>
+										<g
+										fill="none"
+										stroke="currentColor"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+									>
+										<circle cx="12" cy="12" r="10" />
+										<path d="M12 16v-4m0-4h.01" />
+									</g>
 									</svg>
 								</button>
 							</div>

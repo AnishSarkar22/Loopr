@@ -193,55 +193,55 @@
 	</div>
 
 	{#if loading}
-		 <!-- DaisyUI Skeleton Loader -->
-        <div class="card bg-base-100 shadow-lg animate-pulse">
-            <div class="card-body">
-                <!-- Header Skeleton -->
-                <div class="mb-6 flex items-center justify-between">
-                    <div>
-                        <div class="h-7 w-32 bg-base-200 rounded mb-2 skeleton"></div>
-                        <div class="h-4 w-40 bg-base-200 rounded skeleton"></div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="h-6 w-16 bg-base-200 rounded-full skeleton"></div>
-                        <div class="h-4 w-20 bg-base-200 rounded skeleton"></div>
-                    </div>
-                </div>
-                <!-- Form Skeleton -->
-                <div class="space-y-6">
-                    <div class="form-control">
-                        <div class="h-4 w-24 bg-base-200 rounded mb-2 skeleton"></div>
-                        <div class="h-10 w-full bg-base-200 rounded skeleton"></div>
-                    </div>
-                    <div class="form-control">
-                        <div class="h-4 w-32 bg-base-200 rounded mb-2 skeleton"></div>
-                        <div class="h-10 w-full bg-base-200 rounded skeleton"></div>
-                    </div>
-                    <div class="form-control">
-                        <div class="h-4 w-40 bg-base-200 rounded mb-2 skeleton"></div>
-                        <div class="h-20 w-full bg-base-200 rounded skeleton"></div>
-                    </div>
-                    <div class="form-control">
-                        <div class="h-4 w-28 bg-base-200 rounded mb-2 skeleton"></div>
-                        <div class="h-10 w-full bg-base-200 rounded skeleton"></div>
-                    </div>
-                    <div class="form-control">
-                        <div class="flex items-center justify-between">
-                            <div class="h-4 w-32 bg-base-200 rounded skeleton"></div>
-                            <div class="h-6 w-12 bg-base-200 rounded-full skeleton"></div>
-                        </div>
-                        <div class="h-3 w-40 bg-base-200 rounded mt-2 skeleton"></div>
-                    </div>
-                    <div class="card-actions justify-between pt-4">
-                        <div class="h-10 w-32 bg-base-200 rounded skeleton"></div>
-                        <div class="flex gap-2">
-                            <div class="h-10 w-20 bg-base-200 rounded skeleton"></div>
-                            <div class="h-10 w-28 bg-base-200 rounded skeleton"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+		<!-- DaisyUI Skeleton Loader -->
+		<div class="card bg-base-100 animate-pulse shadow-lg">
+			<div class="card-body">
+				<!-- Header Skeleton -->
+				<div class="mb-6 flex items-center justify-between">
+					<div>
+						<div class="bg-base-200 skeleton mb-2 h-7 w-32 rounded"></div>
+						<div class="bg-base-200 skeleton h-4 w-40 rounded"></div>
+					</div>
+					<div class="flex items-center gap-2">
+						<div class="bg-base-200 skeleton h-6 w-16 rounded-full"></div>
+						<div class="bg-base-200 skeleton h-4 w-20 rounded"></div>
+					</div>
+				</div>
+				<!-- Form Skeleton -->
+				<div class="space-y-6">
+					<div class="form-control">
+						<div class="bg-base-200 skeleton mb-2 h-4 w-24 rounded"></div>
+						<div class="bg-base-200 skeleton h-10 w-full rounded"></div>
+					</div>
+					<div class="form-control">
+						<div class="bg-base-200 skeleton mb-2 h-4 w-32 rounded"></div>
+						<div class="bg-base-200 skeleton h-10 w-full rounded"></div>
+					</div>
+					<div class="form-control">
+						<div class="bg-base-200 skeleton mb-2 h-4 w-40 rounded"></div>
+						<div class="bg-base-200 skeleton h-20 w-full rounded"></div>
+					</div>
+					<div class="form-control">
+						<div class="bg-base-200 skeleton mb-2 h-4 w-28 rounded"></div>
+						<div class="bg-base-200 skeleton h-10 w-full rounded"></div>
+					</div>
+					<div class="form-control">
+						<div class="flex items-center justify-between">
+							<div class="bg-base-200 skeleton h-4 w-32 rounded"></div>
+							<div class="bg-base-200 skeleton h-6 w-12 rounded-full"></div>
+						</div>
+						<div class="bg-base-200 skeleton mt-2 h-3 w-40 rounded"></div>
+					</div>
+					<div class="card-actions justify-between pt-4">
+						<div class="bg-base-200 skeleton h-10 w-32 rounded"></div>
+						<div class="flex gap-2">
+							<div class="bg-base-200 skeleton h-10 w-20 rounded"></div>
+							<div class="bg-base-200 skeleton h-10 w-28 rounded"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	{:else if url}
 		<div class="card bg-base-100 shadow-lg">
 			<div class="card-body">
@@ -386,10 +386,12 @@
 								stroke="currentColor"
 							>
 								<path
+									fill="none"
+									stroke="currentColor"
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+									d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
 								/>
 							</svg>
 							Delete URL
