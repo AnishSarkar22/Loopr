@@ -14,8 +14,8 @@
 	// Pagination state
 	let currentPage = $state(1);
 	let itemsPerPage = 3;
-    let showStatusToast = $state(false);
-    let statusToastMessage = $state('');
+	let showStatusToast = $state(false);
+	let statusToastMessage = $state('');
 
 	function handleNonPendingClick(webhook: ScheduledWebhook) {
 		statusToastMessage = `This webhook is ${webhook.status} and cannot be edited. Only pending webhooks can be modified.`;
@@ -252,21 +252,21 @@
 										></path>
 									</svg>
 								</button>
-								<button
+								<a
+									href="/webhooks/{webhook.id}/edit"
 									class="btn btn-ghost btn-xs btn-circle tooltip tooltip-left"
-									data-tip="Details"
-									onclick={() => toggleDetails(webhook.id || '')}
-									aria-label="Toggle Details"
+									data-tip="Edit"
+									aria-label="Edit Webhook"
 								>
 									<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path
 											stroke-linecap="round"
 											stroke-linejoin="round"
 											stroke-width="2"
-											d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+											d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
 										></path>
 									</svg>
-								</button>
+								</a>
 							</div>
 						</div>
 
@@ -401,15 +401,15 @@
 									View Details
 									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<g
-										fill="none"
-										stroke="currentColor"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-									>
-										<circle cx="12" cy="12" r="10" />
-										<path d="M12 16v-4m0-4h.01" />
-									</g>
+											fill="none"
+											stroke="currentColor"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+										>
+											<circle cx="12" cy="12" r="10" />
+											<path d="M12 16v-4m0-4h.01" />
+										</g>
 									</svg>
 								</button>
 							</div>
