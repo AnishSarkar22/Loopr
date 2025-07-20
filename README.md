@@ -1,10 +1,9 @@
 <p align="center"><img src="/static/favicon.svg" width="150"></p>
 <h1 align="center"><b>Loopr</b></h1>
-<h4 align="center"><i>Intelligent URL Monitoring, Webhook Scheduling & Uptime Service</i></h4>
+<h4 align="center"><i>Intelligent URL & API Monitoring, Webhook Scheduling & Uptime Service</i></h4>
 <br>
 
-**Loopr** is a comprehensive, cloud-native URL monitoring application designed to track website uptime, performance, availability, and automate webhook scheduling in real-time. Built with modern web technologies and optimized for scalability, Loopr provides automated monitoring, intelligent alerting, webhook delivery, and detailed analytics for web services.
-
+**Loopr** is a comprehensive, cloud-native URL and API monitoring application designed to track website and API uptime, performance, availability, and automate webhook scheduling in real-time. Built with modern web technologies and optimized for scalability, Loopr provides automated monitoring, intelligent alerting, webhook delivery, and detailed analytics for web services.
 
 # **Overview**
 

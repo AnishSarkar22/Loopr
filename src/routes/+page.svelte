@@ -41,14 +41,27 @@
 </svg>
 			</svg>`
 		},
-		    {
-		      name: "Email",
-		      linkText: "Docs",
-		      description: "Automated emails for onboarding, password resets, and URL downtime.",
-		      svgContent: `<path d="M22 10C22.0185 10.7271 22 11.0542 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-		<path d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-		<circle cx="19" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>`,
-		    },
+		//     {
+		//       name: "Email",
+		//       linkText: "Docs",
+		//       description: "Automated emails for onboarding, password resets, and URL downtime.",
+		//       svgContent: `<path d="M22 10C22.0185 10.7271 22 11.0542 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+		// <path d="M6 8L8.1589 9.79908C9.99553 11.3296 10.9139 12.0949 12 12.0949C13.0861 12.0949 14.0045 11.3296 15.8411 9.79908" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+		// <circle cx="19" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>`,
+		//     },
+		{
+			name: 'Webhooks Scheduling',
+			newPage: true,
+			linkText: 'Docs',
+			description: 'Schedule webhooks to run at specific times, enabling seamless integrations and automation for your services.',
+			svgContent: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" {...$$props}>
+	<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+		<path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2" />
+		<path d="m6 17l3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06" />
+		<path d="m12 6l3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8" />
+	</g>
+</svg>`
+		},
 		{
 			name: 'Performance',
 			newPage: true,
@@ -191,7 +204,7 @@
 	<div class="px-7 pt-20 pb-8">
 		<div class="mx-auto max-w-lg text-center">
 			<div
-				class="animate-gradient-x mt-50 bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-4xl font-extrabold text-transparent drop-shadow-lg md:mt-40 md:text-5xl"
+				class="animate-gradient-x mt-50 bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-4xl font-extrabold text-transparent drop-shadow-lg md:mt-50 md:text-5xl"
 			>
 				Explore the Features
 			</div>
