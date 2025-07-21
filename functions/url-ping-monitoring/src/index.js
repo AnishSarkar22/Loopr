@@ -105,6 +105,17 @@ export default async function ({ res }) {
 	}
 }
 
+function formatPingError(errorMsg) {
+    if (!errorMsg) return 'Unknown error';
+    if (errorMsg.includes('ENOTFOUND')) return 'Domain name not found (DNS error)';
+    if (errorMsg.includes('ECONNREFUSED')) return 'Connection refused by server';
+    if (errorMsg.includes('ETIMEDOUT')) return 'Connection timed out';
+    if (errorMsg.includes('EAI_AGAIN')) return 'Temporary DNS lookup failure';
+    if (errorMsg.includes('certificate')) return 'SSL certificate error';
+    if (errorMsg.includes('aborted')) return 'Request was aborted (timeout)';
+    return errorMsg;
+}
+
 async function processBatch(databases, urlDocuments, messaging, users) {
 	// Process URLs in smaller parallel chunks to avoid memory issues
 	const PARALLEL_CHUNK_SIZE = parseInt(process.env.PARALLEL_CHUNK_SIZE) || 25;
@@ -224,7 +235,7 @@ async function processBatch(databases, urlDocuments, messaging, users) {
 	}
 }
 
-// Helper function to calculate next ping time based on user's interval choice
+// Function to calculate next ping time based on user's interval choice
 function calculateNextPingTime(pingInterval) {
 	const nextPing = new Date();
 	const intervalMinutes = parseInt(pingInterval) || 15;
@@ -240,7 +251,7 @@ function calculateNextPingTime(pingInterval) {
 	return isoString;
 }
 
-// Helper function to ping a URL
+// Function to ping a URL
 async function pingUrl(url, urlId) {
     const startTime = Date.now();
 
@@ -316,7 +327,6 @@ async function updateUrlsInBatches(databases, urlUpdates, batchSize = 50) {
 	}
 }
 
-// Add this new helper function
 async function upsertShardDocument(databases, shardId, data) {
 	try {
 		return await databases.createDocument(
@@ -350,7 +360,7 @@ async function upsertShardDocument(databases, shardId, data) {
 	}
 }
 
-// Add this helper function for merging results
+// Function for merging results
 function mergeResults(existingResults, newResults) {
 	const resultMap = new Map();
 
@@ -567,7 +577,7 @@ async function sendFailureNotification(databases, messaging, users, urlDoc, resu
                     <p><strong>URL:</strong> ${urlDoc.url}</p>
                     <p><strong>Name:</strong> ${urlDoc.name || 'Unnamed URL'}</p>
                     <p><strong>Status Code:</strong> ${result.status || 'No response'}</p>
-                    <p><strong>Error:</strong> ${result.error || 'Unknown error'}</p>
+                    <p><strong>Error:</strong> ${formatPingError(result.error) || 'Unknown error'}</p>
                     <p><strong>Time:</strong> ${
 											result.timestamp
 												? new Date(result.timestamp).toLocaleString('en-US', {
@@ -603,7 +613,8 @@ async function sendFailureNotification(databases, messaging, users, urlDoc, resu
 			[], // attachments
 			false, // draft
 			true, // html (boolean - indicates content is HTML)
-			new Date(Date.now() + 2000).toISOString() // scheduledAt
+			// new Date(Date.now() + 2000).toISOString() // scheduledAt
+			null
 		);
 
 		await databases.createDocument(
@@ -613,7 +624,7 @@ async function sendFailureNotification(databases, messaging, users, urlDoc, resu
 			{
 			userId: urlDoc.userId,
 			type: 'url_down',
-			message: `The URL ${urlDoc.url} is down. Error: ${result.error || 'Unknown error'}`,
+			message: `The URL ${urlDoc.url} is down. Error: ${formatPingError(result.error)}`,
 			urlId: urlDoc.$id,
 			url: urlDoc.url,
 			timestamp: new Date().toISOString(),
