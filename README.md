@@ -9,8 +9,6 @@
 
 Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite backend** infrastructure, featuring intelligent **cron job scheduling**, **webhook scheduling and delivery**, and **distributed monitoring capabilities**. The application is engineered to handle high-frequency monitoring tasks while maintaining optimal resource utilization and cost efficiency.
 
-
-
 # **Key Features**
 
 ## 🔍 Real-Time Monitoring
@@ -130,10 +128,6 @@ graph TB
     Alerts --> Email
     
     %% Styling
-    classDef functions fill:#fff3e0,stroke:#f57c00
-    classDef data fill:#e8f5e8,stroke:#4caf50
-    classDef external fill:#fce4ec,stroke:#e91e63
-    
     class Monitor,Workers,Webhooks,Cleanup functions
     class URLs,Results,Nodes,Alerts data
     class Internet,Email external
