@@ -15,7 +15,7 @@ Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite b
 
 ## 🔍 Real-Time Monitoring
 
-* Continuous URL health checking with configurable ping intervals
+* Continuous URL and webhook health checking with configurable ping intervals
 * Multi-node distributed monitoring architecture
 * Response time tracking and performance analytics
 * Automated failure detection and recovery monitoring
@@ -75,33 +75,114 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 * Memory-efficient data operations
 * Webhook scheduling and execution handled by dedicated serverless functions
 
+```mermaid
+graph TB
+    %% User Interface
+    User[User Dashboard]
+    
+    %% Core Application
+    subgraph "Loopr Backend"
+        API[SvelteKit App<br/>REST API]
+        Appwrite[Appwrite BaaS<br/>Auth + Database]
+    end
+    
+    %% Serverless Functions
+    subgraph "Automated Functions"
+        Monitor[URL Monitor]
+        Workers[Load Balancer] 
+        Webhooks[Webhook Scheduler]
+        Cleanup[Data Cleanup]
+    end
+    
+    %% Data Storage
+    subgraph "Database Collections"
+        URLs[(URLs)]
+        Results[(Results)]
+        Nodes[(Worker Nodes)]
+        Alerts[(Notifications)]
+    end
+    
+    %% External
+    Internet[Monitored URLs<br/>External APIs]
+    Email[SMTP Alerts]
+    
+    %% Connections
+    User --> API
+    API --> Appwrite
+    Appwrite --> Monitor
+    Appwrite --> Workers
+    Appwrite --> Webhooks
+    Appwrite --> Cleanup
+    
+    Monitor --> URLs
+    Monitor --> Results
+    Monitor --> Internet
+    Monitor --> Alerts
+    
+    Workers --> URLs
+    Workers --> Nodes
+    
+    Webhooks --> Internet
+    
+    Cleanup --> Results
+    Cleanup --> URLs
+    
+    Alerts --> Email
+    
+    %% Styling
+    classDef functions fill:#fff3e0,stroke:#f57c00
+    classDef data fill:#e8f5e8,stroke:#4caf50
+    classDef external fill:#fce4ec,stroke:#e91e63
+    
+    class Monitor,Workers,Webhooks,Cleanup functions
+    class URLs,Results,Nodes,Alerts data
+    class Internet,Email external
+```
 
+# **Serverless Function Optimization Strategy**
 
-# **Cron Job Optimization Strategy**
+## 🔄 Multi-Function Architecture
 
-## 📦 Dynamic Batch Processing
+* **URL Monitoring**: [`url-ping-monitoring`](functions/url-ping-monitoring/src/index.js) - Distributed health checking across worker nodes
+* **Node Management**: [`node-registration`](functions/node-registration/src/index.js) - Automated load balancing and URL redistribution  
+* **Data Cleanup**: [`database-cleanup`](functions/database-cleanup/src/index.js) - Intelligent data retention and orphaned URL reassignment
+* **Webhook Scheduling**: [`webhook-scheduler`](functions/webhook-scheduler/src/index.js) - Reliable webhook delivery with retry mechanisms
 
-* URL checks are processed in **dynamically sized batches**
-* Batch size adapts to system resources and time availability
+## 📦 Adaptive Batch Processing
+
+* **Dynamic Sizing**: Batch sizes automatically adjust based on `FUNCTION_TIMEOUT` and `PROCESSING_BUFFER` 
+* **Parallel Processing**: Configurable chunk sizes (`PARALLEL_CHUNK_SIZE`: 25, `WEBHOOK_PARALLEL_CHUNK_SIZE`: 20)
+* **Smart Querying**: Offset-based pagination with configurable limits (`BATCH_SIZE`: 100, `WEBHOOK_BATCH_SIZE`: 50)
+* **Memory Optimization**: Processing in smaller parallel chunks to prevent memory exhaustion
 
 ## ⏱️ Time-Aware Execution
 
-* Smart scheduling to utilize full execution window
-* Processing buffers to avoid timeouts
+* **Execution Windows**: Functions utilize full 300-second timeout with 30-second processing buffers
+* **Real-time Monitoring**: Continuous elapsed time tracking to prevent timeouts
+* **Scheduled Intervals**: Smart cron scheduling (every minute for monitoring, bi-daily for cleanup)
+* **Next Ping Calculation**: Dynamic interval-based scheduling using [`calculateNextPingTime`](functions/url-ping-monitoring/src/index.js)
 
 ## 🧩 Resource Management
 
-* Customizable processing parameters for different environments
-* Adaptive sizing based on system performance
-* Optimized memory and database interaction
+* **Environment-Based Configuration**: All parameters customizable via environment variables
+* **Worker Node Distribution**: Intelligent load balancing across multiple node instances
+* **Database Sharding**: User-based data partitioning with date-based shard keys
+* **Update Batching**: Consolidated database operations via [`updateUrlsInBatches`](functions/url-ping-monitoring/src/index.js) and [`updateWebhooksInBatches`](functions/webhook-scheduler/src/index.js)
 
 ## 🛡️ Fault Tolerance
 
-* Graceful handling of partial task failures
-* Auto-retry on failed operations
-* Resilient data consistency
-* Recovery from process interruptions
+* **Graceful Degradation**: Individual chunk failures don't stop entire batch processing
+* **Automatic Recovery**: Orphaned URL reassignment when nodes go offline
+* **Retry Mechanisms**: Exponential backoff for webhook delivery failures
+* **Data Consistency**: Race condition protection with [`upsertShardDocument`](functions/url-ping-monitoring/src/index.js) patterns
+* **Error Isolation**: Comprehensive error handling with detailed logging and partial success reporting
 
+## 🎯 Performance Optimizations
+
+* **Connection Pooling**: Efficient database connection reuse across batch operations
+* **Query Optimization**: Compound indexes for fast lookups (`nodeId_enabled_nextping`, `status_priority_time`)
+* **Result Aggregation**: Efficient data collection via [`storeResultsByUser`](functions/url-ping-monitoring/src/index.js)
+* **Notification Management**: Smart alerting with duplicate prevention and rate limiting
 
 
 # **Deployment Architecture**
@@ -142,10 +223,10 @@ Loopr employs a **multi-node architecture** that distributes monitoring tasks ac
 ## 🔧 Backend
 
 * **Appwrite** as Backend-as-a-Service
+* **Appwrite serverless functions** for automated scheduling and delivery of URLs and webhooks
 * **Node.js** for serverless functions
 * **MariaDB** for data persistence
 * **Redis** for caching and session storage
-* Webhook scheduling and delivery via Appwrite serverless functions
 
 ## 🛠️ Infrastructure
 
