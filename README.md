@@ -5,6 +5,16 @@
 
 **Loopr** is a comprehensive, cloud-native URL and API monitoring application designed to track website and API uptime, performance, availability, and automate webhook scheduling in real-time. Built with modern web technologies and optimized for scalability, Loopr provides automated monitoring, intelligent alerting, webhook delivery, and detailed analytics for web services.
 
+# Screenshots
+
+<p align="center">
+  <img src="/static/readme/screenshot-1.png" width="600" alt="Loopr Dashboard Screenshot 1">
+  <br>
+  <img src="/static/readme/screenshot-2.png" width="600" alt="Loopr Dashboard Screenshot 2">
+  <br>
+  <img src="/static/readme/screenshot-3.png" width="600" alt="Loopr Dashboard Screenshot 3">
+</p>
+
 # **Overview**
 
 Loopr combines a sophisticated **SvelteKit frontend** with a robust **Appwrite backend** infrastructure, featuring intelligent **cron job scheduling**, **webhook scheduling and delivery**, and **distributed monitoring capabilities**. The application is engineered to handle high-frequency monitoring tasks while maintaining optimal resource utilization and cost efficiency.
