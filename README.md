@@ -8,11 +8,11 @@
 # Screenshots
 
 <p align="center">
-  <img src="/static/readme/screenshot-1.png" width="600" alt="Loopr Dashboard Screenshot 1">
+  <img src="/static/readme/screenshot-1.jpg" width="600" alt="Loopr Dashboard Screenshot 1">
   <br>
-  <img src="/static/readme/screenshot-2.png" width="600" alt="Loopr Dashboard Screenshot 2">
+  <img src="/static/readme/screenshot-2.jpg" width="600" alt="Loopr Dashboard Screenshot 2">
   <br>
-  <img src="/static/readme/screenshot-3.png" width="600" alt="Loopr Dashboard Screenshot 3">
+  <img src="/static/readme/screenshot-3.jpg" width="600" alt="Loopr Dashboard Screenshot 3">
 </p>
 
 # **Overview**
